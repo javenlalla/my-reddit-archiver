@@ -1,2 +1,18 @@
-# my-reddit-archiver
+# My Reddit Archiver
+
 Archive Saved posts under your Reddit account.
+
+## Local Development
+
+```bash
+cp .env.sample .env # And update the .env file with real values.
+docker build ./build -f=build/Dockerfile --tag=mra:local # Build PHP image.
+```
+
+### Hook Into Containers
+
+API:
+
+```bash
+docker exec -it mra-api sh
+```
