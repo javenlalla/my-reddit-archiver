@@ -10,7 +10,11 @@ services:
       - /var/www/mra-api/vendor/
       - /var/www/mra-api/var/
     environment:
-      PHP_IDE_CONFIG: "${PHP_IDE_CONFIG}" #Update Host Name
+      REDDIT_USERNAME: "${REDDIT_USERNAME}"
+      REDDIT_PASSWORD: "${REDDIT_PASSWORD}"
+      REDDIT_CLIENT_ID: "${REDDIT_CLIENT_ID}"
+      REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET}"
+      PHP_IDE_CONFIG: "${PHP_IDE_CONFIG}"
     working_dir: /var/www/mra-api
   mra-api-web:  #Update Service Name
     container_name: mra-api-web #Update Container Name

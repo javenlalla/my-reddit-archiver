@@ -14,4 +14,16 @@ class RedditApiController extends AbstractController
     {
         return $this->json(['test'=>'boo']);
     }
+
+    #[Route('/saved-posts', name: 'saved_posts')]
+    public function getSavedPosts(RedditApi $api)
+    {
+        return $this->json($api->getSavedPosts());
+    }
+
+    #[Route('/comments', name: 'comments')]
+    public function getComments(RedditApi $api)
+    {
+        return $this->json($api->getPostComments());
+    }
 }
