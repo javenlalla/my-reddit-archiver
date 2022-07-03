@@ -14,6 +14,7 @@ services:
       REDDIT_PASSWORD: "${REDDIT_PASSWORD}"
       REDDIT_CLIENT_ID: "${REDDIT_CLIENT_ID}"
       REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET}"
+      DATABASE_URL: "${DATABASE_URL}"
       PHP_IDE_CONFIG: "${PHP_IDE_CONFIG}"
     working_dir: /var/www/mra-api
   mra-api-web: 
