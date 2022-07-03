@@ -1,8 +1,8 @@
 version: '3.9'
 
 services:
-  mra-api: #Update Service Name
-    container_name: mra-api #Update Container Name
+  mra-api:
+    container_name: mra-api
     image: mra:local
     volumes:
       - ./api/app:/var/www/mra-api
@@ -16,8 +16,8 @@ services:
       REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET}"
       PHP_IDE_CONFIG: "${PHP_IDE_CONFIG}"
     working_dir: /var/www/mra-api
-  mra-api-web:  #Update Service Name
-    container_name: mra-api-web #Update Container Name
+  mra-api-web: 
+    container_name: mra-api-web
     image: nginx:alpine
     volumes:
       - ./api/app:/var/www/mra-api
@@ -27,24 +27,16 @@ services:
     ports:
       - "2080:80"
       # - "1002:443"
-  mra-database: #Update Service Name
-    container_name: mra-database #Update Container Name
-    image: mysql:8.0
+  mra-database:
+    container_name: mra-database
+    image: mariadb:10.8
     environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
-      MYSQL_USER: "${MYSQL_USER}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+      MARIADB_USER: "${MARIADB_USER}"
+      MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
+      MARIADB_DATABASE: "${MARIADB_DATABASE}"
     ports:
-      - "3116:3306" #Update Port
+      - "3116:3306"
     volumes:
       - ./database-data:/var/lib/mysql
     working_dir: /var/lib/mysql
-  # smsweets-react: #Update Service Name
-  #   container_name: smsweets-react #Update Container Name
-  #   image: node:16-alpine3.12
-  #   volumes:
-  #     - ./smsweets:/var/www/smsweets
-  #   working_dir: /var/www/smsweets
-  #   ports:
-  #     - "8080:8080"
