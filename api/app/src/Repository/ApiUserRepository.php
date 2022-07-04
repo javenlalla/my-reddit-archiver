@@ -54,22 +54,27 @@ class ApiUserRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?ApiUser
-//    {
-//        return $this->createQueryBuilder('a')
-//            ->andWhere('a.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
-    public function getAccessTokenByUsername(string $username)
+    public function findOneByUsername(string $username): ?ApiUser
     {
-        return $this->createQueryBuilder('a')
-            ->select('a.accessToken')
-            ->andWhere('a.username = :username')
-            ->setParameter('username', $username)
-            ->getQuery()
-            ->getSingleScalarResult();
+       return $this->createQueryBuilder('a')
+           ->andWhere('a.username = :username')
+           ->setParameter('username', $username)
+           ->getQuery()
+           ->getOneOrNullResult()
+       ;
+    }
+
+    public function getAccessTokenByUsername(string $username): string
+    {
+        return $this->findOneByUsername($username)->getAccessToken();
+    }
+
+    public function saveToken(string $username, string $accessToken)
+    {
+        $apiUser = $this->findOneByUsername($username);
+        $apiUser->setAccessToken($accessToken);
+
+        $this->getEntityManager()->persist($apiUser);
+        $this->getEntityManager()->flush();
     }
 }

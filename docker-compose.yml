@@ -7,7 +7,7 @@ services:
     volumes:
       - ./api/app:/var/www/mra-api
       - /var/www/mra-api/node_modules/
-      - /var/www/mra-api/vendor/
+      # - /var/www/mra-api/vendor/
       - /var/www/mra-api/var/
     environment:
       REDDIT_USERNAME: "${REDDIT_USERNAME}"

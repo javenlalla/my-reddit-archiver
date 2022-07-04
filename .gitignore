@@ -2,3 +2,4 @@ api/app/.idea
 .env
 database-data
 temp
+api/app/.env.test
