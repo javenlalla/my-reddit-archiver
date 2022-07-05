@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Repository\ApiUserRepository;
 use App\Service\RedditApi\Comments;
+use App\Service\RedditApi\Post;
 use Exception;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -13,9 +14,11 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 class RedditApi
 {
-    const OAUTH_URL = 'https://www.reddit.com/api/v1/access_token';
+    const OAUTH_ENDPOINT = 'https://www.reddit.com/api/v1/access_token';
 
-    const SAVED_POSTS_BASE_URL = 'https://oauth.reddit.com/user/%s/saved';
+    const POST_DETAIL_ENDPOINT = 'https://oauth.reddit.com/api/info?id=%s_%s';
+
+    const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
     const METHOD_GET = 'GET';
 
@@ -35,6 +38,22 @@ class RedditApi
     ) {
         $this->accessToken = $this->getAccessToken();
         $this->userAgent = sprintf('User-Agent from %s', $this->username);
+    }
+
+    public function getPostById(string $type, string $id): ?Post
+    {
+        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $type, $id);
+        $response = $this->executeCall(self::METHOD_GET, $endpoint);
+
+        if ($response->getStatusCode() === 200) {
+            $responseData = $response->toArray();
+
+            if (!empty($responseData["data"]["children"][0])) {
+                return new Post($responseData["data"]["children"][0]);
+            }
+        }
+
+        return null;
     }
 
     public function getSavedPosts(): array
@@ -114,7 +133,7 @@ class RedditApi
 
     private function getSavedPostsUrl(): string
     {
-        return sprintf(self::SAVED_POSTS_BASE_URL, $this->username);
+        return sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
     }
 
     private function getAccessToken()
@@ -141,7 +160,7 @@ class RedditApi
             ]
         ];
 
-        $response = $this->client->request(self::METHOD_POST, self::OAUTH_URL, $options);
+        $response = $this->client->request(self::METHOD_POST, self::OAUTH_ENDPOINT, $options);
         if ($response->getStatusCode() === 200) {
             $responseData = $response->toArray();
             $this->accessToken = $responseData['access_token'];
