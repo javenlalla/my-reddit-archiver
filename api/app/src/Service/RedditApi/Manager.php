@@ -45,20 +45,15 @@ class Manager
         return $this->postRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    public function savePost(\App\Service\RedditApi\Post $post)
+    public function savePost(Post $post)
     {
-        $entityPost = $this->getPostByRedditId($post->getRedditId());
+        $existingPost = $this->getPostByRedditId($post->getRedditId());
 
-        if (empty($entityPost)) {
-            $entityPost = new Post();
+        if ($existingPost instanceof Post) {
+            return;
         }
 
-        $entityPost->setRedditId($post->getRedditId());
-        $entityPost->setTitle($post->getTitle());
-        $entityPost->setScore($post->getScore());
-        $entityPost->setUrl($post->getUrl());
-
-        $this->postRepository->save($entityPost);
+        $this->postRepository->save($post);
     }
 
     public function saveComments(){}

@@ -16,3 +16,12 @@ API:
 ```bash
 docker exec -it mra-api sh
 ```
+
+## Testing
+
+Configure Test Database:
+
+```bash
+php bin/console --env=test doctrine:database:create
+php bin/console --env=test doctrine:schema:create
+```

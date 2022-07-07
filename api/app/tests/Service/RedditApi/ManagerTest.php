@@ -35,12 +35,12 @@ class ManagerTest extends KernelTestCase
 
     public function testSaveImagePost()
     {
-        $targetRedditId = 'vepbt0';
+        $redditId = 'vepbt0';
+        $post = $this->manager->getPostFromApiByRedditId(RedditApi\Hydrator::TYPE_LINK, $redditId);
 
-        $post = $this->redditApi->getPostById(RedditApi\Post::TYPE_LINK, $targetRedditId);
         $this->manager->savePost($post);
 
-        $fetchedPost = $this->manager->getPostByRedditId($targetRedditId);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $this->assertInstanceOf(Post::class, $fetchedPost);
     }
 }
