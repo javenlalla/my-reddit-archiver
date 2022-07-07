@@ -3,14 +3,13 @@
 namespace App\Tests\Service\RedditApi;
 
 use App\Entity\Post;
-use App\Service\RedditApi;
+use App\Service\RedditApi\Hydrator;
+use App\Service\RedditApi\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ManagerTest extends KernelTestCase
 {
-    private RedditApi\Manager $manager;
-
-    private RedditApi $redditApi;
+    private Manager $manager;
 
     public function setUp(): void
     {
@@ -18,14 +17,13 @@ class ManagerTest extends KernelTestCase
         self::bootKernel();
 
         $container = static::getContainer();
-        $this->manager = $container->get(RedditApi\Manager::class);
-        $this->redditApi = $container->get(RedditApi::class);
+        $this->manager = $container->get(Manager::class);
     }
 
     public function testGetPostFromApiByRedditId()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(RedditApi\Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertEquals($redditId, $post->getRedditId());
@@ -36,7 +34,7 @@ class ManagerTest extends KernelTestCase
     public function testSaveImagePost()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(RedditApi\Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
