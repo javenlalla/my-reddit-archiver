@@ -25,6 +25,14 @@ class Post
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $url;
 
+    #[ORM\ManyToOne(targetEntity: Type::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private $typeId;
+
+    #[ORM\ManyToOne(targetEntity: ContentType::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private $contentTypeId;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -74,6 +82,30 @@ class Post
     public function setUrl(?string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getTypeId(): ?Type
+    {
+        return $this->typeId;
+    }
+
+    public function setTypeId(?Type $typeId): self
+    {
+        $this->typeId = $typeId;
+
+        return $this;
+    }
+
+    public function getContentTypeId(): ?ContentType
+    {
+        return $this->contentTypeId;
+    }
+
+    public function setContentTypeId(?ContentType $contentTypeId): self
+    {
+        $this->contentTypeId = $contentTypeId;
 
         return $this;
     }
