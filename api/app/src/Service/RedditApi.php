@@ -6,6 +6,11 @@ use App\Repository\ApiUserRepository;
 use App\Service\RedditApi\Comments;
 use App\Service\RedditApi\Post;
 use Exception;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -38,6 +43,27 @@ class RedditApi
     ) {
         $this->accessToken = $this->getAccessToken();
         $this->userAgent = sprintf('User-Agent from %s', $this->username);
+    }
+
+    /**
+     * Retrieve a Post from the API by its Reddit "fullName" ID.
+     *
+     * @param  string  $type
+     * @param  string  $id
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getPostByRedditId(string $type, string $id): array
+    {
+        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $type, $id);
+        $response = $this->executeCall(self::METHOD_GET, $endpoint);
+
+        return $response->toArray();
     }
 
     public function getPostById(string $type, string $id): ?Post
@@ -126,6 +152,15 @@ class RedditApi
             return $this->executeCall($method, $endpoint, $options, true);
         } else if ($response->getStatusCode() === 401 && $retry === true) {
             throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
+        }
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception(sprintf(
+                'API call failed. Status Code: %d. Endpoint: %s. Options: %s',
+                $response->getStatusCode(),
+                $endpoint,
+                var_export($options, true)
+            ));
         }
 
         return $response;

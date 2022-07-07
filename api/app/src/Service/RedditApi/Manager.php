@@ -3,18 +3,44 @@
 namespace App\Service\RedditApi;
 
 use App\Entity\Post;
-use App\Entity\Post as PostEntity;
 use App\Repository\PostRepository;
 use App\Service\RedditApi;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class Manager
 {
-    public function __construct(private RedditApi $redditApi, private PostRepository $postRepository)
-    {
-
+    public function __construct(
+        private readonly RedditApi $redditApi,
+        private readonly PostRepository $postRepository,
+        private readonly Hydrator $hydrator
+    ) {
     }
 
-    public function getPostByRedditId(string $redditId): ?PostEntity
+    /**
+     * Retrieve a Post from the API hydrated with the response data.
+     *
+     * @param  string  $type
+     * @param  string  $redditId
+     *
+     * @return Post
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getPostFromApiByRedditId(string $type, string $redditId): Post
+    {
+        $response = $this->redditApi->getPostByRedditId($type, $redditId);
+
+        return $this->hydrator->hydratePostFromResponse($response);
+    }
+
+    public function getPostByRedditId(string $redditId): ?Post
     {
         return $this->postRepository->findOneBy(['redditId' => $redditId]);
     }
@@ -24,7 +50,7 @@ class Manager
         $entityPost = $this->getPostByRedditId($post->getRedditId());
 
         if (empty($entityPost)) {
-            $entityPost = new PostEntity();
+            $entityPost = new Post();
         }
 
         $entityPost->setRedditId($post->getRedditId());
