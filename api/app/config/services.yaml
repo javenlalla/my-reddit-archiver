@@ -33,3 +33,6 @@ services:
             $password: '%app.reddit.password%'
             $clientId: '%app.reddit.client_id%'
             $clientSecret: '%app.reddit.client_secret%'
+
+    App\Service\RedditApi\Manager:
+        public: true

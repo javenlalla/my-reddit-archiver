@@ -49,6 +49,7 @@ class RedditApiTest extends KernelTestCase
         $this->assertInstanceOf(RedditApi\Post::class, $post);
 
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
+        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
     }
     public function testParseTextPost(){} //https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/
     public function testParseVideoPost(){} //https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/
