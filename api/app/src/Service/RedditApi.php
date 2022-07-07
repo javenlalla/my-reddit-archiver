@@ -42,7 +42,7 @@ class RedditApi
         private readonly string $clientSecret,
     ) {
         $this->accessToken = $this->getAccessToken();
-        $this->userAgent = sprintf('User-Agent from %s', $this->username);
+        $this->setUserAgent();
     }
 
     /**
@@ -174,8 +174,10 @@ class RedditApi
     private function getAccessToken()
     {
         if (empty($this->accessToken)) {
-            // @TODO: Add error handling and refresh logic.
-            $this->accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
+            $accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
+            if (empty($accessToken)) {
+                $this->refreshToken();
+            }
         }
 
         return $this->accessToken;
@@ -183,6 +185,10 @@ class RedditApi
 
     private function refreshToken()
     {
+        if (empty($this->userAgent)) {
+            $this->setUserAgent();
+        }
+
         $options = [
             'auth_basic' => $this->clientId.':'.$this->clientSecret,
             'headers' => [
@@ -205,5 +211,15 @@ class RedditApi
         }
 
         throw new Exception(sprintf('Unable to retrieve Access Token: %s', var_export($response->toArray(), true)));
+    }
+
+    /**
+     * Set a unique User Agent for API requests using the current Username.
+     *
+     * @return void
+     */
+    private function setUserAgent()
+    {
+        $this->userAgent = sprintf('User-Agent from %s', $this->username);
     }
 }

@@ -64,9 +64,9 @@ class ApiUserRepository extends ServiceEntityRepository
        ;
     }
 
-    public function getAccessTokenByUsername(string $username): string
+    public function getAccessTokenByUsername(string $username): ?string
     {
-        return $this->findOneByUsername($username)->getAccessToken();
+        return $this->findOneByUsername($username)?->getAccessToken();
     }
 
     public function saveToken(string $username, string $accessToken)
