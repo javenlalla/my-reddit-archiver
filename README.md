@@ -31,3 +31,17 @@ Load Fixtures:
 ```bash
 php bin/console --env=test doctrine:fixtures:load
 ```
+
+## Database Changes
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+php bin/console doctrine:fixtures:load
+
+# Recreate the testing database as necessary.
+php bin/console --env=test doctrine:database:drop --force
+php bin/console --env=test doctrine:database:create
+php bin/console --env=test doctrine:schema:create
+php bin/console --env=test doctrine:fixtures:load
+```

@@ -27,11 +27,11 @@ class Post
 
     #[ORM\ManyToOne(targetEntity: Type::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $typeId;
+    private $type;
 
     #[ORM\ManyToOne(targetEntity: ContentType::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private $contentTypeId;
+    private $contentType;
 
     public function getId(): ?int
     {
@@ -86,26 +86,26 @@ class Post
         return $this;
     }
 
-    public function getTypeId(): ?Type
+    public function getType(): ?Type
     {
-        return $this->typeId;
+        return $this->type;
     }
 
-    public function setTypeId(?Type $typeId): self
+    public function setType(?Type $type): self
     {
-        $this->typeId = $typeId;
+        $this->type = $type;
 
         return $this;
     }
 
     public function getContentTypeId(): ?ContentType
     {
-        return $this->contentTypeId;
+        return $this->contentType;
     }
 
     public function setContentTypeId(?ContentType $contentTypeId): self
     {
-        $this->contentTypeId = $contentTypeId;
+        $this->contentType = $contentTypeId;
 
         return $this;
     }
