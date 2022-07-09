@@ -39,6 +39,22 @@ class ContentTypeRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return ContentType
+     */
+    public function getImageContentType(): ContentType
+    {
+        return $this->findOneBy(['name' => ContentType::CONTENT_TYPE_IMAGE]);
+    }
+
+    /**
+     * @return ContentType
+     */
+    public function getVideoContentType(): ContentType
+    {
+        return $this->findOneBy(['name' => ContentType::CONTENT_TYPE_VIDEO]);
+    }
+
 //    /**
 //     * @return ContentType[] Returns an array of ContentType objects
 //     */

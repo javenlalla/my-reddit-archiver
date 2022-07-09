@@ -8,6 +8,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ContentTypeRepository::class)]
 class ContentType
 {
+    const CONTENT_TYPE_IMAGE = 'image';
+
+    const CONTENT_TYPE_VIDEO = 'video';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

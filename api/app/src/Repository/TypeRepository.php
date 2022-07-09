@@ -39,6 +39,22 @@ class TypeRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Type
+     */
+    public function getLinkType(): Type
+    {
+        return $this->findOneBy(['redditTypeId' => Type::TYPE_LINK]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getCommentType(): Type
+    {
+        return $this->findOneBy(['redditTypeId' => Type::TYPE_COMMENT]);
+    }
+
 //    /**
 //     * @return Type[] Returns an array of Type objects
 //     */

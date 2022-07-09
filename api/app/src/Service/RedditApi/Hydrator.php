@@ -2,6 +2,8 @@
 
 namespace App\Service\RedditApi;
 
+use App\Repository\ContentTypeRepository;
+use App\Repository\TypeRepository;
 use Exception;
 
 class Hydrator
@@ -14,6 +16,12 @@ class Hydrator
     const CONTENT_TYPE_IMAGE = 'image';
 
     const CONTENT_TYPE_VIDEO = 'video';
+
+    public function __construct(
+        private readonly TypeRepository $typeRepository,
+        private readonly ContentTypeRepository $contentTypeRepository
+    ) {
+    }
 
     /**
      * @param  array  $responseRawData
@@ -28,7 +36,7 @@ class Hydrator
         }
 
         if ($responseRawData['kind'] === self::TYPE_LINK) {
-            return $this->initLinkPostFromRawData($responseRawData['data']);
+            return $this->hydrateLinkPostFromResponseData($responseRawData['data']);
         } elseif ($responseRawData['kind'] === self::TYPE_COMMENT) {
             return $this->initCommentPostFromRawData($responseRawData['data']);
         }
@@ -48,24 +56,20 @@ class Hydrator
     //     }
     // }
 
-    private function initLinkPostFromRawData(array $responseData): \App\Entity\Post
+    private function hydrateLinkPostFromResponseData(array $responseData): \App\Entity\Post
     {
         $post = new \App\Entity\Post();
         $post->setRedditId($responseData['id']);
-        // $post->setType(self::TYPE_LINK);
         $post->setTitle($responseData['title']);
-        $post->setScore((int) $responseData['score']);
+        $post->setScore((int)$responseData['score']);
         $post->setUrl($responseData['url']);
 
-        // $this->redditId = $postData['id'];
-        // $this->type = self::TYPE_LINK;
-        // $this->title = $postData['title'];
-        // $this->score = (int) $postData['score'];
+        $type = $this->typeRepository->getLinkType();
+        $post->setType($type);
 
         if ($responseData['domain'] === 'i.imgur.com' || !empty($responseData['preview']['images'])) {
-            // $post->setContentType(self::CONTENT_TYPE_IMAGE);
-
-            // $this->contentType = self::CONTENT_TYPE_IMAGE;
+            $contentType = $this->contentTypeRepository->getImageContentType();
+            $post->setContentType($contentType);
         }
 
         return $post;

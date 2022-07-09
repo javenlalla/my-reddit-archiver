@@ -98,14 +98,14 @@ class Post
         return $this;
     }
 
-    public function getContentTypeId(): ?ContentType
+    public function getContentType(): ?ContentType
     {
         return $this->contentType;
     }
 
-    public function setContentTypeId(?ContentType $contentTypeId): self
+    public function setContentType(?ContentType $contentType): self
     {
-        $this->contentType = $contentTypeId;
+        $this->contentType = $contentType;
 
         return $this;
     }
