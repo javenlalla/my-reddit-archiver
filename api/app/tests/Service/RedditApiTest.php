@@ -3,12 +3,12 @@
 namespace App\Tests\Service;
 
 use App\Entity\Type;
-use App\Service\RedditApi;
+use App\Service\Reddit\Api;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class RedditApiTest extends KernelTestCase
 {
-    private RedditApi $redditApi;
+    private Api $api;
 
     public function setUp(): void
     {
@@ -16,7 +16,7 @@ class RedditApiTest extends KernelTestCase
         self::bootKernel();
 
         $container = static::getContainer();
-        $this->redditApi = $container->get(RedditApi::class);
+        $this->api = $container->get(Api::class);
     }
 
     /**
@@ -40,7 +40,7 @@ class RedditApiTest extends KernelTestCase
         // $newsletterGenerator = $container->get(NewsletterGenerator::class);
         // $newsletter = $newsletterGenerator->generateMonthlyNews(...);
 
-        /** @var RedditApi $redditApi */
+        /** @var Api $redditApi */
         // $redditApi = $container->get(RedditApi::class);
         // $comments = $redditApi->getCommentsByPostId($postId);
         //
@@ -51,7 +51,7 @@ class RedditApiTest extends KernelTestCase
     public function testParseImagePost()
     {
         //https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
-        $postResponseData = $this->redditApi->getPostByRedditId(Type::TYPE_LINK, 'vepbt0');
+        $postResponseData = $this->api->getPostByRedditId(Type::TYPE_LINK, 'vepbt0');
         $this->assertIsArray($postResponseData);
 
         $postData = $postResponseData['data']['children'][0]['data'];

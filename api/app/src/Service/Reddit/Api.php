@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Reddit;
 
 use App\Repository\ApiUserRepository;
-use App\Service\Reddit\Comments;
 use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -16,7 +15,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 /**
  * @property HttpClientInterface $client
  */
-class RedditApi
+class Api
 {
     const OAUTH_ENDPOINT = 'https://www.reddit.com/api/v1/access_token';
 

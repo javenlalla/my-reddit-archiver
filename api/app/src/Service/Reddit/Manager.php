@@ -4,7 +4,6 @@ namespace App\Service\Reddit;
 
 use App\Entity\Post;
 use App\Repository\PostRepository;
-use App\Service\RedditApi;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -14,7 +13,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 class Manager
 {
     public function __construct(
-        private readonly RedditApi $redditApi,
+        private readonly Api $api,
         private readonly PostRepository $postRepository,
         private readonly Hydrator $hydrator
     ) {
@@ -35,7 +34,7 @@ class Manager
      */
     public function getPostFromApiByRedditId(string $type, string $redditId): Post
     {
-        $response = $this->redditApi->getPostByRedditId($type, $redditId);
+        $response = $this->api->getPostByRedditId($type, $redditId);
 
         return $this->hydrator->hydratePostFromResponse($response);
     }
