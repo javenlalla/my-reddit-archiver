@@ -19,8 +19,13 @@ class RedditApiTest extends KernelTestCase
         $this->redditApi = $container->get(RedditApi::class);
     }
 
+    /**
+     * @S
+     * @return void
+     */
     public function testArticleComments()
     {
+        $this->markTestSkipped();
         $postId = 'vlyukg';
         // $testJson = json_decode(file_get_contents(dirname(__FILE__)
         //     .'/../data/image_post.json'), true);
@@ -54,8 +59,4 @@ class RedditApiTest extends KernelTestCase
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $postData['title']);
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $postData['url']);
     }
-    public function testParseTextPost(){} //https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/
-    public function testParseVideoPost(){} //https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/
-    public function testParseGalleryPost(){} //https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/
-    public function testParseCommentPost(){} //https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/?context=3 Use parent_id to get actual Post.
 }
