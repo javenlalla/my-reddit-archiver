@@ -5,8 +5,8 @@ namespace App\Tests\Service\RedditApi;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
-use App\Service\RedditApi\Hydrator;
-use App\Service\RedditApi\Manager;
+use App\Service\Reddit\Hydrator;
+use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ManagerTest extends KernelTestCase

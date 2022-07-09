@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\RedditApi;
+namespace App\Service\Reddit;
 
 use App\Repository\ContentTypeRepository;
 use App\Repository\TypeRepository;

@@ -34,5 +34,5 @@ services:
             $clientId: '%app.reddit.client_id%'
             $clientSecret: '%app.reddit.client_secret%'
 
-    App\Service\RedditApi\Manager:
+    App\Service\Reddit\Manager:
         public: true

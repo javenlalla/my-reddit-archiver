@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Repository\ApiUserRepository;
-use App\Service\RedditApi\Comments;
+use App\Service\Reddit\Comments;
 use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;

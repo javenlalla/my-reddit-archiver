@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\RedditApi;
+namespace App\Service\Reddit;
 
 use App\Entity\Post;
 use App\Repository\PostRepository;
