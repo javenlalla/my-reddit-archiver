@@ -21,7 +21,7 @@ class ContentType
     private $name;
 
     #[ORM\Column(type: 'string', length: 10)]
-    private $display_name;
+    private $displayName;
 
     public function getId(): ?int
     {
@@ -42,12 +42,12 @@ class ContentType
 
     public function getDisplayName(): ?string
     {
-        return $this->display_name;
+        return $this->displayName;
     }
 
-    public function setDisplayName(string $display_name): self
+    public function setDisplayName(string $displayName): self
     {
-        $this->display_name = $display_name;
+        $this->displayName = $displayName;
 
         return $this;
     }
