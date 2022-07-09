@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service;
 
+use App\Entity\Type;
 use App\Service\RedditApi;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -45,11 +46,13 @@ class RedditApiTest extends KernelTestCase
     public function testParseImagePost()
     {
         //https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
-        $post = $this->redditApi->getPostById(RedditApi\Post::TYPE_LINK, 'vepbt0');
-        $this->assertInstanceOf(RedditApi\Post::class, $post);
+        $postResponseData = $this->redditApi->getPostByRedditId(Type::TYPE_LINK, 'vepbt0');
+        $this->assertIsArray($postResponseData);
 
-        $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
-        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
+        $postData = $postResponseData['data']['children'][0]['data'];
+        $this->assertEquals('vepbt0', $postData['id']);
+        $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $postData['title']);
+        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $postData['url']);
     }
     public function testParseTextPost(){} //https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/
     public function testParseVideoPost(){} //https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/

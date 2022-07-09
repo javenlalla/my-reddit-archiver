@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Repository\ApiUserRepository;
 use App\Service\RedditApi\Comments;
-use App\Service\RedditApi\Post;
 use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -64,22 +63,6 @@ class RedditApi
         $response = $this->executeCall(self::METHOD_GET, $endpoint);
 
         return $response->toArray();
-    }
-
-    public function getPostById(string $type, string $id): ?Post
-    {
-        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $type, $id);
-        $response = $this->executeCall(self::METHOD_GET, $endpoint);
-
-        if ($response->getStatusCode() === 200) {
-            $responseData = $response->toArray();
-
-            if (!empty($responseData["data"]["children"][0])) {
-                return new Post($responseData["data"]["children"][0]);
-            }
-        }
-
-        return null;
     }
 
     public function getSavedPosts(): array
