@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Tests\Service;
+namespace App\Tests\Service\Reddit;
 
 use App\Entity\Type;
 use App\Service\Reddit\Api;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class RedditApiTest extends KernelTestCase
+class ApiTest extends KernelTestCase
 {
     private Api $api;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Service\RedditApi;
+namespace App\Tests\Service\Reddit;
 
 use App\Entity\ContentType;
 use App\Entity\Post;
