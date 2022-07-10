@@ -60,6 +60,10 @@ class ApiUserFixture extends Fixture
                 'name' => 'video',
                 'displayName' => 'Video',
             ],
+            [
+                'name' => 'text',
+                'displayName' => 'Text',
+            ],
         ];
 
         foreach ($contentTypes as $contentType) {

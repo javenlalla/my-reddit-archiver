@@ -12,6 +12,8 @@ class ContentType
 
     const CONTENT_TYPE_VIDEO = 'video';
 
+    const CONTENT_TYPE_TEXT = 'text';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

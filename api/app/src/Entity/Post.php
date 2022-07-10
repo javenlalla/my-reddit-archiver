@@ -33,6 +33,12 @@ class Post
     #[ORM\JoinColumn(nullable: false)]
     private $contentType;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private $authorText;
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private $createdAt;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,6 +112,30 @@ class Post
     public function setContentType(?ContentType $contentType): self
     {
         $this->contentType = $contentType;
+
+        return $this;
+    }
+
+    public function getAuthorText(): ?string
+    {
+        return $this->authorText;
+    }
+
+    public function setAuthorText(?string $authorText): self
+    {
+        $this->authorText = $authorText;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

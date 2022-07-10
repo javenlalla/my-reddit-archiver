@@ -55,6 +55,14 @@ class ContentTypeRepository extends ServiceEntityRepository
         return $this->findOneBy(['name' => ContentType::CONTENT_TYPE_VIDEO]);
     }
 
+    /**
+     * @return ContentType
+     */
+    public function getTextContentType(): ContentType
+    {
+        return $this->findOneBy(['name' => ContentType::CONTENT_TYPE_TEXT]);
+    }
+
 //    /**
 //     * @return ContentType[] Returns an array of ContentType objects
 //     */
@@ -69,7 +77,6 @@ class ContentTypeRepository extends ServiceEntityRepository
 //            ->getResult()
 //        ;
 //    }
-
 //    public function findOneBySomeField($value): ?ContentType
 //    {
 //        return $this->createQueryBuilder('c')

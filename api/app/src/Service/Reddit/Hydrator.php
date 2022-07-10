@@ -2,6 +2,7 @@
 
 namespace App\Service\Reddit;
 
+use App\Entity\Post;
 use App\Repository\ContentTypeRepository;
 use App\Repository\TypeRepository;
 use Exception;
@@ -26,10 +27,10 @@ class Hydrator
     /**
      * @param  array  $responseRawData
      *
-     * @return \App\Entity\Post
+     * @return Post
      * @throws Exception
      */
-    public function hydratePostFromResponse(array $responseRawData): \App\Entity\Post
+    public function hydratePostFromResponse(array $responseRawData): Post
     {
         if ($responseRawData['kind'] === 'Listing') {
             $responseRawData = $responseRawData['data']['children'][0];
@@ -56,27 +57,32 @@ class Hydrator
     //     }
     // }
 
-    private function hydrateLinkPostFromResponseData(array $responseData): \App\Entity\Post
+    private function hydrateLinkPostFromResponseData(array $responseData): Post
     {
-        $post = new \App\Entity\Post();
+        $post = new Post();
         $post->setRedditId($responseData['id']);
         $post->setTitle($responseData['title']);
         $post->setScore((int)$responseData['score']);
         $post->setUrl($responseData['url']);
+        $post->setCreatedAt(\DateTimeImmutable::createFromFormat('U', $responseData['created_utc']));
 
         $type = $this->typeRepository->getLinkType();
         $post->setType($type);
 
+        $contentType = null;
         if ($responseData['domain'] === 'i.imgur.com' || !empty($responseData['preview']['images'])) {
             $contentType = $this->contentTypeRepository->getImageContentType();
-            $post->setContentType($contentType);
+        } else if (!empty($responseData['selftext']) && $responseData['is_self'] === true) {
+            $post->setAuthorText($responseData['selftext']);
+            $contentType = $this->contentTypeRepository->getTextContentType();
         }
+        $post->setContentType($contentType);
 
         return $post;
     }
 
-    private function initCommentPostFromRawData(array $rawData): \App\Entity\Post
+    private function initCommentPostFromRawData(array $rawData): Post
     {
-        return new \App\Entity\Post();
+        return new Post();
     }
 }
