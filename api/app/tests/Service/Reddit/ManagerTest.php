@@ -50,6 +50,7 @@ class ManagerTest extends KernelTestCase
         $this->assertNotEmpty($fetchedPost->getId());
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $fetchedPost->getTitle());
+        $this->assertEquals('shittyfoodporn', $fetchedPost->getSubreddit());
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $fetchedPost->getUrl());
         $this->assertEquals('2022-06-17 20:29:22', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEmpty($fetchedPost->getAuthorText());
@@ -80,6 +81,7 @@ class ManagerTest extends KernelTestCase
         $this->assertNotEmpty($fetchedPost->getId());
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
         $this->assertEquals('If you are an intermediate level learner, I strongly suggest you give the book "Tintenherz" a try', $fetchedPost->getTitle());
+        $this->assertEquals('German', $fetchedPost->getSubreddit());
         $this->assertEquals('https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/', $fetchedPost->getUrl());
         $this->assertEquals('2022-06-27 16:00:42', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEquals("I've been reading this book for the past weeks and I'm loving the pace in which I can read it. I feel like it's perfectly suited for B1/B2 level learners (I'd say even A2 learners could read it, albeit in a slower pace).

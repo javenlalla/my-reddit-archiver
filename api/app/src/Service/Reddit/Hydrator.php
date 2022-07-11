@@ -63,6 +63,8 @@ class Hydrator
         $post->setRedditId($responseData['id']);
         $post->setTitle($responseData['title']);
         $post->setScore((int)$responseData['score']);
+        $post->setAuthor($responseData['author']);
+        $post->setSubreddit($responseData['subreddit']);
         $post->setUrl($responseData['url']);
         $post->setCreatedAt(\DateTimeImmutable::createFromFormat('U', $responseData['created_utc']));
 

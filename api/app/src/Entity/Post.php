@@ -39,6 +39,12 @@ class Post
     #[ORM\Column(type: 'datetime_immutable')]
     private $createdAt;
 
+    #[ORM\Column(type: 'string', length: 25)]
+    private $author;
+
+    #[ORM\Column(type: 'string', length: 25)]
+    private $subreddit;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +142,30 @@ class Post
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?string
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(string $author): self
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
+    public function getSubreddit(): ?string
+    {
+        return $this->subreddit;
+    }
+
+    public function setSubreddit(string $subreddit): self
+    {
+        $this->subreddit = $subreddit;
 
         return $this;
     }
