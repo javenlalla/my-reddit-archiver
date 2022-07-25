@@ -64,6 +64,10 @@ class ApiUserFixture extends Fixture
                 'name' => 'text',
                 'displayName' => 'Text',
             ],
+            [
+                'name' => 'image_gallery',
+                'displayName' => 'Image Gallery',
+            ],
         ];
 
         foreach ($contentTypes as $contentType) {

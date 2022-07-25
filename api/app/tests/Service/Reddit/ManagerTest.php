@@ -135,7 +135,28 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      */
     public function testParseGalleryPost()
     {
-        $this->markTestSkipped();
+        $redditId = 'v27nr7';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('All my recreations of magazine covers from Tremors 2 so far', $fetchedPost->getTitle());
+        $this->assertEquals('Tremors', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://www.reddit.com/gallery/v27nr7', $fetchedPost->getUrl());
+        $this->assertEquals('2022-06-01 03:31:38', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE_GALLERY, $contentType->getName());
     }
 
     /**

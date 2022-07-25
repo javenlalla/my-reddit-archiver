@@ -14,15 +14,17 @@ class ContentType
 
     const CONTENT_TYPE_TEXT = 'text';
 
+    const CONTENT_TYPE_IMAGE_GALLERY = 'image_gallery';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 10)]
+    #[ORM\Column(type: 'string', length: 20)]
     private $name;
 
-    #[ORM\Column(type: 'string', length: 10)]
+    #[ORM\Column(type: 'string', length: 20)]
     private $displayName;
 
     public function getId(): ?int

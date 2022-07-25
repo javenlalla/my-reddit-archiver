@@ -101,6 +101,8 @@ class Hydrator
             $contentType = $this->contentTypeRepository->getTextContentType();
         } else if ($this->isVideoContent($responseData) === true) {
             $contentType = $this->contentTypeRepository->getVideoContentType();
+        } else if (!empty($responseData['gallery_data'])) {
+            $contentType = $this->contentTypeRepository->getImageGalleryContentType();
         }
 
         return $contentType;
