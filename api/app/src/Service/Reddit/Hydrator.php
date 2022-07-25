@@ -2,6 +2,7 @@
 
 namespace App\Service\Reddit;
 
+use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Repository\ContentTypeRepository;
 use App\Repository\TypeRepository;
@@ -45,20 +46,18 @@ class Hydrator
         throw new Exception(sprintf('Unexpected Post type %s: %s', $responseRawData['kind'], var_export($responseRawData, true)));
     }
 
-    // private function initFromRawData(array $rawData)
-    // {
-    //     //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
-    //     if ($rawData['kind'] === self::TYPE_LINK) {
-    //         $this->initLinkPostFromRawData($rawData);
-    //     } elseif ($rawData['kind'] === self::TYPE_COMMENT) {
-    //         $this->initCommentPostFromRawData($rawData);
-    //     } else {
-    //         throw new \Exception(sprintf('Unexpected Post type %s: %s', $rawData['kind'], var_export($rawData, true)));
-    //     }
-    // }
-
+    /**
+     * Instantiate a new Post Entity and hydrate it using the data from the
+     * provided Post Response Data array.
+     *
+     * @param  array  $responseData
+     *
+     * @return Post
+     */
     private function hydrateLinkPostFromResponseData(array $responseData): Post
     {
+        //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
+
         $post = new Post();
         $post->setRedditId($responseData['id']);
         $post->setTitle($responseData['title']);
@@ -71,14 +70,11 @@ class Hydrator
         $type = $this->typeRepository->getLinkType();
         $post->setType($type);
 
-        $contentType = null;
-        if ($responseData['domain'] === 'i.imgur.com' || !empty($responseData['preview']['images'])) {
-            $contentType = $this->contentTypeRepository->getImageContentType();
-        } else if (!empty($responseData['selftext']) && $responseData['is_self'] === true) {
-            $post->setAuthorText($responseData['selftext']);
-            $contentType = $this->contentTypeRepository->getTextContentType();
-        }
+        $contentType = $this->getContentTypeFromResponseData($responseData);
         $post->setContentType($contentType);
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_TEXT) {
+            $post->setAuthorText($responseData['selftext']);
+        }
 
         return $post;
     }
@@ -86,5 +82,49 @@ class Hydrator
     private function initCommentPostFromRawData(array $rawData): Post
     {
         return new Post();
+    }
+
+    /**
+     * Determine and return the Content Type from the provided Post Response
+     * Data.
+     *
+     * @param  array  $responseData
+     *
+     * @return ContentType
+     */
+    private function getContentTypeFromResponseData(array $responseData): ContentType
+    {
+        $contentType = null;
+        if ($responseData['domain'] === 'i.imgur.com') {
+            $contentType = $this->contentTypeRepository->getImageContentType();
+        } else if (!empty($responseData['selftext']) && $responseData['is_self'] === true) {
+            $contentType = $this->contentTypeRepository->getTextContentType();
+        } else if ($this->isVideoContent($responseData) === true) {
+            $contentType = $this->contentTypeRepository->getVideoContentType();
+        }
+
+        return $contentType;
+    }
+
+    /**
+     * Determine if the provided Post Response Data represents a Video Content
+     * Type.
+     *
+     * @param  array  $responseData
+     *
+     * @return bool
+     */
+    private function isVideoContent(array $responseData): bool
+    {
+        $videoDomains = [
+            'youtube.com',
+            'youtu.be',
+        ];
+
+        if (in_array($responseData['domain'], $videoDomains)) {
+            return true;
+        }
+
+        return false;
     }
 }

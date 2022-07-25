@@ -104,7 +104,28 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      */
     public function testParseVideoPost()
     {
-        $this->markTestSkipped();
+        $redditId = 'v443nh';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('Golang Tutorial | How To Implement Concurrency With Goroutines and Channels', $fetchedPost->getTitle());
+        $this->assertEquals('golang', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://youtu.be/bbgip1-ZbZg', $fetchedPost->getUrl());
+        $this->assertEquals('2022-06-03 17:11:50', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_VIDEO, $contentType->getName());
     }
 
     /**
