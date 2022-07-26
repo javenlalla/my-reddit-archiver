@@ -20,32 +20,16 @@ class ApiTest extends KernelTestCase
     }
 
     /**
-     * @S
+     * Verify basic API Comments retrieval by Post Reddit ID.
+     *
      * @return void
      */
-    public function testArticleComments()
+    public function testPostComments()
     {
-        $this->markTestSkipped();
-        $postId = 'vlyukg';
-        // $testJson = json_decode(file_get_contents(dirname(__FILE__)
-        //     .'/../data/image_post.json'), true);
+        $redditId = 'vlyukg';
 
-        // (1) boot the Symfony kernel
-        // self::bootKernel();
-
-        // (2) use static::getContainer() to access the service container
-        $container = static::getContainer();
-
-        // (3) run some service & test the result
-        // $newsletterGenerator = $container->get(NewsletterGenerator::class);
-        // $newsletter = $newsletterGenerator->generateMonthlyNews(...);
-
-        /** @var Api $redditApi */
-        // $redditApi = $container->get(RedditApi::class);
-        // $comments = $redditApi->getCommentsByPostId($postId);
-        //
-        // // $this->assertEquals('...', $newsletter->getContent());
-        // $this->assertNotEmpty($comments);
+        $comments = $this->api->getPostCommentsByRedditId($redditId);
+        $this->assertCount(16, $comments);
     }
 
     public function testParseImagePost()

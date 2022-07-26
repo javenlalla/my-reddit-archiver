@@ -116,19 +116,22 @@ class Api
         return $comments->toJson();
     }
 
-    public function getCommentsByPostId(string $articleId): array
+    /**
+     * Retrieve Comments under a Post by the Post's Reddit ID.
+     *
+     * @param  string  $redditId
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getPostCommentsByRedditId(string $redditId): array
     {
-        $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $articleId);
+        $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $redditId);
         $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
-        // $response = $this->client
-        //     ->request('GET', $commentsUrl.'?raw_json=1',
-        //         [
-        //             'auth_bearer' => $this->accessToken,
-        //             'headers' => [
-        //                 'User-Agent' => $this->userAgent,
-        //             ]
-        //         ]
-        //     );
 
         $comments = $response->toArray();
 
