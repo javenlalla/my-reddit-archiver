@@ -203,16 +203,35 @@ It is easy to read but not boringly easy since it can get rather challenging at 
 
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
-        // Test fetch Comment from DB
+        // Test basic fetch Comment from DB.
         $commentRedditId = 'idygho1';
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPostId());
         $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getText());
-        $this->assertEmpty($comment->getParentCommentId());
+        $this->assertEmpty($comment->getParentComment());
 
-        // ie09fz0
+        // Test fetch Comment replies from Comment.
+        $commentRedditId = 'idy4nd0';
+        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $this->assertInstanceOf(Comment::class, $comment);
+        $this->assertEquals($redditId, $comment->getParentPostId());
+        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getText());
+        $this->assertEmpty($comment->getParentComment());
 
-        // Test fetch Comment replies from Comment
+        $replies = $comment->getReplies();
+        $this->assertCount(2, $replies);
+        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657
+
+I don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getText());
+
+        // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
+        $commentRedditId = 'iebbk73';
+        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $parentComment = $comment->getParentComment();
+        $this->assertEquals('ieare0z', $parentComment->getRedditId());
+
+        $parentComment = $parentComment->getParentComment();
+        $this->assertEquals('ie09fz0', $parentComment->getRedditId());
     }
 }

@@ -68,21 +68,43 @@ class Manager
     public function getCommentsFromApiByPost(Post $post)
     {
         $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditId());
-        $commentsData = $commentsRawResponse[1]['data']['children'];
+        $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
+        $comments = $this->hydrateComments($post, $commentsRawData);
+
+        $this->commentRepository->saveComments($comments);
+
+        return $comments;
+    }
+
+    private function hydrateComments(Post $post, array $commentsRawData, \App\Entity\Comment $parentComment = null)
+    {
         $comments = [];
-        foreach ($commentsData as $commentData) {
-            $targetChildren = $commentData;
-            if (!empty($commentData['data'])) {
-                $targetChildren = $commentData['data'];
+        foreach ($commentsRawData as $commentRawData) {
+            $commentData = $commentRawData;
+            if (!empty($commentRawData['data'])) {
+                $commentData = $commentRawData['data'];
             }
 
             $comment = new \App\Entity\Comment();
-            $comment->setRedditId($targetChildren['id']);
-            $comment->setScore((int) $targetChildren['score']);
-            $comment->setText(utf8_encode($targetChildren['body']));
-            $comment->setAuthor($targetChildren['author']);
+            $comment->setRedditId($commentData['id']);
+            $comment->setScore((int) $commentData['score']);
+            $comment->setText($commentData['body']);
+            $comment->setAuthor($commentData['author']);
             $comment->setParentPostId($post->getRedditId());
+            if ($parentComment instanceof \App\Entity\Comment) {
+                $comment->setParentComment($parentComment);
+            }
+
+            if (!empty($commentData['replies'])) {
+                $replies = $this->hydrateComments($post, $commentData['replies']['data']['children'], $comment);
+
+                foreach ($replies as $reply) {
+                    $comment->addReply($reply);
+                }
+                // $replies = new Comments($commentData['replies']);
+                // $this->replies = $replies->getComments();
+            }
 
             $comments[] = $comment;
 
@@ -106,8 +128,6 @@ class Manager
             //     // }
             // }
         }
-
-        $this->commentRepository->saveComments($comments);
 
         return $comments;
     }

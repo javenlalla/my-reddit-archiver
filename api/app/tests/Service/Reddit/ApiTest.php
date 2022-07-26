@@ -29,7 +29,7 @@ class ApiTest extends KernelTestCase
         $redditId = 'vlyukg';
 
         $comments = $this->api->getPostCommentsByRedditId($redditId);
-        $this->assertCount(16, $comments);
+        $this->assertNotEmpty($comments);
     }
 
     public function testParseImagePost()

@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
@@ -25,11 +27,19 @@ class Comment
     #[ORM\Column(type: 'string', length: 10)]
     private $redditId;
 
-    #[ORM\Column(type: 'string', length: 10, nullable: true)]
-    private $parentCommentId;
-
     #[ORM\Column(type: 'string', length: 10)]
     private $parentPostId;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'replies')]
+    private $parentComment;
+
+    #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private $replies;
+
+    public function __construct()
+    {
+        $this->replies = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -84,18 +94,6 @@ class Comment
         return $this;
     }
 
-    public function getParentCommentId(): ?string
-    {
-        return $this->parentCommentId;
-    }
-
-    public function setParentCommentId(string $parentCommentId): self
-    {
-        $this->parentCommentId = $parentCommentId;
-
-        return $this;
-    }
-
     public function getParentPostId(): ?string
     {
         return $this->parentPostId;
@@ -104,6 +102,48 @@ class Comment
     public function setParentPostId(string $parentPostId): self
     {
         $this->parentPostId = $parentPostId;
+
+        return $this;
+    }
+
+    public function getParentComment(): ?self
+    {
+        return $this->parentComment;
+    }
+
+    public function setParentComment(?self $parentComment): self
+    {
+        $this->parentComment = $parentComment;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, self>
+     */
+    public function getReplies(): Collection
+    {
+        return $this->replies;
+    }
+
+    public function addReply(self $reply): self
+    {
+        if (!$this->replies->contains($reply)) {
+            $this->replies[] = $reply;
+            $reply->setParentComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReply(self $reply): self
+    {
+        if ($this->replies->removeElement($reply)) {
+            // set the owning side to null (unless already changed)
+            if ($reply->getParentComment() === $this) {
+                $reply->setParentComment(null);
+            }
+        }
 
         return $this;
     }
