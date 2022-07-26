@@ -3,7 +3,9 @@
 namespace App\Service\Reddit;
 
 use App\Entity\Post;
+use App\Entity\Type;
 use App\Repository\PostRepository;
+use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -31,12 +33,18 @@ class Manager
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
+     * @throws Exception
      */
     public function getPostFromApiByRedditId(string $type, string $redditId): Post
     {
         $response = $this->api->getPostByRedditId($type, $redditId);
+        $parentPostResponse = [];
 
-        return $this->hydrator->hydratePostFromResponse($response);
+        if ($type === Type::TYPE_COMMENT) {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['parent_id']);
+        }
+
+        return $this->hydrator->hydratePostFromResponse($response, $parentPostResponse);
     }
 
     public function getPostByRedditId(string $redditId): ?Post

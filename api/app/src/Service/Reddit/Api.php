@@ -2,6 +2,7 @@
 
 namespace App\Service\Reddit;
 
+use App\Entity\Post;
 use App\Repository\ApiUserRepository;
 use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -19,7 +20,7 @@ class Api
 {
     const OAUTH_ENDPOINT = 'https://www.reddit.com/api/v1/access_token';
 
-    const POST_DETAIL_ENDPOINT = 'https://oauth.reddit.com/api/info?id=%s_%s';
+    const POST_DETAIL_ENDPOINT = 'https://oauth.reddit.com/api/info?id=%s';
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
@@ -44,7 +45,7 @@ class Api
     }
 
     /**
-     * Retrieve a Post from the API by its Reddit "fullName" ID.
+     * Retrieve a Post from the API by its type and ID.
      *
      * @param  string  $type
      * @param  string  $id
@@ -58,7 +59,25 @@ class Api
      */
     public function getPostByRedditId(string $type, string $id): array
     {
-        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $type, $id);
+        return $this->getPostByFullRedditId(sprintf(Post::FULL_REDDIT_ID_FORMAT, $type, $id));
+    }
+
+    /**
+     * Retrieve a Post from the API by its Reddit "fullName" ID.
+     * Example: t1_vlyukg
+     *
+     * @param  string  $fullRedditId
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getPostByFullRedditId(string $fullRedditId): array
+    {
+        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $fullRedditId);
         $response = $this->executeCall(self::METHOD_GET, $endpoint);
 
         return $response->toArray();

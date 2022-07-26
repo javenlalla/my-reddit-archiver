@@ -27,11 +27,12 @@ class Hydrator
 
     /**
      * @param  array  $responseRawData
+     * @param  array  $parentResponseRawData
      *
      * @return Post
      * @throws Exception
      */
-    public function hydratePostFromResponse(array $responseRawData): Post
+    public function hydratePostFromResponse(array $responseRawData, array $parentResponseRawData = []): Post
     {
         if ($responseRawData['kind'] === 'Listing') {
             $responseRawData = $responseRawData['data']['children'][0];
@@ -40,14 +41,14 @@ class Hydrator
         if ($responseRawData['kind'] === self::TYPE_LINK) {
             return $this->hydrateLinkPostFromResponseData($responseRawData['data']);
         } elseif ($responseRawData['kind'] === self::TYPE_COMMENT) {
-            return $this->initCommentPostFromRawData($responseRawData['data']);
+            return $this->hydrateCommentPostFromResponseData($responseRawData['data'], $parentResponseRawData['data']['children'][0]['data']);
         }
 
         throw new Exception(sprintf('Unexpected Post type %s: %s', $responseRawData['kind'], var_export($responseRawData, true)));
     }
 
     /**
-     * Instantiate a new Post Entity and hydrate it using the data from the
+     * Instantiate a new Link Post Entity and hydrate it using the data from the
      * provided Post Response Data array.
      *
      * @param  array  $responseData
@@ -75,6 +76,38 @@ class Hydrator
         if ($contentType->getName() === ContentType::CONTENT_TYPE_TEXT) {
             $post->setAuthorText($responseData['selftext']);
         }
+
+        return $post;
+    }
+
+    /**
+     * Instantiate a new Comment Post Entity and hydrate it using the data from the
+     * provided Post Response Data array.
+     *
+     * @param  array  $responseData
+     * @param  array  $parentResponseData
+     *
+     * @return Post
+     */
+    private function hydrateCommentPostFromResponseData(array $responseData, array $parentResponseData): Post
+    {
+        //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
+
+        $post = new Post();
+        $post->setRedditId($responseData['id']);
+        $post->setTitle($parentResponseData['title']);
+        $post->setScore((int)$responseData['score']);
+        $post->setAuthor($responseData['author']);
+        $post->setSubreddit($responseData['subreddit']);
+        $post->setUrl($parentResponseData['url']);
+        $post->setCreatedAt(\DateTimeImmutable::createFromFormat('U', $responseData['created_utc']));
+
+        $type = $this->typeRepository->getCommentType();
+        $post->setType($type);
+
+        $contentType = $this->contentTypeRepository->getTextContentType();
+        $post->setContentType($contentType);
+        $post->setAuthorText($responseData['body']);
 
         return $post;
     }
