@@ -39,6 +39,22 @@ class CommentRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Persist the provided array of Comments to the database.
+     *
+     * @param  Comment[]  $comments
+     *
+     * @return void
+     */
+    public function saveComments(array $comments)
+    {
+        foreach ($comments as $comment) {
+            $this->getEntityManager()->persist($comment);
+        }
+
+        $this->getEntityManager()->flush();
+    }
+
 //    /**
 //     * @return Comment[] Returns an array of Comment objects
 //     */

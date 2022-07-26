@@ -133,12 +133,12 @@ class Api
         $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $redditId);
         $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
 
-        $comments = $response->toArray();
+        return $response->toArray();
 
-        $opComment = $comments[0];
-        $comments = new Comments($comments[1]['data']['children']);
-
-        return $comments->toJson();
+        // $opComment = $comments[0];
+        // $comments = new Comments($comments[1]['data']['children']);
+        //
+        // return $comments->toJson();
     }
 
     private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service\Reddit;
 
+use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -188,5 +189,30 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $contentType = $fetchedPost->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+    }
+
+    public function testGetComments()
+    {
+        $redditId = 'vlyukg';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $this->manager->savePost($post);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $comments = $this->manager->getCommentsFromApiByPost($fetchedPost);
+        $this->assertCount(16, $comments);
+
+        $this->assertInstanceOf(Comment::class, $comments[0]);
+
+        // Test fetch Comment from DB
+        $commentRedditId = 'idygho1';
+        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $this->assertInstanceOf(Comment::class, $comment);
+        $this->assertEquals($redditId, $comment->getParentPostId());
+        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getText());
+        $this->assertEmpty($comment->getParentCommentId());
+
+        // ie09fz0
+
+        // Test fetch Comment replies from Comment
     }
 }
