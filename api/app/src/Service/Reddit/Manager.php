@@ -91,7 +91,7 @@ class Manager
             $comment->setScore((int) $commentData['score']);
             $comment->setText($commentData['body']);
             $comment->setAuthor($commentData['author']);
-            $comment->setParentPostId($post->getRedditId());
+            $comment->setParentPost($post);
             if ($parentComment instanceof \App\Entity\Comment) {
                 $comment->setParentComment($parentComment);
             }

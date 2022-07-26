@@ -207,7 +207,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $commentRedditId = 'idygho1';
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
-        $this->assertEquals($redditId, $comment->getParentPostId());
+        $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
         $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getText());
         $this->assertEmpty($comment->getParentComment());
 
@@ -215,7 +215,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $commentRedditId = 'idy4nd0';
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
-        $this->assertEquals($redditId, $comment->getParentPostId());
+        $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
         $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getText());
         $this->assertEmpty($comment->getParentComment());
 

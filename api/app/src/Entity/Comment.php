@@ -27,14 +27,15 @@ class Comment
     #[ORM\Column(type: 'string', length: 10)]
     private $redditId;
 
-    #[ORM\Column(type: 'string', length: 10)]
-    private $parentPostId;
-
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'replies')]
     private $parentComment;
 
     #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: self::class, cascade: ['persist', 'remove'])]
     private $replies;
+
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $parentPost;
 
     public function __construct()
     {
@@ -94,18 +95,6 @@ class Comment
         return $this;
     }
 
-    public function getParentPostId(): ?string
-    {
-        return $this->parentPostId;
-    }
-
-    public function setParentPostId(string $parentPostId): self
-    {
-        $this->parentPostId = $parentPostId;
-
-        return $this;
-    }
-
     public function getParentComment(): ?self
     {
         return $this->parentComment;
@@ -144,6 +133,18 @@ class Comment
                 $reply->setParentComment(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getParentPost(): ?Post
+    {
+        return $this->parentPost;
+    }
+
+    public function setParentPost(?Post $parentPost): self
+    {
+        $this->parentPost = $parentPost;
 
         return $this;
     }
