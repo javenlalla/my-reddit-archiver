@@ -69,4 +69,13 @@ class PostRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function saveComments(Post $post, array $comments)
+    {
+        foreach ($comments as $comment) {
+            $post->addComment($comment);
+        }
+
+        $this->getEntityManager()->persist($post);
+        $this->getEntityManager()->flush();
+    }
 }

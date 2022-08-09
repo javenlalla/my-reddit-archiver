@@ -24,6 +24,8 @@ class Api
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
+    const MORE_CHILDREN_ENDPOINT = 'https://oauth.reddit.com/api/morechildren';
+
     const METHOD_GET = 'GET';
 
     const METHOD_POST = 'POST';
@@ -134,11 +136,20 @@ class Api
         $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
 
         return $response->toArray();
+    }
 
-        // $opComment = $comments[0];
-        // $comments = new Comments($comments[1]['data']['children']);
-        //
-        // return $comments->toJson();
+    public function getMoreChildren(string $postRedditId, array $moreChildrenData)
+    {
+        $body = [
+            'link_id' => sprintf('t3_%s', $postRedditId),
+            'children' => implode(',', $moreChildrenData['children']),
+            'api_type' => 'json',
+            'limit_children' => false,
+        ];
+
+        $response = $this->executeCall(self::METHOD_POST, self::MORE_CHILDREN_ENDPOINT, ['body' => $body]);
+
+        return $response->toArray();
     }
 
     private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface

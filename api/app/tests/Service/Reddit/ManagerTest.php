@@ -198,10 +198,14 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
-        $comments = $this->manager->getCommentsFromApiByPost($fetchedPost);
+        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
         $this->assertCount(16, $comments);
-
         $this->assertInstanceOf(Comment::class, $comments[0]);
+
+        // Re-fetch Post.
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $comments = $fetchedPost->getComments();
+        $this->assertCount(16, $comments);
 
         // Test basic fetch Comment from DB.
         $commentRedditId = 'idygho1';
@@ -233,5 +237,52 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
 
         $parentComment = $parentComment->getParentComment();
         $this->assertEquals('ie09fz0', $parentComment->getRedditId());
+    }
+
+    /**
+     * Verify fetching and hydrating a large Comment set from the API persists
+     * successfully to the database.
+     *
+     * Post: https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
+     *
+     * @return void
+     */
+    public function testGetCommentsLargeCount()
+    {
+        $redditId = 'vepbt0';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $this->manager->savePost($post);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        // Re-fetch Post.
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        // Verify top-level Comments count.
+        $this->assertCount(409, $fetchedPost->getComments());
+
+        // Verify all Comments and Replies count.
+        $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
+        $this->assertEquals(576, $allCommentsCount);
+
+        // Basic Comment verification.
+        $comment = $this->manager->getCommentByRedditId('icrhr47');
+        $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getText());
+
+        // Verify top-level Comment with highest up-votes.
+        $comment = $this->manager->getCommentByRedditId('icrxv93');
+        $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getText());
+
+        //Verify a Reply found within "Continue this thread."
+        $comment = $this->manager->getCommentByRedditId('icrovq6');
+        $this->assertEquals('And things can be neither.', $comment->getText());
+
+        // Verify last or closest-to-last Comment on Post.
+        $comment = $this->manager->getCommentByRedditId('icta0qr');
+        $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getText());
+
+        // Verify Comment found in "x more replies."
+        $comment = $this->manager->getCommentByRedditId('icti9mw');
+        $this->assertEquals('I got more!', $comment->getText());
     }
 }

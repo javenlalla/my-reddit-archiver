@@ -6,6 +6,10 @@ use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
+use App\Service\Reddit\Hydrator\Comment as CommentHydrator;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Exception;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -19,7 +23,9 @@ class Manager
         private readonly Api $api,
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
-        private readonly Hydrator $hydrator
+        private readonly EntityManagerInterface $entityManager,
+        private readonly Hydrator $hydrator,
+        private readonly CommentHydrator $commentHydrator,
     ) {
     }
 
@@ -65,71 +71,53 @@ class Manager
         $this->postRepository->save($post);
     }
 
-    public function getCommentsFromApiByPost(Post $post)
+    /**
+     * Retrieve all Comments for the provided Post from the API and persist them
+     * locally to the database.
+     *
+     * @param  Post  $post
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function syncCommentsFromApiByPost(Post $post): array
     {
         $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditId());
         $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
-        $comments = $this->hydrateComments($post, $commentsRawData);
+        $comments = $this->commentHydrator->hydrateComments($post, $commentsRawData);
+        foreach ($comments as $comment) {
+            $this->entityManager->persist($comment);
 
-        $this->commentRepository->saveComments($comments);
+            // It is intentional that the post-to-comment relation here is
+            // only explicitly established for the top-level comments, not
+            // replies.
+            $post->addComment($comment);
+            $this->entityManager->persist($post);
+        }
+
+        $this->entityManager->flush();
 
         return $comments;
     }
 
-    private function hydrateComments(Post $post, array $commentsRawData, \App\Entity\Comment $parentComment = null)
+    /**
+     * Get the count of all Comments, including Replies, attached to the provided
+     * Post.
+     *
+     * @param  Post  $post
+     *
+     * @return int
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function getAllCommentsCountFromPost(Post $post): int
     {
-        $comments = [];
-        foreach ($commentsRawData as $commentRawData) {
-            $commentData = $commentRawData;
-            if (!empty($commentRawData['data'])) {
-                $commentData = $commentRawData['data'];
-            }
-
-            $comment = new \App\Entity\Comment();
-            $comment->setRedditId($commentData['id']);
-            $comment->setScore((int) $commentData['score']);
-            $comment->setText($commentData['body']);
-            $comment->setAuthor($commentData['author']);
-            $comment->setParentPost($post);
-            if ($parentComment instanceof \App\Entity\Comment) {
-                $comment->setParentComment($parentComment);
-            }
-
-            if (!empty($commentData['replies'])) {
-                $replies = $this->hydrateComments($post, $commentData['replies']['data']['children'], $comment);
-
-                foreach ($replies as $reply) {
-                    $comment->addReply($reply);
-                }
-                // $replies = new Comments($commentData['replies']);
-                // $this->replies = $replies->getComments();
-            }
-
-            $comments[] = $comment;
-
-            // foreach ($targetChildren as $parentComment) {
-            //     $currentCommentData = $parentComment['data'];
-            //
-            //     $comment = new \App\Entity\Comment();
-            //     $comment->setRedditId($currentCommentData['id']);
-            //     $comment->setScore((int) $currentCommentData['score']);
-            //     $comment->setText($currentCommentData['body']);
-            //
-            //     $comments[] = $comment;
-            //     // $comments[] = new Comment($parentComment['data']);
-            //     //
-            //     // $this->id = $this->rawCommentData['id'];
-            //     // $this->score = (int) $this->rawCommentData['score'];
-            //     // $this->text = $this->rawCommentData['body'];
-            //     // if (!empty($this->rawCommentData['replies'])) {
-            //     //     $replies = new Comments($this->rawCommentData['replies']);
-            //     //     $this->replies = $replies->getComments();
-            //     // }
-            // }
-        }
-
-        return $comments;
+        return $this->commentRepository->getTotalPostCount($post);
     }
 
     /**
@@ -143,6 +131,4 @@ class Manager
     {
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
     }
-
-    public function saveComments(){}
 }

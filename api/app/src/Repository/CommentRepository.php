@@ -3,7 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Comment;
+use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -53,6 +56,26 @@ class CommentRepository extends ServiceEntityRepository
         }
 
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Get the total number of Comments, including Replies, attached to the
+     * provided Post.
+     *
+     * @param  Post  $post
+     *
+     * @return int
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function getTotalPostCount(Post $post): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('count(c.id)')
+            ->andWhere('c.parentPost = :val')
+            ->setParameter('val', $post)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
 //    /**
