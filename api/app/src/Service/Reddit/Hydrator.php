@@ -75,6 +75,8 @@ class Hydrator
         $post->setContentType($contentType);
         if ($contentType->getName() === ContentType::CONTENT_TYPE_TEXT) {
             $post->setAuthorText($responseData['selftext']);
+            $post->setAuthorTextRawHtml($responseData['selftext_html']);
+            $post->setAuthorTextHtml($this->sanitizeHtml($responseData['selftext_html']));
         }
 
         return $post;
@@ -108,6 +110,9 @@ class Hydrator
         $contentType = $this->contentTypeRepository->getTextContentType();
         $post->setContentType($contentType);
         $post->setAuthorText($responseData['body']);
+        $post->setAuthorTextRawHtml($responseData['body_html']);
+        $post->setAuthorTextHtml($this->sanitizeHtml($responseData['body_html']));
+
 
         return $post;
     }
@@ -161,5 +166,35 @@ class Hydrator
         }
 
         return false;
+    }
+
+    /**
+     * Perform basic sanitization on the raw HTML of a Post or Comment to parse
+     * Reddit's HTML and clean up extraneous tags.
+     *
+     * @param  string|null  $html
+     *
+     * @return string
+     */
+    private function sanitizeHtml(?string $html): string
+    {
+        $html = trim($html);
+        if ( empty($html) ) {
+            return '';
+        }
+
+        // Run a double decode through Reddit's Markdown-converted HTML.
+        $html = html_entity_decode($html);
+        $html = html_entity_decode($html);
+
+        // Clean up unneeded tags and strings.
+        $stringsToRemove = [
+            '<!-- SC_OFF -->',
+            '<!-- SC_ON -->',
+            '\n',
+        ];
+        $html = str_replace($stringsToRemove, '', $html);
+
+        return $html;
     }
 }

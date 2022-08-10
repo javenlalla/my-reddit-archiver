@@ -52,6 +52,12 @@ class Post
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, orphanRemoval: true)]
     private $comments;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private $authorTextHtml;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private $authorTextRawHtml;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -208,6 +214,30 @@ class Post
                 $comment->setParentPost(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAuthorTextHtml(): ?string
+    {
+        return $this->authorTextHtml;
+    }
+
+    public function setAuthorTextHtml(?string $authorTextHtml): self
+    {
+        $this->authorTextHtml = $authorTextHtml;
+
+        return $this;
+    }
+
+    public function getAuthorTextRawHtml(): ?string
+    {
+        return $this->authorTextRawHtml;
+    }
+
+    public function setAuthorTextRawHtml(?string $authorTextRawHtml): self
+    {
+        $this->authorTextRawHtml = $authorTextRawHtml;
 
         return $this;
     }
