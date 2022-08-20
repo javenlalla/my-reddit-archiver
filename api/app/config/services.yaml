@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.path.public: '%env(APP_PUBLIC_PATH)%'
     app.reddit.username: '%env(REDDIT_USERNAME)%'
     app.reddit.password: '%env(REDDIT_PASSWORD)%'
     app.reddit.client_id: '%env(REDDIT_CLIENT_ID)%'
@@ -33,6 +34,10 @@ services:
             $password: '%app.reddit.password%'
             $clientId: '%app.reddit.client_id%'
             $clientSecret: '%app.reddit.client_secret%'
+
+    App\Service\Reddit\MediaDownloader:
+        arguments:
+            $publicPath: '%app.path.public%'
 
     App\Service\Reddit\Manager:
         public: true

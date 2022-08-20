@@ -26,6 +26,7 @@ class Manager
         private readonly EntityManagerInterface $entityManager,
         private readonly Hydrator $hydrator,
         private readonly CommentHydrator $commentHydrator,
+        private readonly MediaDownloader $mediaDownloader,
     ) {
     }
 
@@ -60,15 +61,26 @@ class Manager
         return $this->postRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    public function savePost(Post $post)
+    /**
+     * Persist the following Post Entity to the database and download any media
+     * that may be associated to the post.
+     *
+     * @param  Post  $post
+     *
+     * @return Post
+     */
+    public function savePost(Post $post): Post
     {
         $existingPost = $this->getPostByRedditId($post->getRedditId());
 
         if ($existingPost instanceof Post) {
-            return;
+            return $existingPost;
         }
 
         $this->postRepository->save($post);
+        $this->mediaDownloader->downloadMediaFromPost($post);
+
+        return $this->postRepository->find($post->getId());
     }
 
     /**

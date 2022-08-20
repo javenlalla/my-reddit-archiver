@@ -16,6 +16,7 @@ services:
       REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET}"
       DATABASE_URL: "${DATABASE_URL}"
       PHP_IDE_CONFIG: "${PHP_IDE_CONFIG}"
+      APP_PUBLIC_PATH: /var/www/mra-api/public
     working_dir: /var/www/mra-api
   mra-api-web: 
     container_name: mra-api-web
