@@ -35,7 +35,7 @@ services:
             $clientId: '%app.reddit.client_id%'
             $clientSecret: '%app.reddit.client_secret%'
 
-    App\Service\Reddit\MediaDownloader:
+    App\Service\Reddit\Media\Downloader:
         arguments:
             $publicPath: '%app.path.public%'
 

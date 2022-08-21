@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Tests\Service\Reddit;
+namespace App\Tests\Service\Reddit\Media;
 
 use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
-use App\Service\Reddit\MediaDownloader;
+use App\Service\Reddit\Media\Downloader;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class MediaDownloaderTest extends KernelTestCase
+class DownloaderTest extends KernelTestCase
 {
     const ASSET_PATH_ONE = '/var/www/mra-api/public/assets/f/ac/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
     private Manager $manager;
 
-    private MediaDownloader $mediaDownloader;
+    private Downloader $mediaDownloader;
 
     public function setUp(): void
     {
@@ -23,7 +23,7 @@ class MediaDownloaderTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
-        $this->mediaDownloader = $container->get(MediaDownloader::class);
+        $this->mediaDownloader = $container->get(Downloader::class);
 
         $this->cleanupAssets();
     }

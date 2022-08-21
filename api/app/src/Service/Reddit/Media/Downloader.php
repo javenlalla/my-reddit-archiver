@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Service\Reddit;
+namespace App\Service\Reddit\Media;
 
+use App\Entity\ContentType;
 use App\Entity\Post;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
 
-class MediaDownloader
+class Downloader
 {
     public function __construct(private readonly string $publicPath)
     {
@@ -15,10 +16,15 @@ class MediaDownloader
 
     public function downloadMediaFromPost(Post $post)
     {
-        $path = $this->getFullDownloadFilePath($post);
+        $contentType = $post->getContentType()->getName();
 
-        $url = 'https://i.imgur.com/ThRMZx5.jpg';
-        file_put_contents($path, file_get_contents($url));
+        if ($contentType === ContentType::CONTENT_TYPE_IMAGE) {
+            $path = $this->getFullDownloadFilePath($post);
+            file_put_contents($path, file_get_contents($post->getUrl()));
+        } else if ($contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
+            return;
+        }
+
 
         // @TODO: Determine if Gallery or single image.
     }

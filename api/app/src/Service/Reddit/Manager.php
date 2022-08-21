@@ -7,6 +7,7 @@ use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Hydrator\Comment as CommentHydrator;
+use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -26,7 +27,7 @@ class Manager
         private readonly EntityManagerInterface $entityManager,
         private readonly Hydrator $hydrator,
         private readonly CommentHydrator $commentHydrator,
-        private readonly MediaDownloader $mediaDownloader,
+        private readonly Downloader $mediaDownloader,
     ) {
     }
 
