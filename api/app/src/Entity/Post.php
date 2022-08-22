@@ -58,9 +58,13 @@ class Post
     #[ORM\Column(type: 'text', nullable: true)]
     private $authorTextRawHtml;
 
+    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, orphanRemoval: true)]
+    private $mediaAssets;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+        $this->mediaAssets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -238,6 +242,36 @@ class Post
     public function setAuthorTextRawHtml(?string $authorTextRawHtml): self
     {
         $this->authorTextRawHtml = $authorTextRawHtml;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MediaAsset>
+     */
+    public function getMediaAssets(): Collection
+    {
+        return $this->mediaAssets;
+    }
+
+    public function addMediaAsset(MediaAsset $mediaAsset): self
+    {
+        if (!$this->mediaAssets->contains($mediaAsset)) {
+            $this->mediaAssets[] = $mediaAsset;
+            $mediaAsset->setParentPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMediaAsset(MediaAsset $mediaAsset): self
+    {
+        if ($this->mediaAssets->removeElement($mediaAsset)) {
+            // set the owning side to null (unless already changed)
+            if ($mediaAsset->getParentPost() === $this) {
+                $mediaAsset->setParentPost(null);
+            }
+        }
 
         return $this;
     }

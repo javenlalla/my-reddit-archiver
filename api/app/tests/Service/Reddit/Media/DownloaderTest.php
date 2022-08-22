@@ -2,9 +2,11 @@
 
 namespace App\Tests\Service\Reddit\Media;
 
+use App\Entity\MediaAsset;
 use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Media\Downloader;
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -16,6 +18,8 @@ class DownloaderTest extends KernelTestCase
 
     private Downloader $mediaDownloader;
 
+    private EntityManager $entityManager;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -24,6 +28,7 @@ class DownloaderTest extends KernelTestCase
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
         $this->mediaDownloader = $container->get(Downloader::class);
+        $this->entityManager = $container->get('doctrine')->getManager();
 
         $this->cleanupAssets();
     }
@@ -43,9 +48,26 @@ class DownloaderTest extends KernelTestCase
 
         $savedPost = $this->manager->savePost($post);
 
-        $generatedDownloadPath = $this->mediaDownloader->getFullDownloadFilePath($post);
-        $this->assertEquals($expectedPath, $generatedDownloadPath);
-        $this->assertFileExists($generatedDownloadPath);
+        // Assert image was saved locally.
+        $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert image was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert image can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => 'faac0cc02f38ca7aa896f5dafdeaacb9.jpg'])
+        ;
+
+        $this->assertEquals('f', $mediaAsset->getDirOne());
+        $this->assertEquals('ac', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
     public function testSaveImagesFromImageGallery()

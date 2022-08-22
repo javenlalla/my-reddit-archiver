@@ -79,7 +79,7 @@ class Manager
         }
 
         $this->postRepository->save($post);
-        $this->mediaDownloader->downloadMediaFromPost($post);
+        $post = $this->mediaDownloader->downloadMediaFromPost($post);
 
         return $this->postRepository->find($post->getId());
     }
