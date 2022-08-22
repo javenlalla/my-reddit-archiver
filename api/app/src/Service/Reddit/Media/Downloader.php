@@ -14,6 +14,11 @@ use Symfony\Component\Filesystem\Path;
 
 class Downloader
 {
+    const DOWNLOADABLE_CONTENT_TYPES = [
+        ContentType::CONTENT_TYPE_IMAGE,
+        ContentType::CONTENT_TYPE_GIF,
+    ];
+
     public function __construct(private readonly PostRepository $postRepository, private readonly MediaAssetRepository $mediaAssetRepository, private readonly string $publicPath)
     {
     }
@@ -29,17 +34,13 @@ class Downloader
      */
     public function downloadMediaFromPost(Post $post): Post
     {
-        $contentType = $post->getContentType()->getName();
-
-        if ($contentType === ContentType::CONTENT_TYPE_IMAGE) {
+        if (in_array($post->getContentType()->getName(), self::DOWNLOADABLE_CONTENT_TYPES)) {
             $mediaAsset = $this->initializeMediaAssetFromPost($post);
             $this->executeDownload($mediaAsset);
 
             $post->addMediaAsset($mediaAsset);
             $this->postRepository->add($post, true);
-        } /*else if ($contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
-
-        }*/
+        }
 
         return $post;
     }
@@ -58,11 +59,17 @@ class Downloader
         $mediaAsset->setParentPost($post);
 
         $idHash = md5($post->getRedditId());
-        // @TODO: Add extension detection logic.
-        $mediaAsset->setFilename($idHash . '.jpg');
 
+        $contentType = $post->getContentType()->getName();
+        if ($contentType === ContentType::CONTENT_TYPE_IMAGE) {
+            $mediaAsset->setFilename($idHash . '.jpg');
+        } else if ($contentType === ContentType::CONTENT_TYPE_GIF) {
+            $mediaAsset->setFilename($idHash . '.mp4');
+        }
+
+        $mediaAsset->setSourceUrl($post->getUrl());
         $mediaAsset->setDirOne(substr($idHash, 0, 1));
-        $mediaAsset->setDirTwo(substr($idHash, 2, 2));
+        $mediaAsset->setDirTwo(substr($idHash, 1, 2));
 
         $this->mediaAssetRepository->add($mediaAsset, true);
 
@@ -134,7 +141,7 @@ class Downloader
 
         $assetDownloadPath = $this->getFullPathFromMediaAsset($mediaAsset, $basePath);
 
-        $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getParentPost()->getUrl()));
+        $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
 
         if ($downloadResult === false) {
             throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));

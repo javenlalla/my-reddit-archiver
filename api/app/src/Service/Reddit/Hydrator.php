@@ -65,7 +65,6 @@ class Hydrator
         $post->setScore((int)$responseData['score']);
         $post->setAuthor($responseData['author']);
         $post->setSubreddit($responseData['subreddit']);
-        $post->setUrl($responseData['url']);
         $post->setCreatedAt(\DateTimeImmutable::createFromFormat('U', $responseData['created_utc']));
 
         $type = $this->typeRepository->getLinkType();
@@ -77,6 +76,12 @@ class Hydrator
             $post->setAuthorText($responseData['selftext']);
             $post->setAuthorTextRawHtml($responseData['selftext_html']);
             $post->setAuthorTextHtml($this->sanitizeHtml($responseData['selftext_html']));
+        }
+
+        $post->setUrl($responseData['url']);
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_GIF) {
+            $gifMp4SourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
+            $post->setUrl($gifMp4SourceUrl);
         }
 
         return $post;

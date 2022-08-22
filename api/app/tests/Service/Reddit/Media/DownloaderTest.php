@@ -12,7 +12,9 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DownloaderTest extends KernelTestCase
 {
-    const ASSET_PATH_ONE = '/var/www/mra-api/public/assets/f/ac/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
+    const ASSET_PATH_ONE = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
+
+    const ASSET_PATH_TWO = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
 
     private Manager $manager;
 
@@ -65,8 +67,9 @@ class DownloaderTest extends KernelTestCase
             ->findOneBy(['filename' => 'faac0cc02f38ca7aa896f5dafdeaacb9.jpg'])
         ;
 
+        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('f', $mediaAsset->getDirOne());
-        $this->assertEquals('ac', $mediaAsset->getDirTwo());
+        $this->assertEquals('aa', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
@@ -87,7 +90,35 @@ class DownloaderTest extends KernelTestCase
      */
     public function testSaveGifFromPost()
     {
-        $this->markTestSkipped();
+        $redditId = 'wgb8wj';
+        $expectedPath = self::ASSET_PATH_TWO;
+
+        $this->assertFileDoesNotExist($expectedPath);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert GIF was saved locally.
+        $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert image was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert image can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => '94c248fb3de02e43e46081773f5824f7.mp4'])
+        ;
+
+        $this->assertEquals('https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69', $mediaAsset->getSourceUrl());
+        $this->assertEquals('9', $mediaAsset->getDirOne());
+        $this->assertEquals('4c', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
     public function tearDown(): void
@@ -106,6 +137,13 @@ class DownloaderTest extends KernelTestCase
     {
         $filesystem = new Filesystem();
 
-        $filesystem->remove(self::ASSET_PATH_ONE);
+        $paths = [
+            self::ASSET_PATH_ONE,
+            self::ASSET_PATH_TWO,
+        ];
+
+        foreach ($paths as $path) {
+            $filesystem->remove($path);
+        }
     }
 }

@@ -26,6 +26,9 @@ class MediaAsset
     #[ORM\JoinColumn(nullable: false)]
     private $parentPost;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private $sourceUrl;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -75,6 +78,18 @@ class MediaAsset
     public function setParentPost(?Post $parentPost): self
     {
         $this->parentPost = $parentPost;
+
+        return $this;
+    }
+
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function setSourceUrl(string $sourceUrl): self
+    {
+        $this->sourceUrl = $sourceUrl;
 
         return $this;
     }

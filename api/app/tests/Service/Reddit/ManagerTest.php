@@ -226,7 +226,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
         $this->assertEquals('me_irl', $fetchedPost->getTitle());
         $this->assertEquals('me_irl', $fetchedPost->getSubreddit());
-        $this->assertEquals('https://i.redd.it/kanpjvgbarf91.gif', $fetchedPost->getUrl());
+        $this->assertEquals('https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69', $fetchedPost->getUrl());
         $this->assertEquals('2022-08-04 20:25:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEmpty($fetchedPost->getAuthorText());
 
