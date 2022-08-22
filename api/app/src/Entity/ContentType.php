@@ -10,6 +10,8 @@ class ContentType
 {
     const CONTENT_TYPE_IMAGE = 'image';
 
+    const CONTENT_TYPE_GIF = 'gif';
+
     const CONTENT_TYPE_VIDEO = 'video';
 
     const CONTENT_TYPE_TEXT = 'text';

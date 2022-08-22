@@ -208,6 +208,37 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
     }
 
+    /**
+     * https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/
+     *
+     * @return void
+     */
+    public function testSaveGifPost()
+    {
+        $redditId = 'wgb8wj';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('me_irl', $fetchedPost->getTitle());
+        $this->assertEquals('me_irl', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://i.redd.it/kanpjvgbarf91.gif', $fetchedPost->getUrl());
+        $this->assertEquals('2022-08-04 20:25:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_GIF, $contentType->getName());
+    }
+
     public function testGetComments()
     {
         $redditId = 'vlyukg';

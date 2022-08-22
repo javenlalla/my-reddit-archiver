@@ -129,21 +129,23 @@ class Hydrator
      * @param  array  $responseData
      *
      * @return ContentType
+     * @throws Exception
      */
     private function getContentTypeFromResponseData(array $responseData): ContentType
     {
-        $contentType = null;
         if ($responseData['domain'] === 'i.imgur.com') {
-            $contentType = $this->contentTypeRepository->getImageContentType();
+            return $this->contentTypeRepository->getImageContentType();
         } else if (!empty($responseData['selftext']) && $responseData['is_self'] === true) {
-            $contentType = $this->contentTypeRepository->getTextContentType();
+            return $this->contentTypeRepository->getTextContentType();
         } else if ($this->isVideoContent($responseData) === true) {
-            $contentType = $this->contentTypeRepository->getVideoContentType();
+            return $this->contentTypeRepository->getVideoContentType();
         } else if (!empty($responseData['gallery_data'])) {
-            $contentType = $this->contentTypeRepository->getImageGalleryContentType();
+            return $this->contentTypeRepository->getImageGalleryContentType();
+        } else if (!empty($responseData['preview']['images'][0]['variants']['gif']) && !empty($responseData['preview']['images'][0]['variants']['mp4'])) {
+            return $this->contentTypeRepository->getGifContentType();
         }
 
-        return $contentType;
+        throw new Exception(sprintf('Unable to determine Content Type for response data: %s', var_export($responseData, true)));
     }
 
     /**
