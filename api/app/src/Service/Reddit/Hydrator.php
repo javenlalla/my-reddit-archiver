@@ -6,20 +6,17 @@ use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Repository\ContentTypeRepository;
 use App\Repository\TypeRepository;
+use App\Service\Reddit\Hydrator\MediaAsset;
 use Exception;
 
 class Hydrator
 {
-    // @TODO Move TYPE_ and CONTENT_ to respective Entity models once created.
     const TYPE_COMMENT = 't1';
 
     const TYPE_LINK = 't3';
 
-    const CONTENT_TYPE_IMAGE = 'image';
-
-    const CONTENT_TYPE_VIDEO = 'video';
-
     public function __construct(
+        private readonly MediaAsset $mediaAssetHydrator,
         private readonly TypeRepository $typeRepository,
         private readonly ContentTypeRepository $contentTypeRepository
     ) {
@@ -79,9 +76,16 @@ class Hydrator
         }
 
         $post->setUrl($responseData['url']);
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE) {
+            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
+            $post->addMediaAsset($mediaAsset);
+        }
         if ($contentType->getName() === ContentType::CONTENT_TYPE_GIF) {
             $gifMp4SourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
             $post->setUrl($gifMp4SourceUrl);
+
+            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
+            $post->addMediaAsset($mediaAsset);
         }
 
         return $post;

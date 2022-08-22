@@ -69,6 +69,7 @@ class Manager
      * @param  Post  $post
      *
      * @return Post
+     * @throws Exception
      */
     public function savePost(Post $post): Post
     {
@@ -79,7 +80,9 @@ class Manager
         }
 
         $this->postRepository->save($post);
-        $post = $this->mediaDownloader->downloadMediaFromPost($post);
+        foreach ($post->getMediaAssets() as $mediaAsset) {
+            $this->mediaDownloader->executeDownload($mediaAsset);
+        }
 
         return $this->postRepository->find($post->getId());
     }

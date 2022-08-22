@@ -2,11 +2,7 @@
 
 namespace App\Service\Reddit\Media;
 
-use App\Entity\ContentType;
 use App\Entity\MediaAsset;
-use App\Entity\Post;
-use App\Repository\MediaAssetRepository;
-use App\Repository\PostRepository;
 use Exception;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -14,66 +10,35 @@ use Symfony\Component\Filesystem\Path;
 
 class Downloader
 {
-    const DOWNLOADABLE_CONTENT_TYPES = [
-        ContentType::CONTENT_TYPE_IMAGE,
-        ContentType::CONTENT_TYPE_GIF,
-    ];
-
-    public function __construct(private readonly PostRepository $postRepository, private readonly MediaAssetRepository $mediaAssetRepository, private readonly string $publicPath)
+    public function __construct(private readonly string $publicPath)
     {
     }
 
     /**
-     * Main function to download any Media Assets associated to the provided
-     * Post and persist them to the database.
+     * Execute the download of the provided Media Asset and save the target file
+     * locally.
      *
-     * @param  Post  $post
+     * @param  MediaAsset  $mediaAsset
      *
-     * @return Post
+     * @return void
      * @throws Exception
      */
-    public function downloadMediaFromPost(Post $post): Post
+    public function executeDownload(MediaAsset $mediaAsset): void
     {
-        if (in_array($post->getContentType()->getName(), self::DOWNLOADABLE_CONTENT_TYPES)) {
-            $mediaAsset = $this->initializeMediaAssetFromPost($post);
-            $this->executeDownload($mediaAsset);
+        $filesystem = new Filesystem();
+        $basePath = $this->getBasePathFromMediaAsset($mediaAsset);
 
-            $post->addMediaAsset($mediaAsset);
-            $this->postRepository->add($post, true);
+        try {
+            $filesystem->mkdir(Path::normalize($basePath));
+        } catch (IOExceptionInterface $e) {
+            throw new Exception(sprintf('An error occurred while creating assets directory at %s: %s', $e->getPath(), $e->getMessage()));
         }
 
-        return $post;
-    }
-
-    /**
-     * Initialize a new Media Asset entity with expected pathing from the
-     * provided Post.
-     *
-     * @param  Post  $post
-     *
-     * @return MediaAsset
-     */
-    private function initializeMediaAssetFromPost(Post $post): MediaAsset
-    {
-        $mediaAsset = new MediaAsset();
-        $mediaAsset->setParentPost($post);
-
-        $idHash = md5($post->getRedditId());
-
-        $contentType = $post->getContentType()->getName();
-        if ($contentType === ContentType::CONTENT_TYPE_IMAGE) {
-            $mediaAsset->setFilename($idHash . '.jpg');
-        } else if ($contentType === ContentType::CONTENT_TYPE_GIF) {
-            $mediaAsset->setFilename($idHash . '.mp4');
+        $assetDownloadPath = $this->getFullPathFromMediaAsset($mediaAsset, $basePath);
+        $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
+        if ($downloadResult === false) {
+            throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
         }
-
-        $mediaAsset->setSourceUrl($post->getUrl());
-        $mediaAsset->setDirOne(substr($idHash, 0, 1));
-        $mediaAsset->setDirTwo(substr($idHash, 1, 2));
-
-        $this->mediaAssetRepository->add($mediaAsset, true);
-
-        return $mediaAsset;
     }
 
     /**
@@ -116,35 +81,5 @@ class Downloader
         }
 
         return $basePath . '/' . $mediaAsset->getFilename();
-    }
-
-    /**
-     * Execute the download of the provided Media Asset and save the target file
-     * locally.
-     *
-     * @param  MediaAsset  $mediaAsset
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function executeDownload(MediaAsset $mediaAsset)
-    {
-        $filesystem = new Filesystem();
-
-        $basePath = $this->getBasePathFromMediaAsset($mediaAsset);
-
-        try {
-            $filesystem->mkdir(Path::normalize($basePath));
-        } catch (IOExceptionInterface $e) {
-            throw new Exception(sprintf('An error occurred while creating assets directory at %s: %s', $e->getPath(), $e->getMessage()));
-        }
-
-        $assetDownloadPath = $this->getFullPathFromMediaAsset($mediaAsset, $basePath);
-
-        $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
-
-        if ($downloadResult === false) {
-            throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
-        }
     }
 }

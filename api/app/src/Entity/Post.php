@@ -58,7 +58,7 @@ class Post
     #[ORM\Column(type: 'text', nullable: true)]
     private $authorTextRawHtml;
 
-    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $mediaAssets;
 
     public function __construct()

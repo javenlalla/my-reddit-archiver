@@ -73,6 +73,11 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
+    /**
+     * https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/
+     *
+     * @return void
+     */
     public function testSaveImagesFromImageGallery()
     {
         $this->markTestSkipped();
