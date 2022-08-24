@@ -5,6 +5,7 @@ namespace App\Service\Reddit\Hydrator;
 use App\Entity\ContentType;
 use App\Entity\MediaAsset as MediaAssetEntity;
 use App\Entity\Post;
+use Exception;
 
 class MediaAsset
 {
@@ -16,7 +17,7 @@ class MediaAsset
      *
      * @return MediaAssetEntity
      */
-    public function hydrateMediaAssetFromPost(Post $post, string $overrideSourceUrl = ''): MediaAssetEntity
+    public function hydrateMediaAssetFromPost(Post $post, string $overrideSourceUrl = '', string $assetExtension = ''): MediaAssetEntity
     {
         $mediaAsset = new MediaAssetEntity();
         $mediaAsset->setParentPost($post);
@@ -24,8 +25,9 @@ class MediaAsset
         $idHash = md5($post->getRedditId() . $overrideSourceUrl);
 
         $contentType = $post->getContentType()->getName();
-        if ($contentType === ContentType::CONTENT_TYPE_IMAGE || $contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
-            // @TODO: Add proper extension detection for .png, .jpg/.jpeg, and .webp.
+        if (!empty($assetExtension)) {
+            $mediaAsset->setFilename($idHash . '.' . $assetExtension);
+        } else if ($contentType === ContentType::CONTENT_TYPE_IMAGE || $contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
             $mediaAsset->setFilename($idHash . '.jpg');
         } else if ($contentType === ContentType::CONTENT_TYPE_GIF) {
             $mediaAsset->setFilename($idHash . '.mp4');
@@ -52,14 +54,42 @@ class MediaAsset
      *
      * @return MediaAssetEntity[]
      */
-    public function hydrateGalleryMediaAssetsFromPost(Post $post, array $responseData): array
+    public function hydrateMediaAssetsFromPostMediaMetadata(Post $post, array $responseData): array
     {
         $mediaAssets = [];
-        foreach ($responseData["media_metadata"] as $assetId => $assetMetadata) {
-            $sourceUrl = html_entity_decode($assetMetadata['s']['u']);
-            $mediaAssets[] = $this->hydrateMediaAssetFromPost($post, $sourceUrl);
+        foreach ($responseData["media_metadata"] as $assetId => $mediaMetadata) {
+            $sourceUrl = html_entity_decode($mediaMetadata['s']['u']);
+            $mediaAssets[] = $this->hydrateMediaAssetFromPost($post, $sourceUrl, assetExtension: $this->extractExtensionFromMediaMetadata($mediaMetadata));
         }
 
         return $mediaAssets;
+    }
+
+    /**
+     * Read the 'm' property of the provided Media Metadata and return the
+     * expected extension.
+     *
+     * @param  array  $mediaMetadata
+     *
+     * @return string|null
+     * @throws Exception
+     */
+    private function extractExtensionFromMediaMetadata(array $mediaMetadata): ?string
+    {
+        switch ($mediaMetadata['m']) {
+            case 'image/jpg':
+                return 'jpg';
+
+            case 'image/jpeg':
+                return 'jpeg';
+
+            case 'image/png':
+                return 'png';
+
+            case 'image/webp':
+                return 'webp';
+        }
+
+        throw new Exception(sprintf('Unexpected media type in Media Metadata: %s', $mediaMetadata['m']));
     }
 }

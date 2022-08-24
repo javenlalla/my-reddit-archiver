@@ -81,6 +81,7 @@ class Hydrator
             $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
             $post->addMediaAsset($mediaAsset);
         }
+
         if ($contentType->getName() === ContentType::CONTENT_TYPE_GIF) {
             $gifMp4SourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
             $post->setUrl($gifMp4SourceUrl);
@@ -89,8 +90,8 @@ class Hydrator
             $post->addMediaAsset($mediaAsset);
         }
 
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
-            $mediaAssets = $this->mediaAssetHydrator->hydrateGalleryMediaAssetsFromPost($post, $responseData);
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE_GALLERY || !empty($responseData['media_metadata'])) {
+            $mediaAssets = $this->mediaAssetHydrator->hydrateMediaAssetsFromPostMediaMetadata($post, $responseData);
             foreach ($mediaAssets as $mediaAsset) {
                 $post->addMediaAsset($mediaAsset);
             }

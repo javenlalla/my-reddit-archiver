@@ -14,6 +14,8 @@ class DownloaderTest extends KernelTestCase
 {
     const ASSET_IMAGE_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
+    const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
+
     const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
 
     const IMAGE_GALLERY_ASSETS = [
@@ -162,9 +164,42 @@ class DownloaderTest extends KernelTestCase
         }
     }
 
+    /**
+     * https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988
+     *
+     * @return void
+     */
     public function testSaveImageFromTextPost()
     {
-        $this->markTestSkipped();
+        $redditId = 'utsmkw';
+        $expectedPath = self::ASSET_TEXT_WITH_IMAGE_PATH;
+
+        $this->assertFileDoesNotExist($expectedPath);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert image was saved locally.
+        $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert image was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert image can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => '0a6f67fe20592b9c659e7deee5efe877.jpg'])
+        ;
+
+        $this->assertEquals('https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&s=7cab4910712115bb273171653cc754b9077c1455', $mediaAsset->getSourceUrl());
+        $this->assertEquals('0', $mediaAsset->getDirOne());
+        $this->assertEquals('a6', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
     /**
@@ -224,6 +259,7 @@ class DownloaderTest extends KernelTestCase
         $paths = [
             self::ASSET_IMAGE_PATH,
             self::ASSET_GIF_PATH,
+            self::ASSET_TEXT_WITH_IMAGE_PATH,
         ];
 
         foreach ($paths as $path) {
