@@ -51,6 +51,7 @@ class Hydrator
      * @param  array  $responseData
      *
      * @return Post
+     * @throws Exception
      */
     private function hydrateLinkPostFromResponseData(array $responseData): Post
     {
@@ -86,6 +87,13 @@ class Hydrator
 
             $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
             $post->addMediaAsset($mediaAsset);
+        }
+
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
+            $mediaAssets = $this->mediaAssetHydrator->hydrateGalleryMediaAssetsFromPost($post, $responseData);
+            foreach ($mediaAssets as $mediaAsset) {
+                $post->addMediaAsset($mediaAsset);
+            }
         }
 
         return $post;

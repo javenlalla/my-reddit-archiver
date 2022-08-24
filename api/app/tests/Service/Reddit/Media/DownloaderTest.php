@@ -12,9 +12,54 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DownloaderTest extends KernelTestCase
 {
-    const ASSET_PATH_ONE = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
+    const ASSET_IMAGE_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
-    const ASSET_PATH_TWO = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
+    const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
+
+    const IMAGE_GALLERY_ASSETS = [
+        [
+            'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
+            'dirOne' => 'a',
+            'dirTwo' => 'be',
+            'filePath' => '/var/www/mra-api/public/assets/a/be/abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
+            'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&s=2f4c3f05a428019b6754ca3c9ab8d3122df14664',
+        ],
+        [
+            'filename' => 'd3961edaeaef4913869b6d30e4472d1a.jpg',
+            'dirOne' => 'd',
+            'dirTwo' => '39',
+            'filePath' => '/var/www/mra-api/public/assets/d/39/d3961edaeaef4913869b6d30e4472d1a.jpg',
+            'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&s=1aadfb05549500b4a3e61f377a87b6739d7e92e7',
+        ],
+        [
+            'filename' => '9676a19295d2317fdd111c28324d438b.jpg',
+            'dirOne' => '9',
+            'dirTwo' => '67',
+            'filePath' => '/var/www/mra-api/public/assets/9/67/9676a19295d2317fdd111c28324d438b.jpg',
+            'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&s=d6d30ce00bf261edf76802fd79a455ad08bc0d62',
+        ],
+        [
+            'filename' => '4b59d9f517130e6233d5e7982ee97376.jpg',
+            'dirOne' => '4',
+            'dirTwo' => 'b5',
+            'filePath' => '/var/www/mra-api/public/assets/4/b5/4b59d9f517130e6233d5e7982ee97376.jpg',
+            'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&s=b7442ac83a19780a34ababb9439ef857a672a13f',
+        ],
+        [
+            'filename' => '901411feb2aaa0f697396cf1c0caadfe.jpg',
+            'dirOne' => '9',
+            'dirTwo' => '01',
+            'filePath' => '/var/www/mra-api/public/assets/9/01/901411feb2aaa0f697396cf1c0caadfe.jpg',
+            'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&s=0ea1e60464a6905e72f06a70c4e781ec16ac0af6',
+        ],
+        [
+            'filename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
+            'dirOne' => '7',
+            'dirTwo' => 'd0',
+            'filePath' => '/var/www/mra-api/public/assets/7/d0/7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
+            'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&s=5914dc1cd03aa246d5a22810bf64098674092691',
+        ],
+    ];
 
     private Manager $manager;
 
@@ -43,7 +88,7 @@ class DownloaderTest extends KernelTestCase
     public function testSaveSingleImageFromImagePost()
     {
         $redditId = 'vepbt0';
-        $expectedPath = self::ASSET_PATH_ONE;
+        $expectedPath = self::ASSET_IMAGE_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
         $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
@@ -80,7 +125,41 @@ class DownloaderTest extends KernelTestCase
      */
     public function testSaveImagesFromImageGallery()
     {
-        $this->markTestSkipped();
+        $redditId = 'v27nr7';
+
+        foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            $this->assertFileDoesNotExist($galleryAsset['filePath']);
+        }
+
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert assets were saved locally.
+        foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            $this->assertFileExists($galleryAsset['filePath']);
+        }
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert assets were persisted to the database and associated to this
+        // current Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(6, $mediaAssets);
+
+        // Assert assets can be retrieved from the database and are
+        // associated to this current Post.
+        foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            /** @var MediaAsset $mediaAsset */
+            $mediaAsset = $this->entityManager
+                ->getRepository(MediaAsset::class)
+                ->findOneBy(['filename' => $galleryAsset['filename']])
+            ;
+
+            $this->assertEquals($galleryAsset['sourceUrl'], $mediaAsset->getSourceUrl());
+            $this->assertEquals($galleryAsset['dirOne'], $mediaAsset->getDirOne());
+            $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
+            $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        }
     }
 
     public function testSaveImageFromTextPost()
@@ -96,7 +175,7 @@ class DownloaderTest extends KernelTestCase
     public function testSaveGifFromPost()
     {
         $redditId = 'wgb8wj';
-        $expectedPath = self::ASSET_PATH_TWO;
+        $expectedPath = self::ASSET_GIF_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
         $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
@@ -143,12 +222,16 @@ class DownloaderTest extends KernelTestCase
         $filesystem = new Filesystem();
 
         $paths = [
-            self::ASSET_PATH_ONE,
-            self::ASSET_PATH_TWO,
+            self::ASSET_IMAGE_PATH,
+            self::ASSET_GIF_PATH,
         ];
 
         foreach ($paths as $path) {
             $filesystem->remove($path);
+        }
+
+        foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            $filesystem->remove($galleryAsset['filePath']);
         }
     }
 }
