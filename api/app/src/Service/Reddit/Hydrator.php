@@ -97,6 +97,13 @@ class Hydrator
             }
         }
 
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_VIDEO && $this->isRedditVideo($responseData)) {
+            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromRedditVideoPost($post, $responseData);
+
+            $post->setUrl($mediaAsset->getSourceUrl());
+            $post->addMediaAsset($mediaAsset);
+        }
+
         return $post;
     }
 
@@ -220,5 +227,12 @@ class Hydrator
         $html = str_replace($stringsToRemove, '', $html);
 
         return $html;
+    }
+
+    private function isRedditVideo(array $responseData): bool
+    {
+        if ($responseData['is_video'] === true) {
+            return true;
+        }
     }
 }

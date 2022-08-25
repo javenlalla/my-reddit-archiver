@@ -9,6 +9,8 @@ use Exception;
 
 class MediaAsset
 {
+    const REDDIT_VIDEO_AUDIO_URL_FORMAT = 'https://v.redd.it/%s/DASH_audio.mp4';
+
     /**
      * Initialize a new Media Asset and hydrate it from the provided Post entity.
      *
@@ -29,7 +31,7 @@ class MediaAsset
             $mediaAsset->setFilename($idHash . '.' . $assetExtension);
         } else if ($contentType === ContentType::CONTENT_TYPE_IMAGE || $contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
             $mediaAsset->setFilename($idHash . '.jpg');
-        } else if ($contentType === ContentType::CONTENT_TYPE_GIF) {
+        } else if ($contentType === ContentType::CONTENT_TYPE_GIF || $contentType === ContentType::CONTENT_TYPE_VIDEO) {
             $mediaAsset->setFilename($idHash . '.mp4');
         }
 
@@ -63,6 +65,26 @@ class MediaAsset
         }
 
         return $mediaAssets;
+    }
+
+    /**
+     * Initialize a new Reddit Video Media Asset and hydrate it from the
+     * provided Post entity.
+     *
+     * @param  Post  $post
+     * @param  array  $responseData
+     *
+     * @return MediaAssetEntity
+     */
+    public function hydrateMediaAssetFromRedditVideoPost(Post $post, array $responseData): MediaAssetEntity
+    {
+        $mediaAsset = $this->hydrateMediaAssetFromPost($post, overrideSourceUrl: $responseData['media']['reddit_video']['fallback_url']);
+
+        $videoId = str_replace('https://v.redd.it/', '', $post->getUrl());
+        $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
+        $mediaAsset->setAudioSourceUrl($audioUrl);
+
+        return $mediaAsset;
     }
 
     /**

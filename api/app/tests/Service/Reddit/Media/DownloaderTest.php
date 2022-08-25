@@ -18,6 +18,8 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
 
+    const ASSET_REDDIT_VIDEO_PATH = '/var/www/mra-api/public/assets/0/00/00.mp4';
+
     const IMAGE_GALLERY_ASSETS = [
         [
             'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
@@ -240,6 +242,46 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
+    /**
+     * https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/
+     *
+     * @return void
+     */
+    public function testSaveRedditVideoFromPost()
+    {
+        // @TODO: Add initial assertion to ensure ffmpeg is installed.
+        $redditId = 'tl8qic';
+        // $expectedPath = self::ASSET_REDDIT_VIDEO_PATH;
+
+        // $this->assertFileDoesNotExist($expectedPath);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert Reddit Video was saved locally.
+        // $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert Reddit Video was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert Reddit Video can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => 'a01b41d34f5bb8bceb7540fa1b84728a.mp4'])
+        ;
+
+        $this->assertEquals('https://v.redd.it/8u3caw3zm6p81/DASH_720.mp4?source=fallback', $mediaAsset->getSourceUrl());
+        $this->assertEquals('https://v.redd.it/8u3caw3zm6p81/DASH_audio.mp4', $mediaAsset->getAudioSourceUrl());
+        $this->assertEquals('a', $mediaAsset->getDirOne());
+        $this->assertEquals('01', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+    }
+
     public function tearDown(): void
     {
         $this->cleanupAssets();
@@ -260,6 +302,7 @@ class DownloaderTest extends KernelTestCase
             self::ASSET_IMAGE_PATH,
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
+            self::ASSET_REDDIT_VIDEO_PATH,
         ];
 
         foreach ($paths as $path) {

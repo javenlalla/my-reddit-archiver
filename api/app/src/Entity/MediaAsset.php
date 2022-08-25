@@ -29,6 +29,9 @@ class MediaAsset
     #[ORM\Column(type: 'string', length: 255)]
     private $sourceUrl;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $audioSourceUrl;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,6 +93,18 @@ class MediaAsset
     public function setSourceUrl(string $sourceUrl): self
     {
         $this->sourceUrl = $sourceUrl;
+
+        return $this;
+    }
+
+    public function getAudioSourceUrl(): ?string
+    {
+        return $this->audioSourceUrl;
+    }
+
+    public function setAudioSourceUrl(?string $audioSourceUrl): self
+    {
+        $this->audioSourceUrl = $audioSourceUrl;
 
         return $this;
     }
