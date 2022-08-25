@@ -2,6 +2,15 @@
 
 Archive Saved posts under your Reddit account.
 
+- [My Reddit Archiver](#my-reddit-archiver)
+  - [Local Development](#local-development)
+    - [Hook Into Containers](#hook-into-containers)
+  - [Testing](#testing)
+    - [Configure Test Database](#configure-test-database)
+    - [Run Tests](#run-tests)
+  - [Database Changes](#database-changes)
+  - [ffmpeg](#ffmpeg)
+
 ## Local Development
 
 ```bash
@@ -19,7 +28,7 @@ docker exec -it mra-api sh
 
 ## Testing
 
-Configure Test Database:
+### Configure Test Database
 
 ```bash
 php bin/console --env=test doctrine:database:create
@@ -30,6 +39,19 @@ Load Fixtures:
 
 ```bash
 php bin/console --env=test doctrine:fixtures:load
+```
+
+### Run Tests
+
+Run tests with either of the following approaches:
+
+```bash
+# Hook into container first, then run the tests.
+docker exec -it mra-api sh
+php bin/phpunit
+
+# Run tests directly.
+docker exec -it mra-api sh php bin/phpunit
 ```
 
 ## Database Changes
