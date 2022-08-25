@@ -23,6 +23,8 @@ class Hydrator
     }
 
     /**
+     * Instantiate and hydrate Post Entity based on the provided Response data.
+     *
      * @param  array  $responseRawData
      * @param  array  $parentResponseRawData
      *
@@ -97,7 +99,7 @@ class Hydrator
             }
         }
 
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_VIDEO && $this->isRedditVideo($responseData)) {
+        if ($contentType->getName() === ContentType::CONTENT_TYPE_VIDEO && $responseData['is_video'] === true) {
             $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromRedditVideoPost($post, $responseData);
 
             $post->setUrl($mediaAsset->getSourceUrl());
@@ -227,12 +229,5 @@ class Hydrator
         $html = str_replace($stringsToRemove, '', $html);
 
         return $html;
-    }
-
-    private function isRedditVideo(array $responseData): bool
-    {
-        if ($responseData['is_video'] === true) {
-            return true;
-        }
     }
 }

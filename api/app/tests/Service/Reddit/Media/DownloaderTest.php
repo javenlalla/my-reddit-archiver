@@ -20,8 +20,6 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_REDDIT_VIDEO_PATH = '/var/www/mra-api/public/assets/a/01/a01b41d34f5bb8bceb7540fa1b84728a.mp4';
 
-    const ASSET_REDDIT_VIDEO_AUDIO_PATH = '/var/www/mra-api/public/assets/a/01/8u3caw3zm6p81_audio.mp4';
-
     const IMAGE_GALLERY_ASSETS = [
         [
             'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
@@ -254,17 +252,14 @@ class DownloaderTest extends KernelTestCase
         // @TODO: Add initial assertion to ensure ffmpeg is installed.
         $redditId = 'tl8qic';
         $expectedPath = self::ASSET_REDDIT_VIDEO_PATH;
-        $expectedAudioPath = self::ASSET_REDDIT_VIDEO_AUDIO_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $this->assertFileDoesNotExist($expectedAudioPath);
         $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
         // Assert Reddit Video was saved locally.
         $this->assertFileExists($expectedPath);
-        $this->assertFileExists($expectedAudioPath);
 
         $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
 
@@ -309,7 +304,6 @@ class DownloaderTest extends KernelTestCase
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
             self::ASSET_REDDIT_VIDEO_PATH,
-            self::ASSET_REDDIT_VIDEO_AUDIO_PATH,
         ];
 
         foreach ($paths as $path) {

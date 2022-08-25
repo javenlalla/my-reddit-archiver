@@ -296,7 +296,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
         $this->assertEquals('I think I married a psychopath', $fetchedPost->getTitle());
         $this->assertEquals('Unexpected', $fetchedPost->getSubreddit());
-        $this->assertEquals('https://v.redd.it/8u3caw3zm6p81', $fetchedPost->getUrl());
+        $this->assertEquals('https://v.redd.it/8u3caw3zm6p81/DASH_720.mp4?source=fallback', $fetchedPost->getUrl());
         $this->assertEquals('2022-03-23 19:11:31', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEmpty($fetchedPost->getAuthorText());
 

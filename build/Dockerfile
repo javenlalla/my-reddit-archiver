@@ -22,7 +22,9 @@ RUN apk --no-cache add \
     # mariadb-connector-c needed for caching_sha2_password plugin if connecting to a MySQL 8.0 database.
     mariadb-connector-c \
     # icu-dev is a dependency required by the `intl` extension.
-    icu-dev 
+    icu-dev \
+    # ffmpeg is needed for combining Reddit video and audio asset files.
+    ffmpeg
 
 RUN docker-php-ext-install \
     pdo \
