@@ -39,6 +39,14 @@ class Downloader
         if ($downloadResult === false) {
             throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
         }
+
+        if (!empty($mediaAsset->getAudioSourceUrl())) {
+            $audioDownloadPath = $basePath . '/' . $mediaAsset->getAudioFilename();
+            $downloadResult = file_put_contents($audioDownloadPath, file_get_contents($mediaAsset->getAudioSourceUrl()));
+            if ($downloadResult === false) {
+                throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $audioDownloadPath, $mediaAsset->getParentPost()->getTitle()));
+            }
+        }
     }
 
     /**

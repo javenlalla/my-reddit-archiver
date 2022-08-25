@@ -9,6 +9,8 @@ use Exception;
 
 class MediaAsset
 {
+    const REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT = '%s_audio.mp4';
+
     const REDDIT_VIDEO_AUDIO_URL_FORMAT = 'https://v.redd.it/%s/DASH_audio.mp4';
 
     /**
@@ -81,6 +83,8 @@ class MediaAsset
         $mediaAsset = $this->hydrateMediaAssetFromPost($post, overrideSourceUrl: $responseData['media']['reddit_video']['fallback_url']);
 
         $videoId = str_replace('https://v.redd.it/', '', $post->getUrl());
+        $mediaAsset->setAudioFilename(sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId));
+
         $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
         $mediaAsset->setAudioSourceUrl($audioUrl);
 
