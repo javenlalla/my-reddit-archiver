@@ -176,6 +176,10 @@ class Hydrator
      */
     private function isVideoContent(array $responseData): bool
     {
+        if ($responseData['is_video'] === true) {
+            return true;
+        }
+
         $videoDomains = [
             'youtube.com',
             'youtu.be',

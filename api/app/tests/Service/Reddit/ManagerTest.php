@@ -278,6 +278,37 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
     }
 
+    /**
+     * https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/
+     *
+     * @return void
+     */
+    public function testSaveRedditVideoPost()
+    {
+        $redditId = 'tl8qic';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('I think I married a psychopath', $fetchedPost->getTitle());
+        $this->assertEquals('Unexpected', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://v.redd.it/8u3caw3zm6p81', $fetchedPost->getUrl());
+        $this->assertEquals('2022-03-23 19:11:31', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_VIDEO, $contentType->getName());
+    }
+
     public function testGetComments()
     {
         $redditId = 'vlyukg';
