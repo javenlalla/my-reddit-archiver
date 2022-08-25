@@ -45,3 +45,13 @@ php bin/console --env=test doctrine:database:create
 php bin/console --env=test doctrine:schema:create
 php bin/console --env=test doctrine:fixtures:load
 ```
+
+## ffmpeg
+
+`ffmpeg` is leveraged to combine Reddit-hosted video and audio files (once downloaded) into a single video file. The command used for this operation is as follows:
+
+```bash
+ffmpeg -i source_video_file.mp4  -i source_audio_file.mp4  -c:v copy -c:a aac combined_output_file.mp4  -hide_banner -loglevel error
+```
+
+The command was sourced from the following page: <https://superuser.com/a/277667>
