@@ -5,6 +5,9 @@ namespace App\Service\Reddit;
 use App\Entity\Post;
 use App\Repository\ApiUserRepository;
 use Exception;
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -37,12 +40,13 @@ class Api
     public function __construct(
         private readonly HttpClientInterface $client,
         private readonly ApiUserRepository $apiUserRepository,
+        private readonly CacheInterface $cachePoolRedis,
         private readonly string $username,
         private readonly string $password,
         private readonly string $clientId,
         private readonly string $clientSecret,
     ) {
-        $this->accessToken = $this->getAccessToken();
+        // $this->accessToken = $this->getAccessToken();
         $this->setUserAgent();
     }
 
@@ -85,18 +89,31 @@ class Api
         return $response->toArray();
     }
 
-    public function getSavedPosts(): array
+    /**
+     * Retrieve the Saved Posts under the current user's (as configured in the
+     * application) Reddit Profile.
+     *
+     * @param  int  $limit
+     * @param  string  $after
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getSavedPosts(int $limit = 100, string $after = ''): array
     {
-        return $this->client
-            ->request('GET', $this->getSavedPostsUrl() . '?limit=1',
-                [
-                    'auth_bearer' => $this->accessToken,
-                    'headers' => [
-                        'User-Agent' => $this->userAgent,
-                    ]
-                ]
-            )
-            ->toArray();
+        $endpoint = sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
+        $endpoint = $endpoint . sprintf('?limit=%d', $limit);
+        if (!empty($after)) {
+            $endpoint = $endpoint . sprintf('&after=%s', $after);
+        }
+
+        $cacheKey = md5($endpoint);
+
+        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($endpoint) {
+            $response = $this->executeCall(self::METHOD_GET, $endpoint)->toArray();
+
+            return $response['data'];
+        });
     }
 
     public function getPostComments()
@@ -154,7 +171,12 @@ class Api
 
     private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
     {
-        $options['auth_bearer'] = $this->accessToken;
+        if (isset($this->accessToken)) {
+            $options['auth_bearer'] = $this->accessToken;
+        } else {
+            $options['auth_bearer'] = $this->getAccessToken();
+        }
+
         if (empty($options['headers'])) {
             $options['headers'] = [];
         }
@@ -188,10 +210,11 @@ class Api
 
     private function getAccessToken()
     {
-        if (empty($this->accessToken)) {
-            $accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
-            if (empty($accessToken)) {
-                $this->refreshToken();
+        if (!isset($this->accessToken) || empty($this->accessToken)) {
+            $this->accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
+
+            if (empty($this->accessToken)) {
+                return $this->refreshToken();
             }
         }
 
@@ -222,7 +245,7 @@ class Api
             $this->accessToken = $responseData['access_token'];
             $this->apiUserRepository->saveToken($this->username, $this->accessToken);
 
-            return;
+            return $this->accessToken;
         }
 
         throw new Exception(sprintf('Unable to retrieve Access Token: %s', var_export($response->toArray(), true)));

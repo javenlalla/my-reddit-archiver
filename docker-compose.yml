@@ -43,3 +43,6 @@ services:
     volumes:
       - ./database-data:/var/lib/mysql
     working_dir: /var/lib/mysql
+  mra-cache:
+    container_name: mra-cache
+    image: redis:7-alpine
