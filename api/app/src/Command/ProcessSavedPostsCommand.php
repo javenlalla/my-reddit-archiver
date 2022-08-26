@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Manager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +23,7 @@ class ProcessSavedPostsCommand extends Command
 
     const CACHE_KEY = 'saved-posts-command';
 
-    public function __construct(private readonly Api $redditApi, private readonly CacheInterface $cachePoolRedis)
+    public function __construct(private readonly Manager $manager, private readonly Api $redditApi, private readonly CacheInterface $cachePoolRedis)
     {
         parent::__construct();
     }
@@ -38,6 +39,32 @@ class ProcessSavedPostsCommand extends Command
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $savedPosts = $this->getSavedPosts($input, $output);
+
+        $output->writeln([
+            sprintf('<comment>%d Posts retrieved.</comment>', count($savedPosts)),
+        ]);
+
+        $savedCount = 0;
+        foreach ($savedPosts as $savedPost) {
+            $post = $this->manager->syncPost($savedPost);
+
+            $savedCount++;
+            if ($savedCount % 10 === 0) {
+                $output->writeln(sprintf('<comment>%d Posts saved.</comment>', $savedCount));
+            }
+        }
+
+        $output->writeln([
+            '<info>Processing completed.</info>',
+            sprintf('<info>%d Posts saved.</info>', $savedCount)
+        ]);
+
+        return Command::SUCCESS;
+    }
+
+    private function getSavedPosts(InputInterface $input, OutputInterface $output)
     {
         $maxPosts = $input->getOption('limit');
         if (!empty($maxPosts) && is_numeric($maxPosts)) {
@@ -55,7 +82,7 @@ class ProcessSavedPostsCommand extends Command
             $cacheKey = $cacheKey . $maxPosts;
         }
 
-        $posts = $this->cachePoolRedis->get($cacheKey, function () use ($maxPosts) {
+        return $this->cachePoolRedis->get($cacheKey, function () use ($maxPosts) {
             $limit = self::DEFAULT_LIMIT;
             if (!empty($maxPosts)) {
                 $limit = $maxPosts;
@@ -81,12 +108,5 @@ class ProcessSavedPostsCommand extends Command
 
             return $posts;
         });
-
-        $output->writeln([
-            sprintf('<info>%d Posts retrieved.</info>', count($posts)),
-            '',
-        ]);
-
-        return Command::SUCCESS;
     }
 }

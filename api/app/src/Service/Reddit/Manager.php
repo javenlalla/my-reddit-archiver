@@ -48,6 +48,28 @@ class Manager
     public function getPostFromApiByRedditId(string $type, string $redditId): Post
     {
         $response = $this->api->getPostByRedditId($type, $redditId);
+
+        return $this->hydratePostFromResponseData($type, $response);
+    }
+
+    /**
+     * Instantiate and hydrate Post Entity based on the provided Response data.
+     *
+     * Additionally, retrieve the parent Post from the API if the provided
+     * Response is of type Comment.
+     *
+     * @param  string  $type
+     * @param  array  $response
+     *
+     * @return Post
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function hydratePostFromResponseData(string $type, array $response): Post
+    {
         $parentPostResponse = [];
 
         if ($type === Type::TYPE_COMMENT) {
@@ -85,6 +107,28 @@ class Manager
         }
 
         return $this->postRepository->find($post->getId());
+    }
+
+    /**
+     * Wrapper function to execute a complete sync of a Post, its media, and
+     * its Comments down to local.
+     *
+     * @param  array  $fullPostResponse
+     *
+     * @return Post
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function syncPost(array $fullPostResponse): Post
+    {
+        $post = $this->hydratePostFromResponseData($fullPostResponse['kind'], $fullPostResponse);
+        $post = $this->savePost($post);
+        $comments = $this->syncCommentsFromApiByPost($post);
+
+        return $post;
     }
 
     /**
