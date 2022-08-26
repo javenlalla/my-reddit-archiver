@@ -65,6 +65,72 @@ class DownloaderTest extends KernelTestCase
         ],
     ];
 
+    const IMAGE_GALLERY_GIF_ASSETS = [
+        [
+            'filename' => '7aa0a5546105afba1c31947897880dba.mp4',
+            'dirOne' => '7',
+            'dirTwo' => 'aa',
+            'filePath' => '/var/www/mra-api/public/assets/7/aa/7aa0a5546105afba1c31947897880dba.mp4',
+            'sourceUrl' => 'https://preview.redd.it/hzhtz9fydej91.gif?format=mp4&s=43a197453fe9eebf82404c643507ed622f9760e4',
+        ],
+        [
+            'filename' => '6c82276ca3b65eb70fdbe7c149d95023.mp4',
+            'dirOne' => '6',
+            'dirTwo' => 'c8',
+            'filePath' => '/var/www/mra-api/public/assets/6/c8/6c82276ca3b65eb70fdbe7c149d95023.mp4',
+            'sourceUrl' => 'https://preview.redd.it/pwhjkwyxdej91.gif?format=mp4&s=25ac9c9a6dc03ad3d7ef36f859c13f5edcde08fb',
+        ],
+        [
+            'filename' => 'e0d5057f173251a71ae3319b53c55c7c.mp4',
+            'dirOne' => 'e',
+            'dirTwo' => '0d',
+            'filePath' => '/var/www/mra-api/public/assets/e/0d/e0d5057f173251a71ae3319b53c55c7c.mp4',
+            'sourceUrl' => 'https://preview.redd.it/59hsb44ydej91.gif?format=mp4&s=77fff215f5af86ce035b0d05de9ca66649458ebc',
+        ],
+        [
+            'filename' => '532770974cf94176ab9fccca2c895a17.mp4',
+            'dirOne' => '5',
+            'dirTwo' => '32',
+            'filePath' => '/var/www/mra-api/public/assets/5/32/532770974cf94176ab9fccca2c895a17.mp4',
+            'sourceUrl' => 'https://preview.redd.it/h7tin1jydej91.gif?format=mp4&s=4eb0e10b22e5e6962c2f58bf57e7f78ab8dab98d',
+        ],
+        [
+            'filename' => 'eb7508f732614348dcb4a64dea720824.mp4',
+            'dirOne' => 'e',
+            'dirTwo' => 'b7',
+            'filePath' => '/var/www/mra-api/public/assets/e/b7/eb7508f732614348dcb4a64dea720824.mp4',
+            'sourceUrl' => 'https://preview.redd.it/lkve7ervdej91.gif?format=mp4&s=5a76bc4c82dcb15cb9d23dc6f62eb4c65e424598',
+        ],
+        [
+            'filename' => 'c955af9f84d1906e8c3766fdd7bc889d.mp4',
+            'dirOne' => 'c',
+            'dirTwo' => '95',
+            'filePath' => '/var/www/mra-api/public/assets/c/95/c955af9f84d1906e8c3766fdd7bc889d.mp4',
+            'sourceUrl' => 'https://preview.redd.it/9fy58fazdej91.gif?format=mp4&s=d7f53d9e580e2520acd7a02bd22db1d645249141',
+        ],
+        [
+            'filename' => 'a9d328a856f6a16f3047f1072ab369a0.mp4',
+            'dirOne' => 'a',
+            'dirTwo' => '9d',
+            'filePath' => '/var/www/mra-api/public/assets/a/9d/a9d328a856f6a16f3047f1072ab369a0.mp4',
+            'sourceUrl' => 'https://preview.redd.it/42cnannxdej91.gif?format=mp4&s=7376b9c6327d07dbfbc2b23e903f0a0b8e28e559',
+        ],
+        [
+            'filename' => 'ff96a712f2417f1b551bcb80e3093e78.mp4',
+            'dirOne' => 'f',
+            'dirTwo' => 'f9',
+            'filePath' => '/var/www/mra-api/public/assets/f/f9/ff96a712f2417f1b551bcb80e3093e78.mp4',
+            'sourceUrl' => 'https://preview.redd.it/yvs1hq2zdej91.gif?format=mp4&s=91d6ca9b40ba839f9d16b5f187332646df4047a4',
+        ],
+        [
+            'filename' => 'e1700a5bc0cd6f102b67b8ad3ead6700.mp4',
+            'dirOne' => 'e',
+            'dirTwo' => '17',
+            'filePath' => '/var/www/mra-api/public/assets/e/17/e1700a5bc0cd6f102b67b8ad3ead6700.mp4',
+            'sourceUrl' => 'https://preview.redd.it/6b6pwxvydej91.gif?format=mp4&s=22b28c51afe45f9586f83a2d722522154704b62b',
+        ],
+    ];
+
     private Manager $manager;
 
     private Downloader $mediaDownloader;
@@ -153,6 +219,50 @@ class DownloaderTest extends KernelTestCase
         // Assert assets can be retrieved from the database and are
         // associated to this current Post.
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            /** @var MediaAsset $mediaAsset */
+            $mediaAsset = $this->entityManager
+                ->getRepository(MediaAsset::class)
+                ->findOneBy(['filename' => $galleryAsset['filename']])
+            ;
+
+            $this->assertEquals($galleryAsset['sourceUrl'], $mediaAsset->getSourceUrl());
+            $this->assertEquals($galleryAsset['dirOne'], $mediaAsset->getDirOne());
+            $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
+            $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        }
+    }
+
+    /**
+     * https://www.reddit.com/r/Terminator/comments/wvg39c/terminator_2_teaser_trailer/
+     *
+     * @return void
+     */
+    public function testSaveGifsFromImageGallery()
+    {
+        $redditId = 'wvg39c';
+
+        foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
+            $this->assertFileDoesNotExist($galleryAsset['filePath']);
+        }
+
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert assets were saved locally.
+        foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
+            $this->assertFileExists($galleryAsset['filePath']);
+        }
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert assets were persisted to the database and associated to this
+        // current Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(9, $mediaAssets);
+
+        // Assert assets can be retrieved from the database and are
+        // associated to this current Post.
+        foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             /** @var MediaAsset $mediaAsset */
             $mediaAsset = $this->entityManager
                 ->getRepository(MediaAsset::class)
@@ -311,6 +421,10 @@ class DownloaderTest extends KernelTestCase
         }
 
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
+            $filesystem->remove($galleryAsset['filePath']);
+        }
+
+        foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $filesystem->remove($galleryAsset['filePath']);
         }
     }

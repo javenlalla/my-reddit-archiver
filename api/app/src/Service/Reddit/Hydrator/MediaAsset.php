@@ -62,8 +62,14 @@ class MediaAsset
     {
         $mediaAssets = [];
         foreach ($responseData["media_metadata"] as $assetId => $mediaMetadata) {
-            $sourceUrl = html_entity_decode($mediaMetadata['s']['u']);
-            $mediaAssets[] = $this->hydrateMediaAssetFromPost($post, $sourceUrl, assetExtension: $this->extractExtensionFromMediaMetadata($mediaMetadata));
+            $extension = $this->extractExtensionFromMediaMetadata($mediaMetadata);
+            if ($extension === 'mp4') {
+                $sourceUrl = html_entity_decode($mediaMetadata['s']['mp4']);
+            } else {
+                $sourceUrl = html_entity_decode($mediaMetadata['s']['u']);
+            }
+
+            $mediaAssets[] = $this->hydrateMediaAssetFromPost($post, $sourceUrl, assetExtension: $extension);
         }
 
         return $mediaAssets;
@@ -114,6 +120,9 @@ class MediaAsset
 
             case 'image/webp':
                 return 'webp';
+
+            case 'image/gif':
+                return 'mp4';
         }
 
         throw new Exception(sprintf('Unexpected media type in Media Metadata: %s', $mediaMetadata['m']));
