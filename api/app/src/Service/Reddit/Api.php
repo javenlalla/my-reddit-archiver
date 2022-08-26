@@ -3,9 +3,11 @@
 namespace App\Service\Reddit;
 
 use App\Entity\Post;
+use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -41,12 +43,12 @@ class Api
         private readonly HttpClientInterface $client,
         private readonly ApiUserRepository $apiUserRepository,
         private readonly CacheInterface $cachePoolRedis,
+        private readonly EventDispatcherInterface $eventDispatcher,
         private readonly string $username,
         private readonly string $password,
         private readonly string $clientId,
         private readonly string $clientSecret,
     ) {
-        // $this->accessToken = $this->getAccessToken();
         $this->setUserAgent();
     }
 
@@ -184,6 +186,8 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+
         if ($response->getStatusCode() === 401 && $retry === false) {
             $this->refreshToken();
             return $this->executeCall($method, $endpoint, $options, true);
@@ -240,6 +244,8 @@ class Api
         ];
 
         $response = $this->client->request(self::METHOD_POST, self::OAUTH_ENDPOINT, $options);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+
         if ($response->getStatusCode() === 200) {
             $responseData = $response->toArray();
             $this->accessToken = $responseData['access_token'];

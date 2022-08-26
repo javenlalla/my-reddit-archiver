@@ -17,6 +17,12 @@ framework:
     php_errors:
         log: true
 
+    rate_limiter:
+        reddit_api:
+            policy: 'fixed_window'
+            limit: 60
+            interval: '60 seconds'
+
 when@test:
     framework:
         test: true

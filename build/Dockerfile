@@ -29,7 +29,9 @@ RUN apk --no-cache add \
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
-    intl
+    intl \
+    # sysvsem is required for the RateLimiter Semaphore store.
+    sysvsem
 #     # mysqli \
 #     xmlrpc \
 #     simplexml \
