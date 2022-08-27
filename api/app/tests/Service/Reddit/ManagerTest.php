@@ -494,4 +494,30 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $comments = $fetchedPost->getComments();
         $this->assertCount(881, $comments);
     }
+
+    /**
+     * Similar validation to the `testGetCommentsEmptyMore()` test except the
+     * location in which the empty "more" object occurs happens earlier up in
+     * the Comment tree for this Post.
+     *
+     * https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/
+     *
+     * @return void
+     */
+    public function testGetCommentsInitialEmptyMore()
+    {
+        $redditId = 'wfylnl';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $this->manager->savePost($post);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $this->assertCount(45, $comments);
+        $this->assertInstanceOf(Comment::class, $comments[0]);
+
+        // Re-fetch Post.
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $comments = $fetchedPost->getComments();
+        $this->assertCount(45, $comments);
+    }
 }
