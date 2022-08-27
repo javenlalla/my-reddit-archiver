@@ -434,4 +434,31 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $comment = $this->manager->getCommentByRedditId('icti9mw');
         $this->assertEquals('I got more!', $comment->getText());
     }
+
+    /**
+     * Validate a test case in which a Post's Comment tree yielded a "more" object
+     * with no children.
+     *
+     * Verify no errors are thrown when processing such a use case.
+     *
+     * https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
+     *
+     * @return void
+     */
+    public function testGetCommentsEmptyMore()
+    {
+        $redditId = 'won0ky';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $this->manager->savePost($post);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $this->assertCount(881, $comments);
+        $this->assertInstanceOf(Comment::class, $comments[0]);
+
+        // Re-fetch Post.
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $comments = $fetchedPost->getComments();
+        $this->assertCount(881, $comments);
+    }
 }

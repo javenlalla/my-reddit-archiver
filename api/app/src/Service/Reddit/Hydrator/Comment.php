@@ -92,11 +92,11 @@ class Comment
 
         $comments = [];
         foreach ( $moreData['json']['data']['things'] as $moreComment) {
-            if ($moreComment['kind'] === 'more') {
+            if ($moreComment['kind'] === 'more' && !empty($moreComment['data']['children'])) {
                 $extractedMoreComments = $this->executeExtractMoreChildrenData($postRedditId, $moreComment['data']);
 
                 array_push($comments, ...$extractedMoreComments);
-            } else {
+            } else if ($moreComment['kind'] !== 'more'){
                 $comments[] = $moreComment;
             }
         }
