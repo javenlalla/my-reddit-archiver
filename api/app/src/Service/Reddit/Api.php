@@ -59,11 +59,7 @@ class Api
      * @param  string  $id
      *
      * @return array
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function getPostByRedditId(string $type, string $id): array
     {
@@ -77,18 +73,18 @@ class Api
      * @param  string  $fullRedditId
      *
      * @return array
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function getPostByFullRedditId(string $fullRedditId): array
     {
-        $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $fullRedditId);
-        $response = $this->executeCall(self::METHOD_GET, $endpoint);
+        $cacheKey = md5('post-'.$fullRedditId);
 
-        return $response->toArray();
+        return $this->cachePoolRedis->get($cacheKey, function() use ($fullRedditId) {
+            $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $fullRedditId);
+            $response = $this->executeCall(self::METHOD_GET, $endpoint);
+
+            return $response->toArray();
+        });
     }
 
     /**
@@ -118,46 +114,42 @@ class Api
         });
     }
 
-    public function getPostComments()
-    {
-        $comments = $this->client
-            ->request('GET', 'https://oauth.reddit.com/comments/vlyukg?raw_json=1',
-                [
-                    'auth_bearer' => $this->accessToken,
-                    'headers' => [
-                        'User-Agent' => $this->userAgent,
-                    ]
-                ]
-            )
-            ->toArray();
-
-        $opComment = $comments[0];
-        $comments = new Comments($comments[1]['data']['children']);
-
-        return $comments->toJson();
-    }
-
     /**
      * Retrieve Comments under a Post by the Post's Reddit ID.
      *
      * @param  string  $redditId
      *
      * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getPostCommentsByRedditId(string $redditId): array
+    {
+        $cacheKey = md5('comments-'.$redditId);
+
+        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
+            $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $redditId);
+            $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
+
+            return $response->toArray();
+        });
+    }
+
+    /**
+     * Retrieve the "more" Comments data under the specified Reddit ID using
+     * the provided Children data.
+     *
+     * @param  string  $postRedditId
+     * @param  array  $moreChildrenData
+     *
+     * @return mixed
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
+     * @throws InvalidArgumentException
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getPostCommentsByRedditId(string $redditId): array
-    {
-        $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $redditId);
-        $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
-
-        return $response->toArray();
-    }
-
-    public function getMoreChildren(string $postRedditId, array $moreChildrenData)
+    public function getMoreChildren(string $postRedditId, array $moreChildrenData): array
     {
         $body = [
             'link_id' => sprintf('t3_%s', $postRedditId),
@@ -166,11 +158,26 @@ class Api
             'limit_children' => false,
         ];
 
-        $response = $this->executeCall(self::METHOD_POST, self::MORE_CHILDREN_ENDPOINT, ['body' => $body]);
+        $cacheKey = md5('more-children-'. $postRedditId . '-' . $body['children']);
 
-        return $response->toArray();
+        return $this->cachePoolRedis->get($cacheKey, function() use ($body) {
+            $response = $this->executeCall(self::METHOD_POST, self::MORE_CHILDREN_ENDPOINT, ['body' => $body]);
+
+            return $response->toArray();
+        });
     }
 
+    /**
+     * Core function which executes a call to the Reddit API.
+     *
+     * @param  string  $method
+     * @param  string  $endpoint
+     * @param  array  $options
+     * @param  bool  $retry
+     *
+     * @return ResponseInterface
+     * @throws TransportExceptionInterface
+     */
     private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
     {
         if (isset($this->accessToken)) {
