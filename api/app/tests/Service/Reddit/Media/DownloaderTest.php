@@ -14,6 +14,8 @@ class DownloaderTest extends KernelTestCase
 {
     const ASSET_IMAGE_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
+    const ASSET_REDDIT_HOSTED_IMAGE_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0.jpg';
+
     const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
 
     const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
@@ -185,6 +187,44 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('f', $mediaAsset->getDirOne());
         $this->assertEquals('aa', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+    }
+
+    /**
+     * https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
+     *
+     * @return void
+     */
+    public function testSaveSingleImageFromRedditHostedImagePost()
+    {
+        $redditId = 'won0ky';
+        $expectedPath = self::ASSET_REDDIT_HOSTED_IMAGE_PATH;
+
+        $this->assertFileDoesNotExist($expectedPath);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert image was saved locally.
+        $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert image was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert image can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => '44cdd5b77a44b3ebd1e955946e71efc0.jpg'])
+        ;
+
+        $this->assertEquals('https://i.redd.it/cnfk33iv9sh91.jpg', $mediaAsset->getSourceUrl());
+        $this->assertEquals('4', $mediaAsset->getDirOne());
+        $this->assertEquals('4c', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
@@ -411,6 +451,7 @@ class DownloaderTest extends KernelTestCase
 
         $paths = [
             self::ASSET_IMAGE_PATH,
+            self::ASSET_REDDIT_HOSTED_IMAGE_PATH,
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
             self::ASSET_REDDIT_VIDEO_PATH,

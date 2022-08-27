@@ -71,6 +71,37 @@ class ManagerTest extends KernelTestCase
     }
 
     /**
+     * https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
+     *
+     * @return void
+     */
+    public function testSaveRedditHostedImagePost()
+    {
+        $redditId = 'won0ky';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('I learned how to whistle from this in less than 5 minutes.', $fetchedPost->getTitle());
+        $this->assertEquals('coolguides', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://i.redd.it/cnfk33iv9sh91.jpg', $fetchedPost->getUrl());
+        $this->assertEquals('2022-08-15 01:52:53', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+    }
+
+    /**
      * https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/
      *
      * @return void

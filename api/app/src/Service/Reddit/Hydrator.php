@@ -160,7 +160,14 @@ class Hydrator
      */
     private function getContentTypeFromResponseData(array $responseData): ContentType
     {
-        if ($responseData['domain'] === 'i.imgur.com') {
+        $contentType = $this->getContentTypeFromDomainAndUrl($responseData);
+        if ($contentType instanceof ContentType) {
+            return $contentType;
+        }
+
+        if ($responseData['domain'] === 'i.imgur.com'
+            || ($responseData['domain'] === 'i.redd.it' && $responseData['is_reddit_media_domain'] === true)
+        ) {
             return $this->contentTypeRepository->getImageContentType();
         } else if (!empty($responseData['selftext']) && $responseData['is_self'] === true) {
             return $this->contentTypeRepository->getTextContentType();
@@ -229,5 +236,37 @@ class Hydrator
         $html = str_replace($stringsToRemove, '', $html);
 
         return $html;
+    }
+
+    /**
+     * Attempt to retrieve the Content Type for the provided Response Data based
+     * on its domain and URL properties.
+     *
+     * @param  array  $responseData
+     *
+     * @return ContentType|null
+     */
+    private function getContentTypeFromDomainAndUrl(array $responseData): ?ContentType
+    {
+        $domain = $responseData['domain'];
+        if (in_array($domain, ['i.imgur.com', 'i.redd.it'])) {
+            $extensionSeparatorPos = strrpos($responseData['url'], '.');
+            $extensionPosition = $extensionSeparatorPos + 1;
+
+            $extension = substr($responseData['url'], $extensionPosition, strlen($responseData['url']) - $extensionPosition);
+
+            switch ($extension) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'webp':
+                    return $this->contentTypeRepository->getImageContentType();
+
+                case 'gif':
+                    return $this->contentTypeRepository->getGifContentType();
+            }
+        }
+
+        return null;
     }
 }
