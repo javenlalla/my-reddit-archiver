@@ -340,6 +340,39 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals(ContentType::CONTENT_TYPE_VIDEO, $contentType->getName());
     }
 
+    /**
+     * Validate persisting a Reddit-hosted Video that does not contain audio.
+     *
+     * https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/
+     *
+     * @return void
+     */
+    public function testSaveRedditVideoNoAudioPost()
+    {
+        $redditId = 'wfylnl';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('When you use a new library without reading the documentation', $fetchedPost->getTitle());
+        $this->assertEquals('ProgrammerHumor', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://v.redd.it/bofh9q9jkof91/DASH_720.mp4?source=fallback', $fetchedPost->getUrl());
+        $this->assertEquals('2022-08-04 11:17:29', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_VIDEO, $contentType->getName());
+    }
+
     public function testGetComments()
     {
         $redditId = 'vlyukg';

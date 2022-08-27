@@ -22,6 +22,8 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_REDDIT_VIDEO_PATH = '/var/www/mra-api/public/assets/a/01/a01b41d34f5bb8bceb7540fa1b84728a.mp4';
 
+    const ASSET_REDDIT_VIDEO_NO_AUDIO_PATH = '/var/www/mra-api/public/assets/1/7d/17de4f10fe97940aba8170d1eec6caf0.mp4';
+
     const IMAGE_GALLERY_ASSETS = [
         [
             'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
@@ -433,6 +435,51 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
     }
 
+    /**
+     * Validate persisting a Reddit-hosted Video that does not contain audio.
+     *
+     * Only the Video file (.mp4) should be downloaded and no Audio properties
+     * should be set.
+     *
+     * https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/
+     *
+     * @return void
+     */
+    public function testSaveRedditVideoNoAudioFromPost()
+    {
+        $redditId = 'wfylnl';
+        $expectedPath = self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH;
+
+        $this->assertFileDoesNotExist($expectedPath);
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $savedPost = $this->manager->savePost($post);
+
+        // Assert Reddit Video was saved locally.
+        $this->assertFileExists($expectedPath);
+
+        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
+
+        // Assert Reddit Video was persisted to the database and associated to its Post.
+        $mediaAssets = $fetchedPost->getMediaAssets();
+        $this->assertCount(1, $mediaAssets);
+
+        // Assert Reddit Video can be retrieved from the database and is
+        // associated to its Post.
+        /** @var MediaAsset $mediaAsset */
+        $mediaAsset = $this->entityManager
+            ->getRepository(MediaAsset::class)
+            ->findOneBy(['filename' => '17de4f10fe97940aba8170d1eec6caf0.mp4'])
+        ;
+
+        $this->assertEquals('https://v.redd.it/bofh9q9jkof91/DASH_720.mp4?source=fallback', $mediaAsset->getSourceUrl());
+        $this->assertEmpty($mediaAsset->getAudioSourceUrl());
+        $this->assertEmpty($mediaAsset->getAudioFilename());
+        $this->assertEquals('1', $mediaAsset->getDirOne());
+        $this->assertEquals('7d', $mediaAsset->getDirTwo());
+        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+    }
+
     public function tearDown(): void
     {
         $this->cleanupAssets();
@@ -455,6 +502,7 @@ class DownloaderTest extends KernelTestCase
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
             self::ASSET_REDDIT_VIDEO_PATH,
+            self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH,
         ];
 
         foreach ($paths as $path) {

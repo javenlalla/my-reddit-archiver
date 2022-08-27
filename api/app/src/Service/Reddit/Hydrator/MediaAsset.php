@@ -88,11 +88,15 @@ class MediaAsset
     {
         $mediaAsset = $this->hydrateMediaAssetFromPost($post, overrideSourceUrl: $responseData['media']['reddit_video']['fallback_url']);
 
-        $videoId = str_replace('https://v.redd.it/', '', $post->getUrl());
-        $mediaAsset->setAudioFilename(sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId));
+        // If the Video Asset is not treated as a GIF on Reddit's side, assume
+        // there is a separate Audio file to be retrieved.
+        if ($responseData['media']['reddit_video']['is_gif'] === false) {
+            $videoId = str_replace('https://v.redd.it/', '', $post->getUrl());
+            $mediaAsset->setAudioFilename(sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId));
 
-        $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
-        $mediaAsset->setAudioSourceUrl($audioUrl);
+            $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
+            $mediaAsset->setAudioSourceUrl($audioUrl);
+        }
 
         return $mediaAsset;
     }
