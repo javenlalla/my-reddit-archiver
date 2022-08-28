@@ -520,4 +520,69 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $comments = $fetchedPost->getComments();
         $this->assertCount(45, $comments);
     }
+
+    /**
+     * Validate a Post which links to an external site.
+     *
+     * https://www.reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/
+     *
+     * @return void
+     */
+    public function testSyncCommentsFromCommentPostMultipleLevelsDeep()
+    {
+        $redditId = 'iirwrq4';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
+        $this->manager->savePost($post);
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $this->assertCount(527, $comments);
+        $this->assertInstanceOf(Comment::class, $comments[0]);
+
+        // Re-fetch Post.
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $comments = $fetchedPost->getComments();
+        $this->assertCount(527, $comments);
+    }
+
+    /**
+     * Validate a Saved Comment Post in which the Comment is multiple levels deep
+     * within the Comment tree.
+     *
+     * https://reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/iirwrq4/
+     *
+     * @return void
+     */
+    public function testSaveCommentPostMultipleLevelsDeep()
+    {
+        $redditId = 'iirwrq4';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
+        $this->assertEquals('science', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
+        $this->assertEquals('2022-08-03 12:43:19', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('I\'ve recently started running after not running for 10+ years. This was the single biggest piece of advice I got.
+
+Get a good heartrate monitor and don\'t go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn\'t run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.', $fetchedPost->getAuthorText());
+        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;I&amp;#39;ve recently started running after not running for 10+ years. This was the single biggest piece of advice I got.&lt;/p&gt;\n
+&lt;p&gt;Get a good heartrate monitor and don&amp;#39;t go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn&amp;#39;t run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.&lt;/p&gt;\n&lt;/div&gt;", $fetchedPost->getAuthorTextRawHtml());
+
+        $this->assertEquals("<div class=\"md\"><p>I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.</p>\n
+<p>Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.</p>\n</div>", $fetchedPost->getAuthorTextHtml());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_COMMENT, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+    }
 }

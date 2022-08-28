@@ -61,6 +61,12 @@ class Post
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $mediaAssets;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private $redditPostUrl;
+
+    #[ORM\Column(type: 'string', length: 10)]
+    private $redditPostId;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -272,6 +278,30 @@ class Post
                 $mediaAsset->setParentPost(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRedditPostUrl(): ?string
+    {
+        return $this->redditPostUrl;
+    }
+
+    public function setRedditPostUrl(string $redditPostUrl): self
+    {
+        $this->redditPostUrl = $redditPostUrl;
+
+        return $this;
+    }
+
+    public function getRedditPostId(): ?string
+    {
+        return $this->redditPostId;
+    }
+
+    public function setRedditPostId(string $redditPostId): self
+    {
+        $this->redditPostId = $redditPostId;
 
         return $this;
     }

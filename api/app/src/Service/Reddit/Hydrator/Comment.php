@@ -69,7 +69,7 @@ class Comment
         $comments = [];
         foreach ($commentsRawData as $commentRawData) {
             if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
-                $extractedMoreComments = $this->executeExtractMoreChildrenData($post->getRedditId(), $commentRawData['data']);
+                $extractedMoreComments = $this->executeExtractMoreChildrenData($post->getRedditPostId(), $commentRawData['data']);
 
                 array_push($comments, ...$extractedMoreComments);
             } else if ($commentRawData['kind'] !== 'more') {

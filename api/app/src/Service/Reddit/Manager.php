@@ -12,11 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Exception;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Psr\Cache\InvalidArgumentException;
 
 class Manager
 {
@@ -38,12 +34,7 @@ class Manager
      * @param  string  $redditId
      *
      * @return Post
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function getPostFromApiByRedditId(string $type, string $redditId): Post
     {
@@ -62,18 +53,14 @@ class Manager
      * @param  array  $response
      *
      * @return Post
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function hydratePostFromResponseData(string $type, array $response): Post
     {
         $parentPostResponse = [];
 
         if ($type === Type::TYPE_COMMENT) {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['parent_id']);
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
         }
 
         return $this->hydrator->hydratePostFromResponse($response, $parentPostResponse);
@@ -116,11 +103,7 @@ class Manager
      * @param  array  $fullPostResponse
      *
      * @return Post
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function syncPost(array $fullPostResponse): Post
     {
@@ -138,15 +121,11 @@ class Manager
      * @param  Post  $post
      *
      * @return array
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function syncCommentsFromApiByPost(Post $post): array
     {
-        $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditId());
+        $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditPostId());
         $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
         $comments = $this->commentHydrator->hydrateComments($post, $commentsRawData);

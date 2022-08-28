@@ -61,6 +61,9 @@ class Hydrator
 
         $post = new Post();
         $post->setRedditId($responseData['id']);
+        $post->setRedditPostId($post->getRedditId());
+        // @TODO: Replace hard-coded URL here.
+        $post->setRedditPostUrl('https://reddit.com/' . $responseData['permalink']);
         $post->setTitle($responseData['title']);
         $post->setScore((int)$responseData['score']);
         $post->setAuthor($responseData['author']);
@@ -140,6 +143,13 @@ class Hydrator
         $post->setAuthorTextRawHtml($responseData['body_html']);
         $post->setAuthorTextHtml($this->sanitizeHtml($responseData['body_html']));
 
+        if (!empty($parentResponseData)) {
+            $post->setRedditPostId($parentResponseData['id']);
+            $post->setRedditPostUrl('https://reddit.com/' . $parentResponseData['permalink']);
+        } else {
+            $post->setRedditPostId($post->getRedditId());
+            $post->setRedditPostUrl('https://reddit.com/' . $responseData['permalink']);
+        }
 
         return $post;
     }
