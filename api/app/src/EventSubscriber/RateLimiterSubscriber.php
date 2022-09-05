@@ -28,9 +28,9 @@ class RateLimiterSubscriber implements EventSubscriberInterface
 
         if (false === $limiter->consume(1)->isAccepted()) {
             // @TODO: Replace generic messages with proper logging.
-            echo "Limit reached. Waiting.";
+            echo "API Limit reached. Waiting.\n";
             $limiter->reserve(1)->wait();
-            echo "Done waiting.";
+            echo "Waiting completed. Proceeding.\n";
         }
     }
 }

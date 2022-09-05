@@ -59,8 +59,10 @@ class Manager
     {
         $parentPostResponse = [];
 
-        if ($type === Type::TYPE_COMMENT) {
+        if ($type === Type::TYPE_COMMENT && $response['kind'] === 'Listing') {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
+        } else if ($type === Type::TYPE_COMMENT && $response['kind'] === Type::TYPE_COMMENT) {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
         return $this->hydrator->hydratePostFromResponse($response, $parentPostResponse);
