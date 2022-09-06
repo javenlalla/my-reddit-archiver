@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Manager;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,7 +49,13 @@ class ProcessSavedPostsCommand extends Command
 
         $savedCount = 0;
         foreach ($savedPosts as $savedPost) {
-            $post = $this->manager->syncPost($savedPost);
+            try {
+                $post = $this->manager->syncPost($savedPost);
+            } catch (Exception $e) {
+                file_put_contents('error.json', json_encode($savedPost));
+                $output->writeln(sprintf('<error>Error thrown for post: %s</error>', var_export($savedPost ,true)));
+                throw $e;
+            }
 
             $savedCount++;
             if ($savedCount % 10 === 0) {

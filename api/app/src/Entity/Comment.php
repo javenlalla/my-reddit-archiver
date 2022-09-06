@@ -37,6 +37,9 @@ class Comment
     #[ORM\JoinColumn(nullable: false)]
     private $parentPost;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private $depth;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
@@ -145,6 +148,18 @@ class Comment
     public function setParentPost(?Post $parentPost): self
     {
         $this->parentPost = $parentPost;
+
+        return $this;
+    }
+
+    public function getDepth(): ?int
+    {
+        return $this->depth;
+    }
+
+    public function setDepth(int $depth): self
+    {
+        $this->depth = $depth;
 
         return $this;
     }

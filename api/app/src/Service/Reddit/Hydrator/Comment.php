@@ -37,6 +37,8 @@ class Comment
             $comment->setText($commentData['body']);
             $comment->setAuthor($commentData['author']);
             $comment->setParentPost($post);
+            $comment->setDepth((int) $commentData['depth']);
+
             if ($parentComment instanceof CommentEntity) {
                 $comment->setParentComment($parentComment);
             }
