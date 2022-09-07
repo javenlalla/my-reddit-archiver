@@ -293,11 +293,11 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
 
         // Verify top-level Comments count.
-        $this->assertCount(526, $fetchedPost->getComments());
+        $this->assertCount(527, $fetchedPost->getComments());
 
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(1350, $allCommentsCount);
+        $this->assertEquals(1351, $allCommentsCount);
     }
 
     /**
@@ -597,13 +597,13 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(526, $comments);
+        $this->assertCount(527, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(526, $comments);
+        $this->assertCount(527, $comments);
     }
 
     /**
