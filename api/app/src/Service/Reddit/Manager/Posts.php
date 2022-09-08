@@ -18,10 +18,9 @@ class Posts
      *
      * @return Post[]
      */
-    public function getPosts(int $limit = self::DEFAULT_LIMIT)
+    public function getPosts(int $limit = self::DEFAULT_LIMIT): array
     {
-        $posts = $this->postRepository->findAll();
-
-        return $posts;
+        // @TODO: Replace with DQL function within the Repository.
+        return $this->postRepository->findBy([], [], 1);
     }
 }

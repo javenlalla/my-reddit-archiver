@@ -63,7 +63,7 @@ class Hydrator
         $post->setRedditId($responseData['id']);
         $post->setRedditPostId($post->getRedditId());
         // @TODO: Replace hard-coded URL here.
-        $post->setRedditPostUrl('https://reddit.com/' . $responseData['permalink']);
+        $post->setRedditPostUrl('https://reddit.com' . $responseData['permalink']);
         $post->setTitle($responseData['title']);
         $post->setScore((int)$responseData['score']);
         $post->setAuthor($responseData['author']);
