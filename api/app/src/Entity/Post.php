@@ -206,6 +206,22 @@ class Post
         return $this->comments;
     }
 
+    /**
+     * Get only Top Level Comments of this Post.
+     * I.E.: retrieve the base Comments that do not contain any Parent Comment
+     * so are considered to be at the top level of the Comment tree.
+     *
+     * @TODO: replace filter logic with Criteria to avoid fetching entire collection prior to filtering: https://stackoverflow.com/a/18584028
+     *
+     * @return Collection<int, Comment>
+     */
+    public function getTopLevelComments(): Collection
+    {
+        return $this->comments->filter(function($comment) {
+            return empty($comment->getParentComment());
+        });
+    }
+
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {

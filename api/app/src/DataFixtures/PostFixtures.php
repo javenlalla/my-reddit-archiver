@@ -2,18 +2,25 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
+use App\Repository\CommentRepository;
 use App\Repository\ContentTypeRepository;
+use App\Repository\PostRepository;
 use App\Repository\TypeRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
 class PostFixtures extends Fixture
 {
-    public function __construct(private readonly TypeRepository $typeRepository, private readonly ContentTypeRepository $contentTypeRepository)
-    {
+    public function __construct(
+        private readonly PostRepository $postRepository,
+        private readonly CommentRepository $commentRepository,
+        private readonly TypeRepository $typeRepository,
+        private readonly ContentTypeRepository $contentTypeRepository
+    ) {
     }
 
     public function load(ObjectManager $manager): void
@@ -23,25 +30,34 @@ class PostFixtures extends Fixture
         $manager->flush();
 
         // Create Posts.
-        $posts = [];
         $postsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/posts.csv', 'r');
         while (($postRow = fgetcsv($postsDataFile)) !== FALSE) {
             // Skip header row (first row).
             if ($postRow[0] !== 'typeId') {
                 $post = $this->hydratePostFromCsvRow($postRow);
                 $manager->persist($post);
-
-                $posts[] = $post;
             }
         }
         fclose($postsDataFile);
 
+        $manager->flush();
+
         // Create Comments.
+        $commentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/comments.csv', 'r');
+        while (($commentRow = fgetcsv($commentsDataFile)) !== FALSE) {
+            // Skip header row (first row).
+            if ($commentRow[0] !== 'redditPostId') {
+                $comment = $this->hydrateCommentFromCsvRow($commentRow);
+                $manager->persist($comment);
+
+                // Persist Comments immediately in order for fetching Parent Comments during hydration.
+                $manager->flush();
+
+            }
+        }
+        fclose($commentsDataFile);
 
         // Create Media Assets.
-
-
-        $manager->flush();
     }
 
     /**
@@ -132,5 +148,35 @@ class PostFixtures extends Fixture
 
             $manager->persist($contentTypeEntity);
         }
+    }
+
+    /**
+     * Sanitize the provided raw CSV line containing a Comment record and return
+     * a new, hydrated Comment entity.
+     *
+     * Assign the Post Entity and parent Comment Entity as necessary.
+     *
+     * @param  array  $commentRow
+     *
+     * @return Comment
+     */
+    private function hydrateCommentFromCsvRow(array $commentRow): Comment
+    {
+        $post = $this->postRepository->findOneBy(['redditId' => $commentRow['0']]);
+
+        $comment = new Comment();
+        $comment->setParentPost($post);
+        $comment->setText($commentRow[2]);
+        $comment->setAuthor($commentRow[3]);
+        $comment->setScore((int) $commentRow[4]);
+        $comment->setRedditId($commentRow[5]);
+        $comment->setDepth((int) $commentRow[6]);
+
+        if (!empty($commentRow[1])) {
+            $parentComment = $this->commentRepository->findOneBy(['redditId' => $commentRow[1]]);
+            $comment->setParentComment($parentComment);
+        }
+
+        return $comment;
     }
 }
