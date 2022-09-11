@@ -142,6 +142,41 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     }
 
     /**
+     * Verify a Text Post that contains only a Title and no Author Text or Content.
+     *
+     * https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/
+     *
+     * @return void
+     */
+    public function testSaveTextPostProblem()
+    {
+        $redditId = 'vdmg2f';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('[serious] What should everyone learn how to do?', $fetchedPost->getTitle());
+        $this->assertEquals('AskReddit', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/', $fetchedPost->getUrl());
+        $this->assertEquals('2022-06-16 13:48:47', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty( $fetchedPost->getAuthorText());
+        $this->assertEmpty( $fetchedPost->getAuthorTextRawHtml());
+        $this->assertEmpty( $fetchedPost->getAuthorTextHtml());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+    }
+
+    /**
      * https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/
      *
      * @return void
@@ -547,13 +582,13 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(879, $comments);
+        $this->assertCount(878, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(879, $comments);
+        $this->assertCount(878, $comments);
     }
 
     /**

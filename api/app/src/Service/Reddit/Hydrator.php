@@ -187,6 +187,8 @@ class Hydrator
             return $this->contentTypeRepository->getImageGalleryContentType();
         } else if (!empty($responseData['preview']['images'][0]['variants']['gif']) && !empty($responseData['preview']['images'][0]['variants']['mp4'])) {
             return $this->contentTypeRepository->getGifContentType();
+        } else if (empty($responseData['selftext']) && $responseData['is_self'] === true) {
+            return $this->contentTypeRepository->getTextContentType();
         }
 
         throw new Exception(sprintf('Unable to determine Content Type for response data: %s', var_export($responseData, true)));
