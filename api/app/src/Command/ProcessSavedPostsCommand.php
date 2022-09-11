@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\Post;
+use App\Repository\PostRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Manager;
 use Exception;
@@ -24,8 +26,12 @@ class ProcessSavedPostsCommand extends Command
 
     const CACHE_KEY = 'saved-posts-command';
 
-    public function __construct(private readonly Manager $manager, private readonly Api $redditApi, private readonly CacheInterface $cachePoolRedis)
-    {
+    public function __construct(
+        private readonly Manager $manager,
+        private readonly Api $redditApi,
+        private readonly PostRepository $postRepository,
+        private readonly CacheInterface $cachePoolRedis
+    ) {
         parent::__construct();
     }
 
@@ -50,10 +56,20 @@ class ProcessSavedPostsCommand extends Command
         $savedCount = 0;
         foreach ($savedPosts as $savedPost) {
             try {
-                $post = $this->manager->syncPost($savedPost);
+                $syncedPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
+                if (empty($syncedPost)) {
+                    $post = $this->manager->syncPost($savedPost);
+                }
             } catch (Exception $e) {
                 file_put_contents('error.json', json_encode($savedPost));
                 $output->writeln(sprintf('<error>Error thrown for post: %s</error>', var_export($savedPost ,true)));
+
+                // If the Post was persisted, remove it for re-processing.
+                $errorPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
+                if ($errorPost instanceof Post) {
+                    $this->postRepository->remove($errorPost, true);
+                }
+
                 throw $e;
             }
 
