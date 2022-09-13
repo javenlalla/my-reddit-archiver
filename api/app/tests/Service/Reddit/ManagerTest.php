@@ -474,7 +474,7 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
      *
      * @return void
      */
-    public function testSaveLinkPost()
+    public function testSaveExternalLinkPost()
     {
         $redditId = 'urn2yw';
         $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
