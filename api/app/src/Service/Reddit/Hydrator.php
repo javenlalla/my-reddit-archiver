@@ -189,6 +189,8 @@ class Hydrator
             return $this->contentTypeRepository->getGifContentType();
         } else if (empty($responseData['selftext']) && $responseData['is_self'] === true) {
             return $this->contentTypeRepository->getTextContentType();
+        } else if ($this->postIsExternalLink($responseData) === true) {
+            return $this->contentTypeRepository->getExternalLinkContentType();
         }
 
         throw new Exception(sprintf('Unable to determine Content Type for response data: %s', var_export($responseData, true)));
@@ -280,5 +282,27 @@ class Hydrator
         }
 
         return null;
+    }
+
+    /**
+     * Verify if a Post links to an external (anything not *.reddit.com) site
+     * based on the provided Response Data.
+     *
+     * @param  array  $responseData
+     *
+     * @return bool
+     */
+    private function postIsExternalLink(array $responseData): bool
+    {
+        $domainContainsReddit = strrpos($responseData['domain'], 'reddit');
+        if ($domainContainsReddit !== false) {
+            return false;
+        }
+
+        if ($responseData['is_self'] === true) {
+            return false;
+        }
+
+        return true;
     }
 }

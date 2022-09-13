@@ -148,7 +148,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      *
      * @return void
      */
-    public function testSaveTextPostProblem()
+    public function testSaveTextPostWithNoContent()
     {
         $redditId = 'vdmg2f';
         $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
@@ -467,6 +467,38 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
         $contentType = $fetchedPost->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
         $this->assertEquals(ContentType::CONTENT_TYPE_VIDEO, $contentType->getName());
+    }
+
+    /**
+     * https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/
+     *
+     * @return void
+     */
+    public function testSaveLinkPost()
+    {
+        $redditId = 'urn2yw';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $this->assertInstanceOf(Post::class, $fetchedPost);
+        $this->assertNotEmpty($fetchedPost->getId());
+        $this->assertEquals($redditId, $fetchedPost->getRedditId());
+        $this->assertEquals('Mithril.js release a new version after nearly 3 years', $fetchedPost->getTitle());
+        $this->assertEquals('javascript', $fetchedPost->getSubreddit());
+        $this->assertEquals('https://github.com/MithrilJS/mithril.js/releases', $fetchedPost->getUrl());
+        $this->assertEquals('https://reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/', $fetchedPost->getRedditPostUrl());
+        $this->assertEquals('2022-05-17 13:59:01', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($fetchedPost->getAuthorText());
+
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $fetchedPost->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_EXTERNAL_LINK, $contentType->getName());
     }
 
     public function testGetComments()

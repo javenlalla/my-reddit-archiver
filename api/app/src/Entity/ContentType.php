@@ -18,6 +18,8 @@ class ContentType
 
     const CONTENT_TYPE_IMAGE_GALLERY = 'image_gallery';
 
+    const CONTENT_TYPE_EXTERNAL_LINK = 'external_link';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

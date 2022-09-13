@@ -139,6 +139,10 @@ class PostFixtures extends Fixture
                 'name' => 'gif',
                 'displayName' => 'GIF',
             ],
+            [
+                'name' => 'external_link',
+                'displayName' => 'External Link',
+            ],
         ];
 
         foreach ($contentTypes as $contentType) {
