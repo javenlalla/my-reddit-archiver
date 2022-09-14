@@ -18,4 +18,4 @@ framework:
         pools:
             cache.pool.redis:
                 adapter: cache.adapter.redis
-                default_lifetime: 3600
+                default_lifetime: 604800 # @TODO: Temporarily increased to one week for development purposes. Previous value for one hour: 3600
