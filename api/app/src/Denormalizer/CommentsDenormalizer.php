@@ -1,28 +1,32 @@
 <?php
 
-namespace App\Service\Reddit\Hydrator;
+namespace App\Denormalizer;
 
-use App\Entity\Comment as CommentEntity;
+use App\Entity\Comment;
 use App\Entity\Post;
 use App\Service\Reddit\Api;
+use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class Comment
+class CommentsDenormalizer implements DenormalizerInterface
 {
     public function __construct(private readonly Api $api){}
 
     /**
-     * Instantiate and hydrate Comment Entities based on the provided Post
-     * and Comments raw data.
+     * Denormalize the provided Response Data containing a Listing of Comments
+     * and return an array of Comment Entities.
      *
-     * @param  Post  $post
-     * @param  array  $commentsRawData
-     * @param  CommentEntity|null  $parentComment
+     * @param  array  $data  Response Data from Reddit API for a particular Comment.
+     * @param  string  $type
+     * @param  string|null  $format
+     * @param  array  $context  'post' => Instance of a Post Entity.
+     *                          'parentComment' => Instance of a Comment Entity to which this Comment belongs.
      *
      * @return array
      */
-    public function hydrateComments(Post $post, array $commentsRawData, CommentEntity $parentComment = null): array
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): array
     {
-        $sanitizedCommentsRawData = $this->extractMoreChildrenData($post, $commentsRawData);
+        $sanitizedCommentsRawData = $this->extractMoreChildrenData($context['post'], $data);
 
         $comments = [];
         foreach ($sanitizedCommentsRawData as $commentRawData) {
@@ -31,20 +35,21 @@ class Comment
                 $commentData = $commentRawData['data'];
             }
 
-            $comment = new CommentEntity();
+            $comment = new Comment();
             $comment->setRedditId($commentData['id']);
             $comment->setScore((int) $commentData['score']);
             $comment->setText($commentData['body']);
             $comment->setAuthor($commentData['author']);
-            $comment->setParentPost($post);
+            $comment->setParentPost($context['post']);
             $comment->setDepth((int) $commentData['depth']);
 
-            if ($parentComment instanceof CommentEntity) {
-                $comment->setParentComment($parentComment);
+            if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
+                $comment->setParentComment($context['parentComment']);
             }
 
             if (!empty($commentData['replies'])) {
-                $replies = $this->hydrateComments($post, $commentData['replies']['data']['children'], $comment);
+                $context['parentComment'] = $comment;
+                $replies = $this->denormalize($commentData['replies']['data']['children'], 'array', null, $context);
 
                 foreach ($replies as $reply) {
                     $comment->addReply($reply);
@@ -58,7 +63,18 @@ class Comment
     }
 
     /**
-     * Inspected the provided Comments Raw data array and extract visible and
+     * @inheritDoc
+     *
+     * @return bool
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    {
+        // @TODO: Add additional checks to ensure array is compatible with a Comment Entity.
+        return is_array($data) && $type === 'array';
+    }
+
+    /**
+     * Inspect the provided Comments Raw data array and extract visible and
      * More Children Comments based on the data.
      *
      * @param  Post  $post
@@ -83,10 +99,14 @@ class Comment
     }
 
     /**
+     * Core function to recursively drill down into 'more' components and extract
+     * the relevant Comments within those elements.
+     *
      * @param  string  $postRedditId
      * @param  array  $originalMoreRawData
      *
      * @return array
+     * @throws InvalidArgumentException
      */
     private function executeExtractMoreChildrenData(string $postRedditId, array $originalMoreRawData): array
     {

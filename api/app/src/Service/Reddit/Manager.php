@@ -2,11 +2,11 @@
 
 namespace App\Service\Reddit;
 
+use App\Denormalizer\CommentsDenormalizer;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
-use App\Service\Reddit\Hydrator\Comment as CommentHydrator;
 use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -22,7 +22,7 @@ class Manager
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly Hydrator $hydrator,
-        private readonly CommentHydrator $commentHydrator,
+        private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
     }
@@ -130,7 +130,7 @@ class Manager
         $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditPostId());
         $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
-        $comments = $this->commentHydrator->hydrateComments($post, $commentsRawData);
+        $comments = $this->commentsDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);
         foreach ($comments as $comment) {
             $this->entityManager->persist($comment);
 
