@@ -26,7 +26,7 @@ class CommentsDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): array
     {
-        $sanitizedCommentsRawData = $this->extractMoreChildrenData($context['post'], $data);
+        $sanitizedCommentsRawData = $this->retrieveAllComments($context['post'], $data);
 
         $comments = [];
         foreach ($sanitizedCommentsRawData as $commentRawData) {
@@ -74,20 +74,21 @@ class CommentsDenormalizer implements DenormalizerInterface
     }
 
     /**
-     * Inspect the provided Comments Raw data array and extract visible and
-     * More Children Comments based on the data.
+     * Retrieve all Comments for the provided Post by first inspecting the
+     * provided Comments Raw data array and then extracting visible and More
+     * Children Comments based on the data.
      *
      * @param  Post  $post
      * @param  array  $commentsRawData
      *
      * @return array
      */
-    private function extractMoreChildrenData(Post $post, array $commentsRawData): array
+    private function retrieveAllComments(Post $post, array $commentsRawData): array
     {
         $comments = [];
         foreach ($commentsRawData as $commentRawData) {
             if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
-                $extractedMoreComments = $this->executeExtractMoreChildrenData($post->getRedditPostId(), $commentRawData['data']);
+                $extractedMoreComments = $this->extractMoreCommentChildren($post->getRedditPostId(), $commentRawData['data']);
 
                 array_push($comments, ...$extractedMoreComments);
             } else if ($commentRawData['kind'] !== 'more') {
@@ -108,14 +109,14 @@ class CommentsDenormalizer implements DenormalizerInterface
      * @return array
      * @throws InvalidArgumentException
      */
-    private function executeExtractMoreChildrenData(string $postRedditId, array $originalMoreRawData): array
+    private function extractMoreCommentChildren(string $postRedditId, array $originalMoreRawData): array
     {
         $moreData = $this->api->getMoreChildren($postRedditId, $originalMoreRawData);
 
         $comments = [];
         foreach ( $moreData['json']['data']['things'] as $moreComment) {
             if ($moreComment['kind'] === 'more' && !empty($moreComment['data']['children'])) {
-                $extractedMoreComments = $this->executeExtractMoreChildrenData($postRedditId, $moreComment['data']);
+                $extractedMoreComments = $this->extractMoreCommentChildren($postRedditId, $moreComment['data']);
 
                 array_push($comments, ...$extractedMoreComments);
             } else if ($moreComment['kind'] !== 'more'){
