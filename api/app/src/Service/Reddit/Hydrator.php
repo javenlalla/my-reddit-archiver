@@ -2,11 +2,11 @@
 
 namespace App\Service\Reddit;
 
+use App\Denormalizer\MediaAssetsDenormalizer;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Repository\ContentTypeRepository;
 use App\Repository\TypeRepository;
-use App\Service\Reddit\Hydrator\MediaAsset;
 use Exception;
 
 class Hydrator
@@ -16,7 +16,7 @@ class Hydrator
     const TYPE_LINK = 't3';
 
     public function __construct(
-        private readonly MediaAsset $mediaAssetHydrator,
+        private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
         private readonly TypeRepository $typeRepository,
         private readonly ContentTypeRepository $contentTypeRepository
     ) {
@@ -82,31 +82,16 @@ class Hydrator
         }
 
         $post->setUrl($responseData['url']);
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE) {
-            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
+        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, \App\Entity\MediaAsset::class, null, ['postResponseData' => $responseData]);
+
+        foreach ($mediaAssets as $mediaAsset) {
             $post->addMediaAsset($mediaAsset);
         }
 
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_GIF) {
-            $gifMp4SourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
-            $post->setUrl($gifMp4SourceUrl);
-
-            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromPost($post);
-            $post->addMediaAsset($mediaAsset);
-        }
-
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_IMAGE_GALLERY || !empty($responseData['media_metadata'])) {
-            $mediaAssets = $this->mediaAssetHydrator->hydrateMediaAssetsFromPostMediaMetadata($post, $responseData);
-            foreach ($mediaAssets as $mediaAsset) {
-                $post->addMediaAsset($mediaAsset);
-            }
-        }
-
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_VIDEO && $responseData['is_video'] === true) {
-            $mediaAsset = $this->mediaAssetHydrator->hydrateMediaAssetFromRedditVideoPost($post, $responseData);
-
-            $post->setUrl($mediaAsset->getSourceUrl());
-            $post->addMediaAsset($mediaAsset);
+        if (($contentType->getName() === ContentType::CONTENT_TYPE_GIF || $contentType->getName() === ContentType::CONTENT_TYPE_VIDEO)
+            && !empty($mediaAssets)
+        ) {
+            $post->setUrl($mediaAssets[0]->getSourceUrl());
         }
 
         return $post;

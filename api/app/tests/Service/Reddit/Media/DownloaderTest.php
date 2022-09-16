@@ -18,7 +18,7 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
 
-    const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/9/4c/94c248fb3de02e43e46081773f5824f7.mp4';
+    const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/1/ae/1aeefb8b0eb681ac3aaa5ee8e4fd2bcb.mp4';
 
     const ASSET_REDDIT_VIDEO_PATH = '/var/www/mra-api/public/assets/a/01/a01b41d34f5bb8bceb7540fa1b84728a.mp4';
 
@@ -190,6 +190,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('f', $mediaAsset->getDirOne());
         $this->assertEquals('aa', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -228,6 +229,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('4', $mediaAsset->getDirOne());
         $this->assertEquals('4c', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -354,6 +356,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('0', $mediaAsset->getDirOne());
         $this->assertEquals('a6', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        // $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -385,13 +388,14 @@ class DownloaderTest extends KernelTestCase
         /** @var MediaAsset $mediaAsset */
         $mediaAsset = $this->entityManager
             ->getRepository(MediaAsset::class)
-            ->findOneBy(['filename' => '94c248fb3de02e43e46081773f5824f7.mp4'])
+            ->findOneBy(['filename' => '1aeefb8b0eb681ac3aaa5ee8e4fd2bcb.mp4'])
         ;
 
         $this->assertEquals('https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69', $mediaAsset->getSourceUrl());
-        $this->assertEquals('9', $mediaAsset->getDirOne());
-        $this->assertEquals('4c', $mediaAsset->getDirTwo());
+        $this->assertEquals('1', $mediaAsset->getDirOne());
+        $this->assertEquals('ae', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -433,6 +437,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('a', $mediaAsset->getDirOne());
         $this->assertEquals('01', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -478,6 +483,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('1', $mediaAsset->getDirOne());
         $this->assertEquals('7d', $mediaAsset->getDirTwo());
         $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     public function tearDown(): void
