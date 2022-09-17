@@ -40,6 +40,44 @@ class ManagerTest extends KernelTestCase
     }
 
     /**
+     * Verify `created_at` timestamp values persisted to the database are in the
+     * UTC timezone. Verify this by pulling the values, converting to different
+     * Timezones, and ensuring the expected times are correct.
+     *
+     * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
+     *
+     * @return void
+     */
+    public function testCreatedAtTimeZone()
+    {
+        $redditId = 'vepbt0';
+        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+
+        $this->manager->savePost($post);
+
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+
+        $postTimestamp = 1655497762;
+        $targetDateTime = \DateTimeImmutable::createFromFormat('U', $postTimestamp);
+        $targetTimezones = [
+            'Europe/Berlin',
+            'America/New_York',
+            'America/Los_Angeles',
+        ];
+
+        // Verify initial UTC timestamp.
+        $this->assertEquals('2022-06-17 20:29:22', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals($targetDateTime->format('Y-m-d H:i:s'), $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+
+        foreach ($targetTimezones as $targetTimezone) {
+            $this->assertEquals(
+                $targetDateTime->setTimezone(new \DateTimeZone($targetTimezone))->format('Y-m-d H:i:s'),
+                $fetchedPost->getCreatedAt()->setTimezone(new \DateTimeZone($targetTimezone))->format('Y-m-d H:i:s')
+            );
+        }
+    }
+
+    /**
      * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
      *
      * @return void
