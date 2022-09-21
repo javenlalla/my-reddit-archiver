@@ -122,15 +122,9 @@ class ManagerTest extends KernelTestCase
     {
         $redditId = 'vepbt0';
         $kind = Hydrator::TYPE_LINK;
-        $permalinkUrl = 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/';
-        $payload = [
-            'kind' => $kind,
-            'data' => [
-                'link_permalink' => $permalinkUrl,
-            ]
-        ];
+        $postLink = 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/';
 
-        $post = $this->manager->syncPostFromJsonUrl($payload);
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $this->assertInstanceOf(Post::class, $fetchedPost);
@@ -368,24 +362,11 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      */
     public function testSyncCommentPostFromJsonUrl()
     {
-        $this->markTestSkipped('Revisit to fix JSON URL logic for Comment Posts.');
-
         $redditId = 'ia1smh6';
         $kind = Hydrator::TYPE_COMMENT;
-        $permalinkUrl = 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
-        $payload = [
-            'kind' => $kind,
-            'data' => [
-                'link_permalink' => $permalinkUrl,
-            ]
-        ];
+        $postLink = 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
 
-        $post = $this->manager->syncPostFromJsonUrl($payload);
-
-        // $redditId = 'ia1smh6';
-        // $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
-
-        // $this->manager->savePost($post);
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $this->assertInstanceOf(Post::class, $fetchedPost);

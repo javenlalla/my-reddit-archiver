@@ -3,6 +3,7 @@
 namespace App\Service\Reddit;
 
 use App\Denormalizer\CommentDenormalizer;
+use App\Denormalizer\CommentPostDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -25,6 +26,7 @@ class Manager
         private readonly Hydrator $hydrator,
         private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly CommentDenormalizer $commentDenormalizer,
+        private readonly CommentPostDenormalizer $commentPostDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
     }
@@ -121,23 +123,18 @@ class Manager
     /**
      * Sync a Post and its Comments as presented in the Post's .json URL.
      *
-     * Note: Comments are sync'd as-is. Meaning no `more` Comments are
+     * Note: Comments are synced as-is. Meaning no `more` Comments are
      * dynamically loaded. To sync all Comments, including `more` loads, use the
      * `syncCommentsFromApiByPost` function.
      *
-     * @param  array  $fullPostResponse
+     * @param  string  $kind
+     * @param  string  $postLink
      *
      * @return Post
      * @throws InvalidArgumentException
      */
-    public function syncPostFromJsonUrl(array $fullPostResponse): Post
+    public function syncPostFromJsonUrl(string $kind, string $postLink): Post
     {
-        if (!empty($fullPostResponse['data']['link_permalink'])) {
-            $postLink = $fullPostResponse['data']['link_permalink'];
-        } else {
-            $postLink = 'https://reddit.com' . $fullPostResponse['data']['permalink'];
-        }
-
         $jsonData = $this->api->getPostFromJsonUrl($postLink);
         if (count($jsonData) !== 2) {
             throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $postLink));
@@ -146,7 +143,12 @@ class Manager
         $postData = $jsonData[0]['data']['children'][0];
         $commentsData = $jsonData[1]['data']['children'];
 
-        $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+        if ($kind === Hydrator::TYPE_COMMENT) {
+            $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+        } else {
+            $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+        }
+
         $post = $this->savePost($post);
 
         foreach ($commentsData as $commentData) {

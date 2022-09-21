@@ -217,6 +217,12 @@ class Hydrator
      */
     private function sanitizeHtml(?string $html): string
     {
+        // Initial empty check to avoid deprecation notice regarding passing a
+        // null to the `trim` function in the next step.
+        if (empty($html)) {
+            return '';
+        }
+
         $html = trim($html);
         if ( empty($html) ) {
             return '';

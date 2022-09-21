@@ -49,7 +49,7 @@ class Post
     #[ORM\Column(type: 'string', length: 25)]
     private $subreddit;
 
-    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $comments;
 
     #[ORM\Column(type: 'text', nullable: true)]

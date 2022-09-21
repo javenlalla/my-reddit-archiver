@@ -343,6 +343,16 @@ class Api
      * Analyze the provided Post link and convert it to its JSON-equivalent
      * representation.
      *
+     * This sanitation can accommodate full URLs and partial URIs such as the following:
+     *
+     * 1. /r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/
+     * 2. https://www.reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/
+     *
+     * The return results of both examples are as follows, respectively:
+     *
+     * 1. https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding.json
+     * 2. https://www.reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding.json
+     *
      * @param  string  $postLink
      *
      * @return string
@@ -354,6 +364,14 @@ class Api
 
         // Append .json to initiate JSON response.
         $sanitizedPostLink .= '.json';
+
+        $redditDomainExists = strrpos($postLink, 'reddit.com');
+        if ($redditDomainExists === false) {
+            // Remove leading slash, if any.
+            $sanitizedPostLink = ltrim($sanitizedPostLink, '/');
+
+            $sanitizedPostLink = 'https://reddit.com/' . $sanitizedPostLink;
+        }
 
         return $sanitizedPostLink;
     }
