@@ -10,6 +10,10 @@ use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -159,6 +163,27 @@ class Api
     }
 
     /**
+     * Retrieve the JSON response data for the provided Post URL using its
+     * `.json` equivalent endpoint.
+     *
+     * @param  string  $postLink
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getPostFromJsonUrl(string $postLink): array
+    {
+        $jsonUrl = $this->sanitizePostLinkToJsonFormat($postLink);
+        $cacheKey = md5('link-'.$jsonUrl);
+
+        return $this->cachePoolRedis->get($cacheKey, function() use ($jsonUrl) {
+            return
+                $this->executeSimpleCall(self::METHOD_GET, $jsonUrl)
+                ->toArray();
+        });
+    }
+
+    /**
      * Core function which executes a call to the Reddit API.
      *
      * @param  string  $method
@@ -196,6 +221,55 @@ class Api
         if ($response->getStatusCode() !== 200) {
             throw new Exception(sprintf(
                 'API call failed. Status Code: %d. Endpoint: %s. Options: %s',
+                $response->getStatusCode(),
+                $endpoint,
+                var_export($options, true)
+            ));
+        }
+
+        return $response;
+    }
+
+    /**
+     * @TODO: Investigate if this can be combined with `executeCall` function.
+     *
+     * Execute an HTTP request to the targeted endpoint.
+     *
+     * No auth or retry functionality is included in this logic.
+     *
+     * @param  string  $method
+     * @param  string  $endpoint
+     * @param  array  $options
+     *
+     * @return ResponseInterface
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    private function executeSimpleCall(string $method, string $endpoint, array $options = []): ResponseInterface
+    {
+        if (empty($options['headers'])) {
+            $options['headers'] = [];
+        }
+
+        $options['headers']['User-Agent'] = $this->userAgent;
+
+        $response = $this->client->request($method, $endpoint, $options);
+        // $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+
+        // if ($response->getStatusCode() === 401 && $retry === false) {
+        //     $this->refreshToken();
+        //     return $this->executeCall($method, $endpoint, $options, true);
+        // } else if ($response->getStatusCode() === 401 && $retry === true) {
+        //     throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
+        // }
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception(sprintf(
+                'API call failed. Response: %s. Status Code: %d. Endpoint: %s. Options: %s',
+                var_export($response->toArray(), true),
                 $response->getStatusCode(),
                 $endpoint,
                 var_export($options, true)
@@ -263,5 +337,24 @@ class Api
     private function setUserAgent()
     {
         $this->userAgent = sprintf('User-Agent from %s', $this->username);
+    }
+
+    /**
+     * Analyze the provided Post link and convert it to its JSON-equivalent
+     * representation.
+     *
+     * @param  string  $postLink
+     *
+     * @return string
+     */
+    private function sanitizePostLinkToJsonFormat(string $postLink): string
+    {
+        // Remove trailing slash, if any.
+        $sanitizedPostLink = rtrim($postLink, '/');
+
+        // Append .json to initiate JSON response.
+        $sanitizedPostLink .= '.json';
+
+        return $sanitizedPostLink;
     }
 }

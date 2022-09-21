@@ -2,6 +2,7 @@
 
 namespace App\Service\Reddit;
 
+use App\Denormalizer\CommentDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -23,6 +24,7 @@ class Manager
         private readonly EntityManagerInterface $entityManager,
         private readonly Hydrator $hydrator,
         private readonly CommentsDenormalizer $commentsDenormalizer,
+        private readonly CommentDenormalizer $commentDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
     }
@@ -114,6 +116,52 @@ class Manager
         $comments = $this->syncCommentsFromApiByPost($post);
 
         return $post;
+    }
+
+    /**
+     * Sync a Post and its Comments as presented in the Post's .json URL.
+     *
+     * Note: Comments are sync'd as-is. Meaning no `more` Comments are
+     * dynamically loaded. To sync all Comments, including `more` loads, use the
+     * `syncCommentsFromApiByPost` function.
+     *
+     * @param  array  $fullPostResponse
+     *
+     * @return Post
+     * @throws InvalidArgumentException
+     */
+    public function syncPostFromJsonUrl(array $fullPostResponse): Post
+    {
+        if (!empty($fullPostResponse['data']['link_permalink'])) {
+            $postLink = $fullPostResponse['data']['link_permalink'];
+        } else {
+            $postLink = 'https://reddit.com' . $fullPostResponse['data']['permalink'];
+        }
+
+        $jsonData = $this->api->getPostFromJsonUrl($postLink);
+        if (count($jsonData) !== 2) {
+            throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $postLink));
+        }
+
+        $postData = $jsonData[0]['data']['children'][0];
+        $commentsData = $jsonData[1]['data']['children'];
+
+        $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+        $post = $this->savePost($post);
+
+        foreach ($commentsData as $commentData) {
+            if ($commentData['kind'] !== 'more') {
+                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                $post->addComment($comment);
+
+                $this->entityManager->persist($comment);
+                $this->entityManager->persist($post);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->postRepository->find($post->getId());
     }
 
     /**
