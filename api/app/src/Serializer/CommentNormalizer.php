@@ -35,12 +35,9 @@ class CommentNormalizer implements NormalizerInterface
     }
 
     /**
-     * @param  mixed  $data
-     * @param  string|null  $format
-     *
-     * @return bool
+     * @inheritDoc
      */
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
         return $data instanceof Comment;
     }

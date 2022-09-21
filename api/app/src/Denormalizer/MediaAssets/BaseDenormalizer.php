@@ -64,10 +64,8 @@ class BaseDenormalizer implements DenormalizerInterface
 
     /**
      * @inheritDoc
-     *
-     * @return bool
      */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
         return $data instanceof Post;
     }

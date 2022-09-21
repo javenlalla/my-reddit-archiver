@@ -64,10 +64,8 @@ class CommentsDenormalizer implements DenormalizerInterface
 
     /**
      * @inheritDoc
-     *
-     * @return bool
      */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
         // @TODO: Add additional checks to ensure array is compatible with a Comment Entity.
         return is_array($data) && $type === 'array';
