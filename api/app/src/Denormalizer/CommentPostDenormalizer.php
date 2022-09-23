@@ -50,7 +50,7 @@ class CommentPostDenormalizer implements DenormalizerInterface
         $post->setAuthorTextRawHtml($commentData['body_html']);
         $post->setAuthorTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($commentData['body_html']));
         $post->setRedditPostId($postData['id']);
-        $post->setRedditPostUrl('https://reddit.com/' . $postData['permalink']);
+        $post->setRedditPostUrl('https://reddit.com' . $postData['permalink']);
 
         return $post;
     }
