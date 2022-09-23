@@ -8,7 +8,14 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentWithRepliesDenormalizer implements DenormalizerInterface
 {
+    public function __construct(private readonly CommentDenormalizer $commentDenormalizer)
+    {
+    }
+
     /**
+     * Denormalize a Comment and its Replies using the provided Post and Response
+     * Data.
+     *
      * @param  Post  $data
      * @param  string  $type
      * @param  string|null  $format
@@ -20,20 +27,9 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Comment
     {
+        $comment = $this->commentDenormalizer->denormalize($data, $type, $format, $context);
         $post = $data;
         $commentData = $context['commentData'];
-
-        $comment = new Comment();
-        $comment->setRedditId($commentData['id']);
-        $comment->setScore((int) $commentData['score']);
-        $comment->setText($commentData['body']);
-        $comment->setAuthor($commentData['author']);
-        $comment->setParentPost($post);
-        $comment->setDepth((int) $commentData['depth']);
-
-        if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
-            $comment->setParentComment($context['parentComment']);
-        }
 
         if (!empty($commentData['replies'])) {
             $context['parentComment'] = $comment;
