@@ -56,9 +56,11 @@ class ProcessSavedPostsCommand extends Command
         $savedCount = 0;
         foreach ($savedPosts as $savedPost) {
             try {
+                // @TODO: Get .json Post with comments, don't load additional comments (may require new API Comments retrieval function).
                 $syncedPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
                 if (empty($syncedPost)) {
-                    $post = $this->manager->syncPost($savedPost);
+                    $post = $this->manager->syncPostFromJsonUrl($savedPost);
+                    // $post = $this->manager->syncPost($savedPost);
                 }
             } catch (Exception $e) {
                 file_put_contents('error.json', json_encode($savedPost));
