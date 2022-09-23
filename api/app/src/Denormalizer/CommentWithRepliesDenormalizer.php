@@ -6,7 +6,7 @@ use App\Entity\Comment;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class CommentNoRepliesDenormalizer implements DenormalizerInterface
+class CommentWithRepliesDenormalizer implements DenormalizerInterface
 {
     /**
      * @param  Post  $data
@@ -33,6 +33,19 @@ class CommentNoRepliesDenormalizer implements DenormalizerInterface
 
         if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
             $comment->setParentComment($context['parentComment']);
+        }
+
+        if (!empty($commentData['replies'])) {
+            $context['parentComment'] = $comment;
+
+            foreach ($commentData['replies']['data']['children'] as $replyCommentData) {
+                if ($replyCommentData['kind'] !== 'more') {
+                    $context['commentData'] = $replyCommentData['data'];
+
+                    $reply = $this->denormalize($post, $type, $format, $context);
+                    $comment->addReply($reply);
+                }
+            }
         }
 
         return $comment;

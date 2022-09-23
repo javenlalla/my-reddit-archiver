@@ -35,19 +35,6 @@ class CommentDenormalizer implements DenormalizerInterface
             $comment->setParentComment($context['parentComment']);
         }
 
-        if (!empty($commentData['replies'])) {
-            $context['parentComment'] = $comment;
-
-            foreach ($commentData['replies']['data']['children'] as $replyCommentData) {
-                if ($replyCommentData['kind'] !== 'more') {
-                    $context['commentData'] = $replyCommentData['data'];
-
-                    $reply = $this->denormalize($post, $type, $format, $context);
-                    $comment->addReply($reply);
-                }
-            }
-        }
-
         return $comment;
     }
 

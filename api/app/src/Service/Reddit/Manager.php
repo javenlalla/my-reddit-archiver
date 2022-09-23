@@ -2,8 +2,8 @@
 
 namespace App\Service\Reddit;
 
+use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
-use App\Denormalizer\CommentNoRepliesDenormalizer;
 use App\Denormalizer\CommentPostDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
 use App\Entity\Post;
@@ -26,8 +26,8 @@ class Manager
         private readonly EntityManagerInterface $entityManager,
         private readonly Hydrator $hydrator,
         private readonly CommentsDenormalizer $commentsDenormalizer,
-        private readonly CommentDenormalizer $commentDenormalizer,
-        private readonly CommentNoRepliesDenormalizer $commentNoRepliesDenormalizer,
+        private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
+        private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
         private readonly CommentPostDenormalizer $commentPostDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
