@@ -3,6 +3,7 @@
 namespace App\Service\Reddit;
 
 use App\Denormalizer\CommentDenormalizer;
+use App\Denormalizer\CommentNoRepliesDenormalizer;
 use App\Denormalizer\CommentPostDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
 use App\Entity\Post;
@@ -26,6 +27,7 @@ class Manager
         private readonly Hydrator $hydrator,
         private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly CommentDenormalizer $commentDenormalizer,
+        private readonly CommentNoRepliesDenormalizer $commentNoRepliesDenormalizer,
         private readonly CommentPostDenormalizer $commentPostDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
@@ -145,21 +147,25 @@ class Manager
 
         if ($kind === Hydrator::TYPE_COMMENT) {
             $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+
+            $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
+
+            // @TODO: Sync other top-level Comments.
         } else {
             $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+
+            foreach ($commentsData as $commentData) {
+                if ($commentData['kind'] !== 'more') {
+                    $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                    $post->addComment($comment);
+
+                    $this->entityManager->persist($comment);
+                    $this->entityManager->persist($post);
+                }
+            }
         }
 
         $post = $this->savePost($post);
-
-        foreach ($commentsData as $commentData) {
-            if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
-                $post->addComment($comment);
-
-                $this->entityManager->persist($comment);
-                $this->entityManager->persist($post);
-            }
-        }
 
         $this->entityManager->flush();
 
@@ -221,5 +227,59 @@ class Manager
     public function getCommentByRedditId(string $redditId): ?\App\Entity\Comment
     {
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
+    }
+
+    private function getCommentTreeBranch(Post $post, array $postData, array $commentData)
+    {
+        $this->syncCommentWithParents($post, $postData, $commentData);
+        // Persist current Comment.
+
+
+        // Sync Replies.
+
+        // Track already-persisted Comments/Replies.
+    }
+
+    private function syncCommentWithParents(Post $post, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
+    {
+        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
+        if (!empty($childComment)) {
+            $comment->addReply($childComment);
+            $childComment->setParentComment($comment);
+            $this->entityManager->persist($childComment);
+        }
+
+        $post->addComment($comment);
+
+        $this->entityManager->persist($comment);
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
+
+        // Sync parent Comments, if any.
+        if (!empty($commentData['parent_id']) && $this->redditFullIdIsComment($commentData['parent_id'])) {
+            $originalPostLink = $postData['permalink'];
+            $parentId = str_replace('t1_', '', $commentData['parent_id']);
+            $targetCommentLink = $originalPostLink . $parentId;
+
+            $jsonData = $this->api->getPostFromJsonUrl($targetCommentLink);
+            if (count($jsonData) !== 2) {
+                throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $targetCommentLink));
+            }
+
+            $commentsData = $jsonData[1]['data']['children'];
+
+            $this->syncCommentWithParents($post, $postData, $commentsData[0]['data'], $comment);
+        }
+    }
+
+    private function redditFullIdIsComment(string $id): bool
+    {
+        $targetPrefix = 't1_';
+
+        if (str_starts_with($id, $targetPrefix)) {
+            return true;
+        }
+
+        return false;
     }
 }
