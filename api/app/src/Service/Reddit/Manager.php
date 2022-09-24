@@ -231,29 +231,32 @@ class Manager
 
     private function getCommentTreeBranch(Post $post, array $postData, array $commentData)
     {
-        $this->syncCommentWithParents($post, $postData, $commentData);
+        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
+
+        $this->syncCommentWithParents($post, $comment, $postData, $commentData);
         // Persist current Comment.
 
-
         // Sync Replies.
-
-        // Track already-persisted Comments/Replies.
     }
 
-    private function syncCommentWithParents(Post $post, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
+    private function syncCommentWithParents(Post $post, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
     {
         $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
-        if (!empty($childComment)) {
-            $comment->addReply($childComment);
-            $childComment->setParentComment($comment);
-            $this->entityManager->persist($childComment);
+
+        // Do not re-persist the original Comment.
+        if ($originalComment->getRedditId() !== $comment->getRedditId()) {
+            if (!empty($childComment)) {
+                $comment->addReply($childComment);
+                $childComment->setParentComment($comment);
+                $this->entityManager->persist($childComment);
+            }
+
+            $post->addComment($comment);
+
+            $this->entityManager->persist($comment);
+            $this->entityManager->persist($post);
+            $this->entityManager->flush();
         }
-
-        $post->addComment($comment);
-
-        $this->entityManager->persist($comment);
-        $this->entityManager->persist($post);
-        $this->entityManager->flush();
 
         // Sync parent Comments, if any.
         if (!empty($commentData['parent_id']) && $this->redditFullIdIsComment($commentData['parent_id'])) {
@@ -268,7 +271,7 @@ class Manager
 
             $commentsData = $jsonData[1]['data']['children'];
 
-            $this->syncCommentWithParents($post, $postData, $commentsData[0]['data'], $comment);
+            $this->syncCommentWithParents($post, $originalComment, $postData, $commentsData[0]['data'], $comment);
         }
     }
 
