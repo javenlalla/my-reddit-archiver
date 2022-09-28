@@ -147,6 +147,7 @@ class Manager
 
         if ($kind === Hydrator::TYPE_COMMENT) {
             $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+            $this->postRepository->add($post, true);
 
             $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
 
@@ -231,12 +232,23 @@ class Manager
 
     private function getCommentTreeBranch(Post $post, array $postData, array $commentData)
     {
-        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
-
-        $this->syncCommentWithParents($post, $comment, $postData, $commentData);
         // Persist current Comment.
+        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
+        $this->entityManager->persist($comment);
+        // $this->entityManager->flush();
 
-        // Sync Replies.
+        // Sync Comment's Parents.
+        $this->syncCommentWithParents($post, $comment, $postData, $commentData);
+
+        // Sync Comment's Replies.
+        $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $post, 'parentComment' => $comment]);
+        foreach ($replies as $reply) {
+            $comment->addReply($reply);
+            $this->entityManager->persist($reply);
+        }
+
+        $this->entityManager->persist($comment);
+        $this->entityManager->flush();
     }
 
     private function syncCommentWithParents(Post $post, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
@@ -271,7 +283,12 @@ class Manager
 
             $commentsData = $jsonData[1]['data']['children'];
 
-            $this->syncCommentWithParents($post, $originalComment, $postData, $commentsData[0]['data'], $comment);
+            $childComment = $comment;
+            if ($originalComment->getRedditId() === $comment->getRedditId()) {
+                $childComment = $originalComment;
+            }
+
+                $this->syncCommentWithParents($post, $originalComment, $postData, $commentsData[0]['data'], $childComment);
         }
     }
 

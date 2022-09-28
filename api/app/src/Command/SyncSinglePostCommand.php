@@ -25,20 +25,13 @@ class SyncSinglePostCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $redditId = 'vepbt0';
-        $kind = Hydrator::TYPE_LINK;
-        $permalinkUrl = 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/';
-        $payload = [
-            'kind' => $kind,
-            'data' => [
-                'link_permalink' => $permalinkUrl,
-            ]
-        ];
+        $redditId = 'ip7pedq';
+        $kind = Hydrator::TYPE_COMMENT;
+        $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
-        $post = $this->manager->syncPostFromJsonUrl($payload);
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
         $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
-        $comments = $post->getComments();
 
         return Command::SUCCESS;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Feature;
 
+use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -152,8 +153,7 @@ class JsonUrlSyncTest extends KernelTestCase
 
         // Verify persisted Saved Comment as matching the Saved Post record.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7pedq']);
-        // @TODO: The logic to persist this Comment's Replies has not been implemented yet. Enable this assertion once that logic is in place.
-        // $this->assertCount(1, $comment->getReplies());
+        $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getText());
         $this->assertEquals('ip7o4ld', $comment->getParentComment()->getRedditId());
 
