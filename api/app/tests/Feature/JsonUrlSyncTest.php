@@ -2,7 +2,6 @@
 
 namespace App\Tests\Feature;
 
-use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;

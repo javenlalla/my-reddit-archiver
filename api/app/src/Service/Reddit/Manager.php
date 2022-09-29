@@ -146,31 +146,10 @@ class Manager
         $commentsData = $jsonData[1]['data']['children'];
 
         if ($kind === Hydrator::TYPE_COMMENT) {
-            $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
-            $this->postRepository->add($post, true);
-
-            $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
-
-            // @TODO: Sync other top-level Comments.
-        } else {
-            $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
-
-            foreach ($commentsData as $commentData) {
-                if ($commentData['kind'] !== 'more') {
-                    $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
-                    $post->addComment($comment);
-
-                    $this->entityManager->persist($comment);
-                    $this->entityManager->persist($post);
-                }
-            }
+            return $this->persistCommentPostJsonUrlData($postData, $commentsData);
         }
 
-        $post = $this->savePost($post);
-
-        $this->entityManager->flush();
-
-        return $this->postRepository->find($post->getId());
+        return $this->persistLinkPostJsonUrlData($postData, $commentsData);
     }
 
     /**
@@ -292,6 +271,13 @@ class Manager
         }
     }
 
+    /**
+     * Verify if the provided full Reddit ID (Ex: t1_ip7pedq) is a Comment ID.
+     *
+     * @param  string  $id
+     *
+     * @return bool
+     */
     private function redditFullIdIsComment(string $id): bool
     {
         $targetPrefix = 't1_';
@@ -301,5 +287,53 @@ class Manager
         }
 
         return false;
+    }
+
+    /**
+     * Persist the following Post and Comment data for a Link Post as
+     * retrieved from the Post's JSON URL.
+     *
+     * @param  array  $postData
+     * @param  array  $commentsData
+     *
+     * @return Post
+     */
+    private function persistLinkPostJsonUrlData(array $postData, array $commentsData): Post
+    {
+        $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+        $this->postRepository->add($post, true);
+
+        foreach ($commentsData as $commentData) {
+            if ($commentData['kind'] !== 'more') {
+                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                $post->addComment($comment);
+
+                $this->entityManager->persist($comment);
+                $this->entityManager->persist($post);
+            }
+        }
+
+        return $post;
+    }
+
+    /**
+     * Persist the following Post and Comment data for a Comment Post as
+     * retrieved from the Post's JSON URL.
+     *
+     * @param  array  $postData
+     * @param  array  $commentsData
+     *
+     * @return Post
+     */
+    private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Post
+    {
+        $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+        $this->postRepository->add($post, true);
+
+        $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
+
+        // @TODO: Sync other top-level Comments.
+
+        return $post;
     }
 }
