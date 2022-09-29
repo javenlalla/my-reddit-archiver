@@ -7,7 +7,6 @@ use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class JsonUrlSyncTest extends KernelTestCase
@@ -15,8 +14,6 @@ class JsonUrlSyncTest extends KernelTestCase
     private Manager $manager;
 
     private CommentRepository $commentRepository;
-
-    private EntityManagerInterface $entityManager;
 
     public function setUp(): void
     {
@@ -26,7 +23,6 @@ class JsonUrlSyncTest extends KernelTestCase
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
         $this->commentRepository = $container->get(CommentRepository::class);
-        $this->entityManager = $container->get(EntityManagerInterface::class);
     }
 
     /**
