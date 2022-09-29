@@ -6,7 +6,6 @@ use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -43,7 +42,7 @@ class JsonUrlSyncTest extends KernelTestCase
     public function testSaveImagePostFromJsonUrl()
     {
         $redditId = 'vepbt0';
-        $kind = Hydrator::TYPE_LINK;
+        $kind = Type::TYPE_LINK;
         $postLink = 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
@@ -81,7 +80,7 @@ class JsonUrlSyncTest extends KernelTestCase
     public function testSyncCommentPostFromJsonUrl()
     {
         $redditId = 'ia1smh6';
-        $kind = Hydrator::TYPE_COMMENT;
+        $kind = Type::TYPE_COMMENT;
         $postLink = 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
@@ -121,7 +120,7 @@ class JsonUrlSyncTest extends KernelTestCase
     public function testSyncCommentPostMultipleLevelsDeepFromJsonUrl()
     {
         $redditId = 'ip7pedq';
-        $kind = Hydrator::TYPE_COMMENT;
+        $kind = Type::TYPE_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);

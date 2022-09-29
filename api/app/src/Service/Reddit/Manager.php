@@ -4,8 +4,9 @@ namespace App\Service\Reddit;
 
 use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
-use App\Denormalizer\CommentPostDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
+use App\Denormalizer\Post\CommentPostDenormalizer;
+use App\Denormalizer\PostDenormalizer;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
@@ -16,6 +17,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class Manager
 {
@@ -24,7 +26,7 @@ class Manager
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly Hydrator $hydrator,
+        private readonly PostDenormalizer $postDenormalizer,
         private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
@@ -60,6 +62,7 @@ class Manager
      *
      * @return Post
      * @throws InvalidArgumentException
+     * @throws ExceptionInterface
      */
     public function hydratePostFromResponseData(string $type, array $response): Post
     {
@@ -71,7 +74,7 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        return $this->hydrator->hydratePostFromResponse($response, $parentPostResponse);
+        return $this->postDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
     }
 
     public function getPostByRedditId(string $redditId): ?Post
@@ -145,7 +148,7 @@ class Manager
         $postData = $jsonData[0]['data']['children'][0];
         $commentsData = $jsonData[1]['data']['children'];
 
-        if ($kind === Hydrator::TYPE_COMMENT) {
+        if ($kind === Type::TYPE_COMMENT) {
             return $this->persistCommentPostJsonUrlData($postData, $commentsData);
         }
 

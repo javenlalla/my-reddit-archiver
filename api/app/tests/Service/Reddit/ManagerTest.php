@@ -5,7 +5,6 @@ namespace App\Tests\Service\Reddit;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -34,7 +33,7 @@ class ManagerTest extends KernelTestCase
     public function testCreatedAtTimeZone()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -91,7 +90,7 @@ class ManagerTest extends KernelTestCase
         $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
         $this->assertEquals('science', $fetchedPost->getSubreddit());
         $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
-        $this->assertEquals('https://reddit.com//r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/', $fetchedPost->getRedditPostUrl());
+        $this->assertEquals('https://reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/', $fetchedPost->getRedditPostUrl());
 
         $this->assertEquals('2022-08-03 12:43:19', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n

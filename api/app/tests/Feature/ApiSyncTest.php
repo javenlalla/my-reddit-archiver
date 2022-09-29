@@ -5,7 +5,6 @@ namespace App\Tests\Feature;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -30,7 +29,7 @@ class ApiSyncTest extends KernelTestCase
     public function testGetPostFromApiByRedditId()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertEquals($redditId, $post->getRedditId());
@@ -46,7 +45,7 @@ class ApiSyncTest extends KernelTestCase
     public function testSyncImagePost()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -77,7 +76,7 @@ class ApiSyncTest extends KernelTestCase
     public function testSyncRedditHostedImagePost()
     {
         $redditId = 'won0ky';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -108,7 +107,7 @@ class ApiSyncTest extends KernelTestCase
     public function testSyncTextPost()
     {
         $redditId = 'vlyukg';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -150,7 +149,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncTextPostWithNoContent()
     {
         $redditId = 'vdmg2f';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -183,7 +182,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncVideoPost()
     {
         $redditId = 'v443nh';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -214,7 +213,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncGalleryPost()
     {
         $redditId = 'v27nr7';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -245,7 +244,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncCommentPost()
     {
         $redditId = 'ia1smh6';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_COMMENT, $redditId);
 
         $this->manager->savePost($post);
 
@@ -281,7 +280,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncGifPost()
     {
         $redditId = 'wgb8wj';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -312,7 +311,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncTextPostWithImage()
     {
         $redditId = 'utsmkw';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -351,7 +350,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncRedditVideoPost()
     {
         $redditId = 'tl8qic';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -384,7 +383,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncRedditVideoNoAudioPost()
     {
         $redditId = 'wfylnl';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -415,7 +414,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
     public function testSyncExternalLinkPost()
     {
         $redditId = 'urn2yw';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 

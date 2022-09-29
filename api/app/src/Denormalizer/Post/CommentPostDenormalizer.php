@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Denormalizer;
+namespace App\Denormalizer\Post;
 
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;

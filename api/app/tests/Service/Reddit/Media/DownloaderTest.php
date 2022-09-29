@@ -3,6 +3,7 @@
 namespace App\Tests\Service\Reddit\Media;
 
 use App\Entity\MediaAsset;
+use App\Entity\Type;
 use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Media\Downloader;
@@ -165,7 +166,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_IMAGE_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
@@ -204,7 +205,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_REDDIT_HOSTED_IMAGE_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
@@ -245,7 +246,7 @@ class DownloaderTest extends KernelTestCase
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
         }
 
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $savedPost = $this->manager->savePost($post);
 
         // Assert assets were saved locally.
@@ -289,7 +290,7 @@ class DownloaderTest extends KernelTestCase
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
         }
 
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $savedPost = $this->manager->savePost($post);
 
         // Assert assets were saved locally.
@@ -331,7 +332,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_TEXT_WITH_IMAGE_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
@@ -370,7 +371,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_GIF_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
@@ -410,7 +411,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_REDDIT_VIDEO_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 
@@ -456,7 +457,7 @@ class DownloaderTest extends KernelTestCase
         $expectedPath = self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH;
 
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $savedPost = $this->manager->savePost($post);
 

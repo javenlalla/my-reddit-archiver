@@ -6,7 +6,6 @@ use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -26,7 +25,7 @@ class CommentsSyncTest extends KernelTestCase
     public function testGetComments()
     {
         $redditId = 'vlyukg';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -82,7 +81,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsLargeCount()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -131,7 +130,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsEmptyMore()
     {
         $redditId = 'won0ky';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -157,7 +156,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsInitialEmptyMore()
     {
         $redditId = 'wfylnl';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_LINK, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -181,7 +180,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testSyncCommentsFromCommentPostMultipleLevelsDeep()
     {
         $redditId = 'iirwrq4';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_COMMENT, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -206,7 +205,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testSaveCommentPostMultipleLevelsDeep()
     {
         $redditId = 'iirwrq4';
-        $post = $this->manager->getPostFromApiByRedditId(Hydrator::TYPE_COMMENT, $redditId);
+        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_COMMENT, $redditId);
 
         $this->manager->savePost($post);
 

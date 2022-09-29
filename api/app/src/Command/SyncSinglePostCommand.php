@@ -2,9 +2,8 @@
 
 namespace App\Command;
 
-use App\Entity\Post;
+use App\Entity\Type;
 use App\Repository\PostRepository;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -26,7 +25,7 @@ class SyncSinglePostCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $redditId = 'ip7pedq';
-        $kind = Hydrator::TYPE_COMMENT;
+        $kind = Type::TYPE_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
