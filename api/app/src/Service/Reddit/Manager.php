@@ -52,6 +52,61 @@ class Manager
     }
 
     /**
+     * Convenience function to execute a sync of a Reddit Post by its full
+     * Reddit ID.
+     *
+     * Full Reddit ID example: t3_vepbt0
+     *
+     * @param  string  $fullRedditId
+     *
+     * @return Post
+     * @throws ExceptionInterface
+     * @throws InvalidArgumentException
+     */
+    public function syncPostByFullRedditId(string $fullRedditId): Post
+    {
+        $idParts = explode('_', $fullRedditId);
+        if (count($idParts) !== 2) {
+            throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
+        }
+
+        return $this->syncPostByRedditId($idParts[0], $idParts[1]);
+    }
+
+    /**
+     * Core function to sync a Reddit Post and persist it to the local database
+     * while also downloading any associated media.
+     *
+     * @param  string  $type
+     * @param  string  $redditId
+     *
+     * @return Post
+     * @throws ExceptionInterface
+     * @throws InvalidArgumentException
+     */
+    public function syncPostByRedditId(string $type, string $redditId): Post
+    {
+        $response = $this->api->getPostByRedditId($type, $redditId);
+
+        $parentPostResponse = [];
+        if ($type === Type::TYPE_COMMENT && $response['kind'] === 'Listing') {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
+        } else if ($type === Type::TYPE_COMMENT && $response['kind'] === Type::TYPE_COMMENT) {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
+        }
+
+        $post = $this->postDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
+
+        foreach ($post->getMediaAssets() as $mediaAsset) {
+            $this->mediaDownloader->executeDownload($mediaAsset);
+        }
+
+        $this->postRepository->add($post, true);
+
+        return $post;
+    }
+
+    /**
      * Instantiate and hydrate Post Entity based on the provided Response data.
      *
      * Additionally, retrieve the parent Post from the API if the provided
@@ -217,7 +272,6 @@ class Manager
         // Persist current Comment.
         $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
         $this->entityManager->persist($comment);
-        // $this->entityManager->flush();
 
         // Sync Comment's Parents.
         $this->syncCommentWithParents($post, $comment, $postData, $commentData);
