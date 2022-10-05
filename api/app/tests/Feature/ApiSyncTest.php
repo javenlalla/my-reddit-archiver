@@ -52,7 +52,7 @@ class ApiSyncTest extends KernelTestCase
      * @return void
      * @throws Exception
      */
-    public function testSyncPosts(
+    public function testSyncPostsFromApi(
         string $originalPostUrl,
         string $redditId,
         string $type,
@@ -66,44 +66,66 @@ class ApiSyncTest extends KernelTestCase
         string $authorTextHtml = null,
         string $redditPostUrl = null,
     ) {
-        $post = $this->manager->syncPostByFullRedditId($type . '_' . $redditId);
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertNotEmpty($post->getId());
-        $this->assertEquals($redditId, $post->getRedditId());
-        $this->assertEquals($title, $post->getTitle());
-        $this->assertEquals($subreddit, $post->getSubreddit());
-        $this->assertEquals($url, $post->getUrl());
-        $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->validatePost(
+            $this->manager->syncPostByFullRedditId($type . '_' . $redditId),
+            $originalPostUrl,
+            $redditId,
+            $type,
+            $contentType,
+            $title,
+            $subreddit,
+            $url,
+            $createdAt,
+            $authorText,
+            $authorTextRawHtml,
+            $authorTextHtml,
+            $redditPostUrl
+        );
+    }
 
-        $postType = $post->getType();
-        $this->assertInstanceOf(Type::class, $postType);
-        $this->assertEquals($type, $postType->getRedditTypeId());
-
-        $postContentType = $post->getContentType();
-        $this->assertInstanceOf(ContentType::class, $postContentType);
-        $this->assertEquals($contentType, $postContentType->getName());
-
-        if ($authorText === null) {
-            $this->assertEmpty($post->getAuthorText());
-        } else {
-            $this->assertEquals($authorText, $post->getAuthorText());
-        }
-
-        if ($authorTextRawHtml === null) {
-            $this->assertEmpty($post->getAuthorTextRawHtml());
-        } else {
-            $this->assertEquals($authorTextRawHtml, $post->getAuthorTextRawHtml());
-        }
-
-        if ($authorTextHtml === null) {
-            $this->assertEmpty($post->getAuthorTextHtml());
-        } else {
-            $this->assertEquals($authorTextHtml, $post->getAuthorTextHtml());
-        }
-
-        if (!empty($redditPostUrl)) {
-            $this->assertEquals($redditPostUrl, $post->getRedditPostUrl());
-        }
+    /**
+     * @dataProvider getSyncPostsData()
+     *
+     * @param  string  $redditId
+     * @param  string  $type
+     * @param  string  $contentType
+     * @param  string  $title
+     * @param  string  $subreddit
+     * @param  string  $url
+     * @param  string  $createdAt
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function testSyncPostsFromJsonUrls(
+        string $originalPostUrl,
+        string $redditId,
+        string $type,
+        string $contentType,
+        string $title,
+        string $subreddit,
+        string $url,
+        string $createdAt,
+        string $authorText = null,
+        string $authorTextRawHtml = null,
+        string $authorTextHtml = null,
+        string $redditPostUrl = null,
+    ) {
+        $this->validatePost(
+            $this->manager->syncPostFromJsonUrl($type, $originalPostUrl),
+            $originalPostUrl,
+            $redditId,
+            $type,
+            $contentType,
+            $title,
+            $subreddit,
+            $url,
+            $createdAt,
+            $authorText,
+            $authorTextRawHtml,
+            $authorTextHtml,
+            $redditPostUrl
+        );
     }
 
     public function getSyncPostsData(): array
@@ -198,7 +220,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
                 'createdAt' => '2022-06-01 03:31:38',
             ],
             'Comment Post' => [
-                'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/?context=3',
+                'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
                 'redditId' => 'ia1smh6',
                 'type' => Type::TYPE_COMMENT,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
@@ -254,5 +276,77 @@ It is easy to read but not boringly easy since it can get rather challenging at 
                 'redditPostUrl' => 'https://reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
             ],
         ];
+    }
+
+    /**
+     * @param  Post  $post
+     * @param  string  $originalPostUrl
+     * @param  string  $redditId
+     * @param  string  $type
+     * @param  string  $contentType
+     * @param  string  $title
+     * @param  string  $subreddit
+     * @param  string  $url
+     * @param  string  $createdAt
+     * @param  string|null  $authorText
+     * @param  string|null  $authorTextRawHtml
+     * @param  string|null  $authorTextHtml
+     * @param  string|null  $redditPostUrl
+     *
+     * @return void
+     */
+    private function validatePost(
+        Post $post,
+        string $originalPostUrl,
+        string $redditId,
+        string $type,
+        string $contentType,
+        string $title,
+        string $subreddit,
+        string $url,
+        string $createdAt,
+        string $authorText = null,
+        string $authorTextRawHtml = null,
+        string $authorTextHtml = null,
+        string $redditPostUrl = null,
+    )
+    {
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals($title, $post->getTitle());
+        $this->assertEquals($subreddit, $post->getSubreddit());
+        $this->assertEquals($url, $post->getUrl());
+        $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
+
+        $postType = $post->getType();
+        $this->assertInstanceOf(Type::class, $postType);
+        $this->assertEquals($type, $postType->getRedditTypeId());
+
+        $postContentType = $post->getContentType();
+        $this->assertInstanceOf(ContentType::class, $postContentType);
+        $this->assertEquals($contentType, $postContentType->getName());
+
+        if ($authorText === null) {
+            $this->assertEmpty($post->getAuthorText());
+        } else {
+            $this->assertEquals($authorText, $post->getAuthorText());
+        }
+
+        if ($authorTextRawHtml === null) {
+            $this->assertEmpty($post->getAuthorTextRawHtml());
+        } else {
+            $this->assertEquals($authorTextRawHtml, $post->getAuthorTextRawHtml());
+        }
+
+        if ($authorTextHtml === null) {
+            $this->assertEmpty($post->getAuthorTextHtml());
+        } else {
+            $this->assertEquals($authorTextHtml, $post->getAuthorTextHtml());
+        }
+
+        if (!empty($redditPostUrl)) {
+            $this->assertEquals($redditPostUrl, $post->getRedditPostUrl());
+        }
     }
 }
