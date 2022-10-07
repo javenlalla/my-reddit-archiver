@@ -41,29 +41,30 @@ class JsonUrlSyncTest extends KernelTestCase
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $this->assertInstanceOf(Post::class, $fetchedPost);
-        $this->assertNotEmpty($fetchedPost->getId());
-        $this->assertEquals($redditId, $fetchedPost->getRedditId());
-        $this->assertEquals('Star Citizen passes half billion dollars funding milestone, still no game launches in sight', $fetchedPost->getTitle());
-        $this->assertEquals('gaming', $fetchedPost->getSubreddit());
-        $this->assertEquals('https://i.redd.it/d0s8oagaj0p91.png', $fetchedPost->getUrl());
-        $this->assertEquals('https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $fetchedPost->getRedditPostUrl());
-        $this->assertEquals('2022-09-20 16:38:58', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $fetchedPost->getAuthorText());
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals('Star Citizen passes half billion dollars funding milestone, still no game launches in sight', $post->getTitle());
+        $this->assertEquals('gaming', $post->getSubreddit());
+        $this->assertEquals('https://i.redd.it/d0s8oagaj0p91.png', $post->getUrl());
+        $this->assertEquals('https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $post->getRedditPostUrl());
+        $this->assertEquals('2022-09-20 16:38:58', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $post->getAuthorText());
         $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably&lt;/p&gt;
-&lt;/div&gt;", $fetchedPost->getAuthorTextRawHtml());
+&lt;/div&gt;", $post->getAuthorTextRawHtml());
 
         $this->assertEquals("<div class=\"md\"><p>Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably</p>
-</div>", $fetchedPost->getAuthorTextHtml());
+</div>", $post->getAuthorTextHtml());
 
-        $type = $fetchedPost->getType();
+        $type = $post->getType();
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals(Type::TYPE_COMMENT, $type->getRedditTypeId());
 
-        $contentType = $fetchedPost->getContentType();
+        $contentType = $post->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+
+        // Verify all top Comments have been persisted.
+        $this->assertEquals(25, $post->getComments()->count());
 
         // Verify persisted Saved Comment as matching the Saved Post record.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7pedq']);

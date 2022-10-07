@@ -117,6 +117,6 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
 
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(1347, $allCommentsCount);
+        $this->assertEquals(1346, $allCommentsCount);
     }
 }

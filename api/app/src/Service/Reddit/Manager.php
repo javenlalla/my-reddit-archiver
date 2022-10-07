@@ -195,19 +195,13 @@ class Manager
      */
     public function syncPostFromJsonUrl(string $kind, string $postLink): Post
     {
-        $jsonData = $this->api->getPostFromJsonUrl($postLink);
-        if (count($jsonData) !== 2) {
-            throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $postLink));
-        }
-
-        $postData = $jsonData[0]['data']['children'][0];
-        $commentsData = $jsonData[1]['data']['children'];
+        $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
         if ($kind === Type::TYPE_COMMENT) {
-            return $this->persistCommentPostJsonUrlData($postData, $commentsData);
+            return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkPostJsonUrlData($postData, $commentsData);
+        return $this->persistLinkPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
     }
 
     /**
@@ -360,15 +354,7 @@ class Manager
         $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
         $this->postRepository->add($post, true);
 
-        foreach ($commentsData as $commentData) {
-            if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
-                $post->addComment($comment);
-
-                $this->entityManager->persist($comment);
-                $this->entityManager->persist($post);
-            }
-        }
+        $this->processJsonCommentsData($post, $commentsData);
 
         return $post;
     }
@@ -388,9 +374,55 @@ class Manager
         $this->postRepository->add($post, true);
 
         $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
-
-        // @TODO: Sync other top-level Comments.
+        $jsonData = $this->getRawDataFromJsonUrl($post->getRedditPostUrl());
+        $this->processJsonCommentsData($post, $jsonData['commentsData']);
 
         return $post;
+    }
+
+    /**
+     * Process and persist the provided JSON Comments data belonging to targeted
+     * Post.
+     *
+     * @param  Post  $post
+     * @param  array  $commentsData
+     *
+     * @return void
+     */
+    private function processJsonCommentsData(Post $post, array $commentsData)
+    {
+        foreach ($commentsData as $commentData) {
+            if ($commentData['kind'] !== 'more') {
+                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                $post->addComment($comment);
+
+                $this->entityManager->persist($comment);
+                $this->entityManager->persist($post);
+            }
+        }
+    }
+
+    /**
+     * Retrieve the raw JSON data from the provided JSON URL.
+     *
+     * @param  string  $jsonUrl
+     *
+     * @return array{
+     *      postData: array,
+     *      commentsData: array,
+     *     }
+     * @throws InvalidArgumentException
+     */
+    private function getRawDataFromJsonUrl(string $jsonUrl): array
+    {
+        $jsonData = $this->api->getPostFromJsonUrl($jsonUrl);
+        if (count($jsonData) !== 2) {
+            throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $jsonUrl));
+        }
+
+        return [
+            'postData' => $jsonData[0]['data']['children'][0],
+            'commentsData' => $jsonData[1]['data']['children'],
+        ];
     }
 }
