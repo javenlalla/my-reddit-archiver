@@ -275,6 +275,22 @@ It is easy to read but not boringly easy since it can get rather challenging at 
                 'authorTextHtml' => null,
                 'redditPostUrl' => 'https://reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
             ],
+            'Comment Post (Several Levels Deep)' => [
+                'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
+                'redditId' => 'ip914eh',
+                'type' => Type::TYPE_COMMENT,
+                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'title' => 'Gamers of old, what will the gamers of the modern console generation never be able to experience?',
+                'subreddit' => 'AskReddit',
+                'url' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
+                'createdAt' => '2022-09-20 21:45:38',
+                'authorText' => 'Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.',
+                'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.&lt;/p&gt;
+&lt;/div&gt;",
+                'authorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
+</div>",
+                'redditPostUrl' => 'https://reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
+            ],
         ];
     }
 

@@ -261,7 +261,7 @@ class Manager
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    private function getCommentTreeBranch(Post $post, array $postData, array $commentData)
+    private function getCommentTreeBranch(Post $post, array $postData, array $commentData): \App\Entity\Comment
     {
         // Persist current Comment.
         $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
@@ -282,6 +282,8 @@ class Manager
 
         $this->entityManager->persist($comment);
         $this->entityManager->flush();
+
+        return $comment;
     }
 
     private function syncCommentWithParents(Post $post, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
@@ -359,6 +361,8 @@ class Manager
 
         $this->processJsonCommentsData($post, $commentsData);
 
+        $this->entityManager->flush();
+
         return $post;
     }
 
@@ -376,9 +380,12 @@ class Manager
         $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
         $this->postRepository->add($post, true);
 
-        $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
+        $originalComment = $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
+
         $jsonData = $this->getRawDataFromJsonUrl($post->getRedditPostUrl());
-        $this->processJsonCommentsData($post, $jsonData['commentsData']);
+        $this->processJsonCommentsData($post, $jsonData['commentsData'], $originalComment);
+
+        $this->entityManager->flush();
 
         return $post;
     }
@@ -392,11 +399,23 @@ class Manager
      *
      * @return void
      */
-    private function processJsonCommentsData(Post $post, array $commentsData)
+    private function processJsonCommentsData(Post $post, array $commentsData, \App\Entity\Comment $originalComment = null)
     {
+        $rootParentComment = null;
+        if (!empty($originalComment)) {
+            $rootParentComment = $this->getRootParentCommentFromComment($originalComment);
+        }
+
         foreach ($commentsData as $commentData) {
             if ($commentData['kind'] !== 'more') {
                 $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+
+                // Do not re-persist the Top Level Comment of the Saved Comment
+                // in order to avoid a unique constraint violation.
+                if (!empty($rootParentComment) && $rootParentComment->getRedditId() === $comment->getRedditId()) {
+                    continue;
+                }
+
                 $post->addComment($comment);
 
                 $this->entityManager->persist($comment);
@@ -427,5 +446,23 @@ class Manager
             'postData' => $jsonData[0]['data']['children'][0],
             'commentsData' => $jsonData[1]['data']['children'],
         ];
+    }
+
+    /**
+     * Recursively travel up the Comment Tree of the provided Comment and return
+     * the root parent Comment.
+     *
+     * @param  \App\Entity\Comment  $comment
+     *
+     * @return \App\Entity\Comment
+     */
+    private function getRootParentCommentFromComment(\App\Entity\Comment $comment): \App\Entity\Comment
+    {
+        $parentComment = $comment->getParentComment();
+        if ($parentComment instanceof \App\Entity\Comment) {
+            return $this->getRootParentCommentFromComment($parentComment);
+        }
+
+        return $comment;
     }
 }
