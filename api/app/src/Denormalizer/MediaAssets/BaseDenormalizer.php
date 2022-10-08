@@ -37,7 +37,11 @@ class BaseDenormalizer implements DenormalizerInterface
 
         $contentType = $post->getContentType()->getName();
         if ($contentType === ContentType::CONTENT_TYPE_GIF) {
-            $overrideSourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
+            if (!empty($responseData['preview']['images'][0]['variants']['mp4']['source']['url'])) {
+                $overrideSourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
+            } else {
+                $overrideSourceUrl = $responseData['url'];
+            }
         }
 
         $idHash = md5($post->getRedditId() . $overrideSourceUrl);

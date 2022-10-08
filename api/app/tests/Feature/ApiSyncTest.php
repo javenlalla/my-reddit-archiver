@@ -65,8 +65,10 @@ class ApiSyncTest extends KernelTestCase
         string $authorTextRawHtml = null,
         string $authorTextHtml = null,
         string $redditPostUrl = null,
+        string $gifUrl = null,
     ) {
         $this->validatePost(
+            false,
             $this->manager->syncPostByFullRedditId($type . '_' . $redditId),
             $originalPostUrl,
             $redditId,
@@ -79,7 +81,8 @@ class ApiSyncTest extends KernelTestCase
             $authorText,
             $authorTextRawHtml,
             $authorTextHtml,
-            $redditPostUrl
+            $redditPostUrl,
+            $gifUrl,
         );
     }
 
@@ -110,8 +113,10 @@ class ApiSyncTest extends KernelTestCase
         string $authorTextRawHtml = null,
         string $authorTextHtml = null,
         string $redditPostUrl = null,
+        string $gifUrl = null,
     ) {
         $this->validatePost(
+            true,
             $this->manager->syncPostFromJsonUrl($type, $originalPostUrl),
             $originalPostUrl,
             $redditId,
@@ -124,7 +129,8 @@ class ApiSyncTest extends KernelTestCase
             $authorText,
             $authorTextRawHtml,
             $authorTextHtml,
-            $redditPostUrl
+            $redditPostUrl,
+            $gifUrl,
         );
     }
 
@@ -141,7 +147,7 @@ class ApiSyncTest extends KernelTestCase
                 'url' => 'https://i.imgur.com/ThRMZx5.jpg',
                 'createdAt' => '2022-06-17 20:29:22',
             ],
-            'Reddit-hosted Image Post' => [
+            'Image Post (Reddit-hosted)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/',
                 'redditId' => 'won0ky',
                 'type' => Type::TYPE_LINK,
@@ -244,6 +250,21 @@ It is easy to read but not boringly easy since it can get rather challenging at 
                 'url' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69',
                 'createdAt' => '2022-08-04 20:25:21',
             ],
+            'GIF Post (Reddit-Hosted)' => [
+                'originalPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
+                'redditId' => 'cs8urd',
+                'type' => Type::TYPE_LINK,
+                'contentType' => ContentType::CONTENT_TYPE_GIF,
+                'title' => 'Matt Riddle got hit by a truck',
+                'subreddit' => 'SquaredCircle',
+                'url' => 'https://preview.redd.it/aha06x6skah31.gif?format=mp4&s=4538ed4f9e9c0cb4d692f7d4a795d64a21447efa',
+                'createdAt' => '2019-08-18 23:29:02',
+                'authorText' => null,
+                'authorTextRawHtml' => null,
+                'authorTextHtml' => null,
+                'redditPostUrl' => 'https://reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
+                'gifUrl' => 'https://i.redd.it/aha06x6skah31.gif',
+            ],
             'Text Post With Image' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988',
                 'redditId' => 'utsmkw',
@@ -312,6 +333,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      * @return void
      */
     private function validatePost(
+        bool $jsonUrl,
         Post $post,
         string $originalPostUrl,
         string $redditId,
@@ -325,14 +347,24 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         string $authorTextRawHtml = null,
         string $authorTextHtml = null,
         string $redditPostUrl = null,
+        string $gifUrl = null,
     )
     {
+        // This logic is needed due to Reddit-hosted GIFs having a `preview`
+        // element in the API response but not in the JSON URL. So a distinction
+        // is required in the URL validation here based on where the response is
+        // retrieved from.
+        $targetUrl = $post->getUrl();
+        if ($jsonUrl === true && !empty($gifUrl)) {
+            $targetUrl = $gifUrl;
+        }
+
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());
         $this->assertEquals($redditId, $post->getRedditId());
         $this->assertEquals($title, $post->getTitle());
         $this->assertEquals($subreddit, $post->getSubreddit());
-        $this->assertEquals($url, $post->getUrl());
+        $this->assertEquals($targetUrl, $post->getUrl());
         $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $postType = $post->getType();
