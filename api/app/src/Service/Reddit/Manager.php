@@ -270,11 +270,14 @@ class Manager
         // Sync Comment's Parents.
         $this->syncCommentWithParents($post, $comment, $postData, $commentData);
 
-        // Sync Comment's Replies.
-        $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $post, 'parentComment' => $comment]);
-        foreach ($replies as $reply) {
-            $comment->addReply($reply);
-            $this->entityManager->persist($reply);
+        // Sync Comment's Replies, if any.
+        if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
+            $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $post, 'parentComment' => $comment]);
+
+            foreach ($replies as $reply) {
+                $comment->addReply($reply);
+                $this->entityManager->persist($reply);
+            }
         }
 
         $this->entityManager->persist($comment);

@@ -120,4 +120,37 @@ How's that different from what they're doing now?", $comment->getText());
         $this->assertEmpty($comment->getParentComment());
         $this->assertEquals(0, $comment->getDepth());
     }
+
+    /**
+     * Verify a Saved Comment in a Comment Tree but has no replies.
+     *
+     * https://www.reddit.com/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/
+     *
+     * @return void
+     */
+    public function testSyncCommentPostMultipleLevelsDeepWithNoReplies()
+    {
+        $redditId = 'ip95ter';
+        $kind = Type::TYPE_COMMENT;
+        $postLink = '/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/';
+
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals('microscopic', $post->getTitle());
+        $this->assertEquals('ProgrammerHumor', $post->getSubreddit());
+        $this->assertEquals('https://i.redd.it/4kp1p03jpzo91.png', $post->getUrl());
+        $this->assertEquals('https://reddit.com/r/ProgrammerHumor/comments/xj50gl/microscopic/', $post->getRedditPostUrl());
+        $this->assertEquals('2022-09-20 22:18:41', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+
+        $postType = $post->getType();
+        $this->assertInstanceOf(Type::class, $postType);
+        $this->assertEquals(Type::TYPE_COMMENT, $postType->getRedditTypeId());
+
+        $postContentType = $post->getContentType();
+        $this->assertInstanceOf(ContentType::class, $postContentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
+    }
 }
