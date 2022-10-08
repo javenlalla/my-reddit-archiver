@@ -153,4 +153,42 @@ How's that different from what they're doing now?", $comment->getText());
         $this->assertInstanceOf(ContentType::class, $postContentType);
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
     }
+
+    /**
+     * Verify if two different Comments from the same Post are Saved, no unique
+     * constraint violations are thrown.
+     *
+     * @return void
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function testMultpleSavedCommentsFromSamePost()
+    {
+        $this->markTestSkipped('The logic required to make this test passable requires more investigation. Marking `Skipped` for now.');
+
+        $redditId = 'f83v7ro';
+        $kind = Type::TYPE_COMMENT;
+        $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+
+        $kind = Type::TYPE_COMMENT;
+        $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
+        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals('Joke lovers of Reddit, what’s a great joke?', $post->getTitle());
+        $this->assertEquals('AskReddit', $post->getSubreddit());
+        $this->assertEquals('https://www.reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getUrl());
+        $this->assertEquals('https://reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getRedditPostUrl());
+        $this->assertEquals('2019-11-20 03:51:00', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+
+        $postType = $post->getType();
+        $this->assertInstanceOf(Type::class, $postType);
+        $this->assertEquals(Type::TYPE_COMMENT, $postType->getRedditTypeId());
+
+        $postContentType = $post->getContentType();
+        $this->assertInstanceOf(ContentType::class, $postContentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
+    }
 }

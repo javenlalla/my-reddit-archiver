@@ -378,6 +378,14 @@ class Manager
     private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Post
     {
         $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+
+        // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.
+        // @see: \App\Tests\Feature\JsonUrlSyncTest::testMultpleSavedCommentsFromSamePost()
+        $existingPost = $this->postRepository->findOneBy(['redditPostUrl' => $post->getRedditPostUrl()]);
+        if (!empty($existingPost)) {
+            return $existingPost;
+        }
+
         $this->postRepository->add($post, true);
 
         $originalComment = $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
