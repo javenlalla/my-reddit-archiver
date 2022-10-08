@@ -370,7 +370,7 @@ class Api
             // Remove leading slash, if any.
             $sanitizedPostLink = ltrim($sanitizedPostLink, '/');
 
-            $sanitizedPostLink = 'https://reddit.com/' . $sanitizedPostLink;
+            $sanitizedPostLink = 'https://www.reddit.com/' . $sanitizedPostLink;
         }
 
         return $sanitizedPostLink;
