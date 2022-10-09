@@ -3,7 +3,11 @@ version: '3.9'
 services:
   mra-api:
     container_name: mra-api
-    image: mra:local
+    build:
+      context: ./build
+      dockerfile: Dockerfile
+      tags:
+        - "mra-api:main"
     volumes:
       - ./api/app:/var/www/mra-api
       - /var/www/mra-api/node_modules/
