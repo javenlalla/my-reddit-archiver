@@ -1,5 +1,7 @@
 FROM php:8.1.7-fpm-alpine
 
+ENV APP_PUBLIC_PATH=/var/www/mra-api/public
+
 RUN apk --no-cache add \
     libxml2-dev \
     libmemcached-dev \
