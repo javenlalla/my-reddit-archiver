@@ -1,5 +1,7 @@
 api/app/.idea
+api/app/.env.test
 .env
+.env.sample
+docker-compose.yml
 database-data
 temp
-api/app/.env.test
