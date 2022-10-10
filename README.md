@@ -6,6 +6,7 @@ Archive Saved posts under your Reddit account.
   - [Setup](#setup)
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
       - [Limitations](#limitations)
+        - [2FA](#2fa)
     - [Configure Application](#configure-application)
     - [Start Application](#start-application)
   - [Development](#development)
@@ -28,7 +29,9 @@ Firstly, a Reddit Client ID and Client Secret must be generated in order to conf
 
 #### Limitations
 
-Does not work with 2FA.
+##### 2FA
+
+The application requires your Reddit `Password` to be provided in the configuration. This is used to make authenticated OAuth calls in order to use Reddit's API. As a result, this flow does not work if 2FA is enabled on the target Reddit account. This may be addressed in the future with a redirect to Reddit for login, but at this time, the only workaround is to disable 2FA.
 
 ### Configure Application
 
