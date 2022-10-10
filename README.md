@@ -7,6 +7,7 @@ Archive Saved posts under your Reddit account.
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
       - [Limitations](#limitations)
     - [Configure Application](#configure-application)
+    - [Start Application](#start-application)
   - [Development](#development)
 
 ## Setup
@@ -30,6 +31,42 @@ Firstly, a Reddit Client ID and Client Secret must be generated in order to conf
 Does not work with 2FA.
 
 ### Configure Application
+
+Create docker-compose.yml file:
+
+```bash
+cp docker-compose.sample.yml docker-compose.yml
+```
+
+Update the following values in the created `docker-compose.yml` file:
+
+- REDDIT_USERNAME
+- REDDIT_PASSWORD
+- REDDIT_CLIENT_ID
+  - The `Client ID` generated in the previous section.
+- REDDIT_CLIENT_SECRET
+  - The `Client Secret` generated in the previous section.
+- DATABASE_URL
+  - The DSN used to connect to the database. Must be formatted as follows:
+    - mysql://DB_USER:DB_USER_PASSWORD@DB_HOST:3306/DB_DATABASE_NAME?serverVersion=mariadb-10.8.3&charset=utf8mb4
+
+If using the database included in the `docker-compose.yml` file, the following parameters also need to be updated:
+
+- MARIADB_ROOT_PASSWORD
+- MARIADB_USER
+  - This value will be used in the `DATABASE_URL` above.
+- MARIADB_PASSWORD
+  - This value will be used in the `DATABASE_URL` above.
+- MARIADB_DATABASE
+  - This value will be used in the `DATABASE_URL` above.
+
+### Start Application
+
+Once the `docker-compose.yml` is configured, the application can be started using the following command:
+
+```bash
+docker-compose up -d
+```
 
 ## Development
 
