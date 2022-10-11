@@ -9,6 +9,7 @@ Archive Saved posts under your Reddit account.
         - [2FA](#2fa)
     - [Configure Application](#configure-application)
     - [Start Application](#start-application)
+  - [Execute Sync](#execute-sync)
   - [Development](#development)
 
 ## Setup
@@ -69,6 +70,14 @@ Once the `docker-compose.yml` is configured, the application can be started usin
 
 ```bash
 docker-compose up -d
+```
+
+## Execute Sync
+
+Once the application is configured and running, use the following command to execute the syncing of the Reddit profile's `Saved` Posts down to the local system:
+
+```bash
+docker exec -it mra-api ./sync-api
 ```
 
 ## Development

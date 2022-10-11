@@ -7,8 +7,10 @@ use App\Repository\PostRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Manager;
 use Exception;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -41,54 +43,55 @@ class ProcessSavedPostsCommand extends Command
             'limit',
             null,
             InputOption::VALUE_OPTIONAL,
-            'The maximum number of Saved Posts that should be retrieved and processed.',
+            'The maximum number of `Saved` Posts that should be retrieved and processed.',
         );
     }
 
+    /**
+     * Entry function to begin syncing the Reddit profile's `Saved` Posts to
+     * local.
+     *
+     * @param  InputInterface  $input
+     * @param  OutputInterface  $output
+     *
+     * @return int
+     * @throws InvalidArgumentException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $savedPosts = $this->getSavedPosts($input, $output);
+        $messagesOutputSection = $output->section();
 
-        $output->writeln([
+        $messagesOutputSection->writeln('<info>-------------Sync API-------------</info>');
+        $messagesOutputSection->writeln('<info>Sync Reddit profile `Saved` Posts to local.</info>');
+
+        $savedPosts = $this->getSavedPosts($input, $messagesOutputSection);
+
+        $messagesOutputSection->writeln([
             sprintf('<comment>%d Posts retrieved.</comment>', count($savedPosts)),
         ]);
 
-        $savedCount = 0;
-        foreach ($savedPosts as $savedPost) {
-            try {
-                // @TODO: Get .json Post with comments, don't load additional comments (may require new API Comments retrieval function).
-                $syncedPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
-                if (empty($syncedPost)) {
-                    $post = $this->manager->syncPostFromJsonUrl($savedPost);
-                    // $post = $this->manager->syncPost($savedPost);
-                }
-            } catch (Exception $e) {
-                file_put_contents('error.json', json_encode($savedPost));
-                $output->writeln(sprintf('<error>Error thrown for post: %s</error>', var_export($savedPost ,true)));
-
-                // If the Post was persisted, remove it for re-processing.
-                $errorPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
-                if ($errorPost instanceof Post) {
-                    $this->postRepository->remove($errorPost, true);
-                }
-
-                throw $e;
-            }
-
-            $savedCount++;
-            if ($savedCount % 10 === 0) {
-                $output->writeln(sprintf('<comment>%d Posts saved.</comment>', $savedCount));
-            }
+        $result = $this->processedSavedPosts($output, $messagesOutputSection, $savedPosts);
+        if ($result === Command::FAILURE) {
+            return $result;
         }
 
-        $output->writeln([
-            '<info>Processing completed.</info>',
-            sprintf('<info>%d Posts saved.</info>', $savedCount)
+        $messagesOutputSection->writeln([
+            '<comment>Sync completed.</comment>',
+            sprintf('<comment>%d `Saved` Posts synced.</comment>', count($savedPosts))
         ]);
 
         return Command::SUCCESS;
     }
 
+    /**
+     * Retrieve all `Saved` Posts from the Reddit profile.
+     *
+     * @param  InputInterface  $input
+     * @param  OutputInterface  $output
+     *
+     * @return int|mixed
+     * @throws InvalidArgumentException
+     */
     private function getSavedPosts(InputInterface $input, OutputInterface $output)
     {
         $maxPosts = $input->getOption('limit');
@@ -107,7 +110,9 @@ class ProcessSavedPostsCommand extends Command
             $cacheKey = $cacheKey . $maxPosts;
         }
 
-        return $this->cachePoolRedis->get($cacheKey, function () use ($maxPosts) {
+        $output->writeln('<comment>Retrieve `Saved` Posts from Reddit profile.</comment>');
+
+        return $this->cachePoolRedis->get($cacheKey, function () use ($maxPosts, $output) {
             $limit = self::DEFAULT_LIMIT;
             if (!empty($maxPosts)) {
                 $limit = $maxPosts;
@@ -129,9 +134,63 @@ class ProcessSavedPostsCommand extends Command
                 if (!empty($maxPosts) && count($posts) >= $maxPosts) {
                     $postsAvailable = false;
                 }
+
+                $output->writeln(sprintf('<comment>%d `Saved` Posts retrieved.</comment>', count($posts)));
             }
 
             return $posts;
         });
+    }
+
+    /**
+     * Loop through the provided array of `Saved` Posts and sync them down to
+     * local.
+     *
+     * @param  OutputInterface  $output
+     * @param  OutputInterface  $messagesOutputSection
+     * @param  array  $savedPosts
+     *
+     * @return int
+     * @throws InvalidArgumentException
+     */
+    private function processedSavedPosts(OutputInterface $output, OutputInterface $messagesOutputSection, array $savedPosts)
+    {
+        $messagesOutputSection->writeln('<comment>Sync `Saved` Posts to local.</comment>');
+
+        $progressBarSection = $output->section();
+        $progressBar = new ProgressBar($progressBarSection, count($savedPosts));
+        $progressBar->start();
+        foreach ($savedPosts as $savedPost) {
+            try {
+                $syncedPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
+                if (empty($syncedPost) && empty($savedPost['data']['removed_by_category'])) {
+                    $messagesOutputSection->writeln(sprintf('%s: %s', $savedPost['kind'], $savedPost['data']['permalink']), OutputInterface::VERBOSITY_VERBOSE);
+
+                    $post = $this->manager->syncPostFromJsonUrl($savedPost['kind'], $savedPost['data']['permalink']);
+                }
+
+                $progressBar->advance();
+            } catch (Exception $e) {
+                $messagesOutputSection->writeln(sprintf('<error>%s</error>', var_export($savedPost ,true)), OutputInterface::VERBOSITY_VERBOSE);
+                $messagesOutputSection->writeln(sprintf('<error>Error: %s', $e->getMessage()));
+                $messagesOutputSection->writeln(sprintf('<error>Post: %s: %s</error>', $savedPost['kind'], $savedPost['data']['permalink']));
+
+                // If the Post was persisted, remove it for re-processing.
+                $errorPost = $this->postRepository->findOneBy(['redditId' => $savedPost['data']['id']]);
+                if ($errorPost instanceof Post) {
+                    $this->postRepository->remove($errorPost, true);
+                }
+
+                if ($messagesOutputSection->isVerbose()) {
+                    throw $e;
+                }
+
+                return Command::FAILURE;
+            }
+        }
+
+        $progressBar->finish();
+
+        return Command::SUCCESS;
     }
 }
