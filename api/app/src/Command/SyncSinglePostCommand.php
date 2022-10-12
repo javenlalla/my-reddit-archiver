@@ -2,7 +2,9 @@
 
 namespace App\Command;
 
+use App\Entity\Post;
 use App\Entity\Type;
+use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Manager;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -17,18 +19,33 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class SyncSinglePostCommand extends Command
 {
-    public function __construct(private readonly Manager $manager, private readonly PostRepository $postRepository)
+    public function __construct(private readonly Manager $manager, private readonly PostRepository $postRepository, private readonly CommentRepository $commentRepository)
     {
         parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $redditId = 'ip7pedq';
-        $kind = Type::TYPE_COMMENT;
-        $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
+        // @TODO: Convert these to arguments provided to the script.
+        $redditId = 'cs8urd';
+        $kind = Type::TYPE_LINK;
+        $postLink = '/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/';
 
-        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+        $purge = true;
+        if ($purge) {
+            $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
+            if ($post instanceof Post) {
+                foreach ($post->getComments() as $comment) {
+                    if ($comment->getParentComment() === null) {
+                        $this->commentRepository->remove($comment, true);
+                    }
+                }
+
+                $this->postRepository->remove($post, true);
+            }
+        }
+
+        $post = $this->manager->syncPostFromJsonUrl($kind,  $postLink);
 
         $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
 
