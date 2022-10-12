@@ -64,7 +64,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
 
         // Verify all top Comments have been persisted.
-        $this->assertEquals(25, $post->getComments()->count());
+        $this->assertEquals(24, $post->getComments()->count());
 
         // Verify persisted Saved Comment as matching the Saved Post record.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7pedq']);

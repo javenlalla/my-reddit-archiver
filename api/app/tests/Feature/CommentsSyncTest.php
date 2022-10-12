@@ -135,13 +135,13 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(877, $comments);
+        $this->assertCount(878, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(877, $comments);
+        $this->assertCount(878, $comments);
     }
 
     /**
