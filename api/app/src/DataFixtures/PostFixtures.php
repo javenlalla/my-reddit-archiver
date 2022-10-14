@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
+use App\Entity\SavedContent;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\ContentTypeRepository;
@@ -29,13 +30,30 @@ class PostFixtures extends Fixture
         $this->loadContentTypes($manager);
         $manager->flush();
 
+        // Create Saved Contents.
+        $savedContentsListing = [];
+        $savedContentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/saved_contents.csv', 'r');
+        while (($savedContentRow = fgetcsv($savedContentsDataFile)) !== FALSE) {
+            // Skip header row (first row).
+            if ($savedContentRow[0] !== 'typeId') {
+                $savedContent = $this->hydrateSavedContentFromCsvRow($savedContentRow);
+                $manager->persist($savedContent);
+
+                $savedContentsListing[$savedContentRow[2]] = $savedContent;
+            }
+        }
+        fclose($savedContentsDataFile);
+
         // Create Posts.
         $postsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/posts.csv', 'r');
         while (($postRow = fgetcsv($postsDataFile)) !== FALSE) {
             // Skip header row (first row).
             if ($postRow[0] !== 'typeId') {
                 $post = $this->hydratePostFromCsvRow($postRow);
+                $savedContentsListing[$post->getRedditId()]->setPost($post);
+
                 $manager->persist($post);
+                $manager->persist($savedContent);
             }
         }
         fclose($postsDataFile);
@@ -72,12 +90,6 @@ class PostFixtures extends Fixture
     {
         $post = new Post();
 
-        $type = $this->typeRepository->findOneBy(['redditTypeId' => $postRow[0]]);
-        $post->setType($type);
-
-        $contentType = $this->contentTypeRepository->findOneBy(['name' => $postRow[1]]);
-        $post->setContentType($contentType);
-
         $post->setRedditId($postRow[2]);
         $post->setTitle($postRow[3]);
         $post->setScore((int) $postRow[4]);
@@ -92,6 +104,21 @@ class PostFixtures extends Fixture
         $post->setCreatedAt(new \DateTimeImmutable());
 
         return $post;
+    }
+
+    private function hydrateSavedContentFromCsvRow(array $savedContentRow): SavedContent
+    {
+        $savedContent = new SavedContent();
+
+        $type = $this->typeRepository->findOneBy(['redditTypeId' => $savedContentRow[0]]);
+        $savedContent->setType($type);
+
+        $contentType = $this->contentTypeRepository->findOneBy(['name' => $savedContentRow[1]]);
+        $savedContent->setContentType($contentType);
+
+        $savedContent->setSyncDate(new \DateTimeImmutable());
+
+        return $savedContent;
     }
 
     private function loadTypes(ObjectManager $manager): void

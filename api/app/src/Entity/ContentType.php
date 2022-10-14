@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ContentTypeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ContentTypeRepository::class)]
@@ -31,6 +33,14 @@ class ContentType
     #[ORM\Column(type: 'string', length: 20)]
     private $displayName;
 
+    #[ORM\OneToMany(mappedBy: 'contentType', targetEntity: SavedContent::class)]
+    private $savedContents;
+
+    public function __construct()
+    {
+        $this->savedContents = new ArrayCollection();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -56,6 +66,36 @@ class ContentType
     public function setDisplayName(string $displayName): self
     {
         $this->displayName = $displayName;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SavedContent>
+     */
+    public function getSavedContents(): Collection
+    {
+        return $this->savedContents;
+    }
+
+    public function addSavedContent(SavedContent $savedContent): self
+    {
+        if (!$this->savedContents->contains($savedContent)) {
+            $this->savedContents[] = $savedContent;
+            $savedContent->setContentType($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSavedContent(SavedContent $savedContent): self
+    {
+        if ($this->savedContents->removeElement($savedContent)) {
+            // set the owning side to null (unless already changed)
+            if ($savedContent->getContentType() === $this) {
+                $savedContent->setContentType(null);
+            }
+        }
 
         return $this;
     }

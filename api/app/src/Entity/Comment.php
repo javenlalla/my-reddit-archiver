@@ -40,6 +40,9 @@ class Comment
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private $depth;
 
+    #[ORM\OneToOne(mappedBy: 'comment', targetEntity: SavedContent::class, cascade: ['persist', 'remove'])]
+    private $savedContent;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
@@ -160,6 +163,28 @@ class Comment
     public function setDepth(int $depth): self
     {
         $this->depth = $depth;
+
+        return $this;
+    }
+
+    public function getSavedContent(): ?SavedContent
+    {
+        return $this->savedContent;
+    }
+
+    public function setSavedContent(?SavedContent $savedContent): self
+    {
+        // unset the owning side of the relation if necessary
+        if ($savedContent === null && $this->savedContent !== null) {
+            $this->savedContent->setComment(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($savedContent !== null && $savedContent->getComment() !== $this) {
+            $savedContent->setComment($this);
+        }
+
+        $this->savedContent = $savedContent;
 
         return $this;
     }

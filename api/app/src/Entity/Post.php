@@ -29,14 +29,6 @@ class Post
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $url;
 
-    #[ORM\ManyToOne(targetEntity: Type::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private $type;
-
-    #[ORM\ManyToOne(targetEntity: ContentType::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private $contentType;
-
     #[ORM\Column(type: 'text', nullable: true)]
     private $authorText;
 
@@ -66,6 +58,9 @@ class Post
 
     #[ORM\Column(type: 'string', length: 10)]
     private $redditPostId;
+
+    #[ORM\OneToOne(mappedBy: 'post', targetEntity: SavedContent::class, cascade: ['persist', 'remove'])]
+    private $savedContent;
 
     public function __construct()
     {
@@ -122,30 +117,6 @@ class Post
     public function setUrl(?string $url): self
     {
         $this->url = $url;
-
-        return $this;
-    }
-
-    public function getType(): ?Type
-    {
-        return $this->type;
-    }
-
-    public function setType(?Type $type): self
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    public function getContentType(): ?ContentType
-    {
-        return $this->contentType;
-    }
-
-    public function setContentType(?ContentType $contentType): self
-    {
-        $this->contentType = $contentType;
 
         return $this;
     }
@@ -318,6 +289,23 @@ class Post
     public function setRedditPostId(string $redditPostId): self
     {
         $this->redditPostId = $redditPostId;
+
+        return $this;
+    }
+
+    public function getSavedContent(): ?SavedContent
+    {
+        return $this->savedContent;
+    }
+
+    public function setSavedContent(SavedContent $savedContent): self
+    {
+        // set the owning side of the relation if necessary
+        if ($savedContent->getPost() !== $this) {
+            $savedContent->setPost($this);
+        }
+
+        $this->savedContent = $savedContent;
 
         return $this;
     }
