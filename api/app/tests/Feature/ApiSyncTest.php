@@ -38,6 +38,17 @@ class ApiSyncTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
     }
 
+    public function testBasicSync()
+    {
+        $redditId = 'vepbt0';
+        $savedContent = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
+
+        $this->assertInstanceOf(Post::class, $savedContent);
+        $this->assertEquals($redditId, $savedContent->getRedditId());
+        $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
+        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
+    }
+
     /**
      * @dataProvider getSyncPostsData()
      *

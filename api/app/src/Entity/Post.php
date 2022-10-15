@@ -59,8 +59,8 @@ class Post
     #[ORM\Column(type: 'string', length: 10)]
     private $redditPostId;
 
-    #[ORM\OneToOne(mappedBy: 'post', targetEntity: SavedContent::class, cascade: ['persist', 'remove'])]
-    private $savedContent;
+    #[ORM\OneToOne(mappedBy: 'post', targetEntity: Content::class, cascade: ['persist', 'remove'])]
+    private $content;
 
     public function __construct()
     {
@@ -293,19 +293,19 @@ class Post
         return $this;
     }
 
-    public function getSavedContent(): ?SavedContent
+    public function getContent(): ?Content
     {
-        return $this->savedContent;
+        return $this->content;
     }
 
-    public function setSavedContent(SavedContent $savedContent): self
+    public function setContent(Content $content): self
     {
         // set the owning side of the relation if necessary
-        if ($savedContent->getPost() !== $this) {
-            $savedContent->setPost($this);
+        if ($content->getPost() !== $this) {
+            $content->setPost($this);
         }
 
-        $this->savedContent = $savedContent;
+        $this->content = $content;
 
         return $this;
     }

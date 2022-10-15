@@ -33,7 +33,7 @@ class ContentType
     #[ORM\Column(type: 'string', length: 20)]
     private $displayName;
 
-    #[ORM\OneToMany(mappedBy: 'contentType', targetEntity: SavedContent::class)]
+    #[ORM\OneToMany(mappedBy: 'contentType', targetEntity: Content::class)]
     private $savedContents;
 
     public function __construct()
@@ -71,14 +71,14 @@ class ContentType
     }
 
     /**
-     * @return Collection<int, SavedContent>
+     * @return Collection<int, Content>
      */
     public function getSavedContents(): Collection
     {
         return $this->savedContents;
     }
 
-    public function addSavedContent(SavedContent $savedContent): self
+    public function addSavedContent(Content $savedContent): self
     {
         if (!$this->savedContents->contains($savedContent)) {
             $this->savedContents[] = $savedContent;
@@ -88,7 +88,7 @@ class ContentType
         return $this;
     }
 
-    public function removeSavedContent(SavedContent $savedContent): self
+    public function removeSavedContent(Content $savedContent): self
     {
         if ($this->savedContents->removeElement($savedContent)) {
             // set the owning side to null (unless already changed)

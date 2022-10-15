@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\SavedContent;
+use App\Entity\Content;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<SavedContent>
+ * @extends ServiceEntityRepository<Content>
  *
- * @method SavedContent|null find($id, $lockMode = null, $lockVersion = null)
- * @method SavedContent|null findOneBy(array $criteria, array $orderBy = null)
- * @method SavedContent[]    findAll()
- * @method SavedContent[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Content|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Content|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Content[]    findAll()
+ * @method Content[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class SavedContentRepository extends ServiceEntityRepository
+class ContentRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, SavedContent::class);
+        parent::__construct($registry, Content::class);
     }
 
-    public function add(SavedContent $entity, bool $flush = false): void
+    public function add(Content $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class SavedContentRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(SavedContent $entity, bool $flush = false): void
+    public function remove(Content $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class SavedContentRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return SavedContent[] Returns an array of SavedContent objects
+//     * @return Content[] Returns an array of Content objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class SavedContentRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?SavedContent
+//    public function findOneBySomeField($value): ?Content
 //    {
 //        return $this->createQueryBuilder('s')
 //            ->andWhere('s.exampleField = :val')

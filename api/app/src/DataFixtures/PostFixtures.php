@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Post;
-use App\Entity\SavedContent;
+use App\Entity\Content;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\ContentTypeRepository;
@@ -30,19 +30,19 @@ class PostFixtures extends Fixture
         $this->loadContentTypes($manager);
         $manager->flush();
 
-        // Create Saved Contents.
-        $savedContentsListing = [];
-        $savedContentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/saved_contents.csv', 'r');
-        while (($savedContentRow = fgetcsv($savedContentsDataFile)) !== FALSE) {
+        // Create Contents.
+        $contentsListing = [];
+        $contentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/contents.csv', 'r');
+        while (($contentRow = fgetcsv($contentsDataFile)) !== FALSE) {
             // Skip header row (first row).
-            if ($savedContentRow[0] !== 'typeId') {
-                $savedContent = $this->hydrateSavedContentFromCsvRow($savedContentRow);
-                $manager->persist($savedContent);
+            if ($contentRow[0] !== 'typeId') {
+                $content = $this->hydrateContentFromCsvRow($contentRow);
+                $manager->persist($content);
 
-                $savedContentsListing[$savedContentRow[2]] = $savedContent;
+                $contentsListing[$contentRow[2]] = $content;
             }
         }
-        fclose($savedContentsDataFile);
+        fclose($contentsDataFile);
 
         // Create Posts.
         $postsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/posts.csv', 'r');
@@ -50,10 +50,10 @@ class PostFixtures extends Fixture
             // Skip header row (first row).
             if ($postRow[0] !== 'typeId') {
                 $post = $this->hydratePostFromCsvRow($postRow);
-                $savedContentsListing[$post->getRedditId()]->setPost($post);
+                $contentsListing[$post->getRedditId()]->setPost($post);
 
                 $manager->persist($post);
-                $manager->persist($savedContent);
+                $manager->persist($contentsListing[$post->getRedditId()]);
             }
         }
         fclose($postsDataFile);
@@ -106,19 +106,19 @@ class PostFixtures extends Fixture
         return $post;
     }
 
-    private function hydrateSavedContentFromCsvRow(array $savedContentRow): SavedContent
+    private function hydrateContentFromCsvRow(array $contentRow): Content
     {
-        $savedContent = new SavedContent();
+        $content = new Content();
 
-        $type = $this->typeRepository->findOneBy(['redditTypeId' => $savedContentRow[0]]);
-        $savedContent->setType($type);
+        $type = $this->typeRepository->findOneBy(['redditTypeId' => $contentRow[0]]);
+        $content->setType($type);
 
-        $contentType = $this->contentTypeRepository->findOneBy(['name' => $savedContentRow[1]]);
-        $savedContent->setContentType($contentType);
+        $contentType = $this->contentTypeRepository->findOneBy(['name' => $contentRow[1]]);
+        $content->setContentType($contentType);
 
-        $savedContent->setSyncDate(new \DateTimeImmutable());
+        $content->setSyncDate(new \DateTimeImmutable());
 
-        return $savedContent;
+        return $content;
     }
 
     private function loadTypes(ObjectManager $manager): void

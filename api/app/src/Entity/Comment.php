@@ -40,8 +40,8 @@ class Comment
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private $depth;
 
-    #[ORM\OneToOne(mappedBy: 'comment', targetEntity: SavedContent::class, cascade: ['persist', 'remove'])]
-    private $savedContent;
+    #[ORM\OneToOne(mappedBy: 'comment', targetEntity: Content::class, cascade: ['persist', 'remove'])]
+    private $content;
 
     public function __construct()
     {
@@ -167,24 +167,24 @@ class Comment
         return $this;
     }
 
-    public function getSavedContent(): ?SavedContent
+    public function getContent(): ?Content
     {
-        return $this->savedContent;
+        return $this->content;
     }
 
-    public function setSavedContent(?SavedContent $savedContent): self
+    public function setContent(?Content $content): self
     {
         // unset the owning side of the relation if necessary
-        if ($savedContent === null && $this->savedContent !== null) {
-            $this->savedContent->setComment(null);
+        if ($content === null && $this->content !== null) {
+            $this->content->setComment(null);
         }
 
         // set the owning side of the relation if necessary
-        if ($savedContent !== null && $savedContent->getComment() !== $this) {
-            $savedContent->setComment($this);
+        if ($content !== null && $content->getComment() !== $this) {
+            $content->setComment($this);
         }
 
-        $this->savedContent = $savedContent;
+        $this->content = $content;
 
         return $this;
     }
