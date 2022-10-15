@@ -72,7 +72,8 @@ RUN docker-php-source extract \
 COPY php.ini /usr/local/etc/php/php.ini
 
 # Install Composer.
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+# https://stackoverflow.com/a/58694421
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 ENV TERM=cygwin \
     COLUMNS=175
@@ -81,9 +82,10 @@ RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile && \
     echo "export TERM=cygwin" >> $HOME/.profile && \
     echo "stty cols 175" >> $HOME/.profile && \
     echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
-    
+
+# Install Symfony installer.    
 RUN wget https://get.symfony.com/cli/installer -O - | bash && \
-    mv /root/.symfony/bin/symfony /usr/local/bin/symfony
+    mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
