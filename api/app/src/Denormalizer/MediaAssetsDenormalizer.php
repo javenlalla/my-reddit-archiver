@@ -5,6 +5,7 @@ namespace App\Denormalizer;
 use App\Denormalizer\MediaAssets\BaseDenormalizer;
 use App\Denormalizer\MediaAssets\MediaMetadataDenormalizer;
 use App\Denormalizer\MediaAssets\RedditVideoDenormalizer;
+use App\Entity\Content;
 use App\Entity\ContentType;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
@@ -33,6 +34,7 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
      * @param  string|null  $format
      * @param  array{
      *              postResponseData: array,
+     *              content: Content,
      *          } $context  'postResponseData' contains the original API Response Data for this Post.
      *
      * @return MediaAsset[]
@@ -41,7 +43,7 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
     {
         $post = $data;
         $responseData = $context['postResponseData'];
-        $contentType = $data->getContentType();
+        $contentType = $context['content']->getContentType();
 
         $mediaAssets = [];
         if (in_array($contentType->getName(), self::BASE_DENORMALIZER_CONTENT_TYPES)) {

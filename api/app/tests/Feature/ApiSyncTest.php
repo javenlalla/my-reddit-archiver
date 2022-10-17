@@ -2,6 +2,7 @@
 
 namespace App\Tests\Feature;
 
+use App\Entity\Content;
 use App\Entity\ContentType;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -30,7 +31,7 @@ class ApiSyncTest extends KernelTestCase
     public function testGetPostFromApiByRedditId()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertEquals($redditId, $post->getRedditId());
@@ -41,10 +42,20 @@ class ApiSyncTest extends KernelTestCase
     public function testBasicSync()
     {
         $redditId = 'vepbt0';
-        $savedContent = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $content = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
-        $this->assertInstanceOf(Post::class, $savedContent);
-        $this->assertEquals($redditId, $savedContent->getRedditId());
+        $this->assertInstanceOf(Content::class, $content);
+
+        $type = $content->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+
+        $contentType = $content->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+
+        $post = $content->getPost();
+        $this->assertEquals($redditId, $post->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
     }

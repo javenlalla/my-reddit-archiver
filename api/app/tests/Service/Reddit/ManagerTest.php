@@ -33,7 +33,7 @@ class ManagerTest extends KernelTestCase
     public function testCreatedAtTimeZone()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getPostFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 

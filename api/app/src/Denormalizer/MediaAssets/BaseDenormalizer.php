@@ -2,6 +2,7 @@
 
 namespace App\Denormalizer\MediaAssets;
 
+use App\Entity\Content;
 use App\Entity\ContentType;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
@@ -17,6 +18,7 @@ class BaseDenormalizer implements DenormalizerInterface
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
+     *              content: Content,
      *              postResponseData: array,
      *              overrideSourceUrl: string,
      *              assetExtension: string,
@@ -35,7 +37,7 @@ class BaseDenormalizer implements DenormalizerInterface
         $mediaAsset->setParentPost($post);
 
 
-        $contentType = $post->getContentType()->getName();
+        $contentType = $context['content']->getContentType()->getName();
         if ($contentType === ContentType::CONTENT_TYPE_GIF) {
             if (!empty($responseData['preview']['images'][0]['variants']['mp4']['source']['url'])) {
                 $overrideSourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);

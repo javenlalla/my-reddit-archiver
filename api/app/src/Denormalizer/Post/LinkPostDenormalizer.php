@@ -3,6 +3,7 @@
 namespace App\Denormalizer\Post;
 
 use App\Denormalizer\MediaAssetsDenormalizer;
+use App\Entity\Content;
 use App\Entity\ContentType;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
@@ -27,8 +28,21 @@ class LinkPostDenormalizer implements DenormalizerInterface
         return is_array($data) && $type === Post::class;
     }
 
+    /**
+     * @param  mixed  $data
+     * @param  string  $type
+     * @param  string|null  $format
+     * @param  array{
+     *          content: Content,
+     *     }  $context
+     *
+     * @return Post
+     */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Post
     {
+        $contentTypeName = $context['content']->getType()->getName();
+        // $contentTypeName = $content->getType()->getName();
+
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
 
@@ -43,25 +57,25 @@ class LinkPostDenormalizer implements DenormalizerInterface
         $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', $postData['created_utc']));
 
-        $type = $this->typeRepository->getLinkType();
-        $post->setType($type);
+        // $type = $this->typeRepository->getLinkType();
+        // $post->setType($type);
 
-        $contentType = $this->contentTypeHelper->getContentTypeFromPostData($postData);
-        $post->setContentType($contentType);
-        if ($contentType->getName() === ContentType::CONTENT_TYPE_TEXT) {
+        // $contentType = $this->contentTypeHelper->getContentTypeFromPostData($postData);
+        // $post->setContentType($contentType);
+        if ($contentTypeName === ContentType::CONTENT_TYPE_TEXT) {
             $post->setAuthorText($postData['selftext']);
             $post->setAuthorTextRawHtml($postData['selftext_html']);
             $post->setAuthorTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
         }
 
         $post->setUrl($postData['url']);
-        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData]);
+        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData, 'content' => $context['content']]);
 
         foreach ($mediaAssets as $mediaAsset) {
             $post->addMediaAsset($mediaAsset);
         }
 
-        if (($contentType->getName() === ContentType::CONTENT_TYPE_GIF || $contentType->getName() === ContentType::CONTENT_TYPE_VIDEO)
+        if (($contentTypeName === ContentType::CONTENT_TYPE_GIF || $contentTypeName === ContentType::CONTENT_TYPE_VIDEO)
             && !empty($mediaAssets)
         ) {
             $post->setUrl($mediaAssets[0]->getSourceUrl());

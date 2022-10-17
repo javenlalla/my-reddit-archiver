@@ -5,8 +5,10 @@ namespace App\Service\Reddit;
 use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
+use App\Denormalizer\ContentDenormalizer;
 use App\Denormalizer\Post\CommentPostDenormalizer;
 use App\Denormalizer\PostDenormalizer;
+use App\Entity\Content;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
@@ -27,6 +29,7 @@ class Manager
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly PostDenormalizer $postDenormalizer,
+        private readonly ContentDenormalizer $contentDenormalizer,
         private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
@@ -36,15 +39,16 @@ class Manager
     }
 
     /**
-     * Retrieve a Post from the API hydrated with the response data.
+     * Retrieve a Content from the API hydrated with the response data.
      *
      * @param  string  $type
      * @param  string  $redditId
      *
-     * @return Post
+     * @return Content
+     * @throws ExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function getPostFromApiByRedditId(string $type, string $redditId): Post
+    public function getContentFromApiByRedditId(string $type, string $redditId): Content
     {
         $response = $this->api->getPostByRedditId($type, $redditId);
 
@@ -107,19 +111,19 @@ class Manager
     }
 
     /**
-     * Instantiate and hydrate Post Entity based on the provided Response data.
+     * Instantiate and hydrate a Content Entity based on the provided Response data.
      *
      * Additionally, retrieve the parent Post from the API if the provided
-     * Response is of type Comment.
+     * Response is of Comment `kind`.
      *
      * @param  string  $type
      * @param  array  $response
      *
-     * @return Post
-     * @throws InvalidArgumentException
+     * @return Content
      * @throws ExceptionInterface
+     * @throws InvalidArgumentException
      */
-    public function hydratePostFromResponseData(string $type, array $response): Post
+    public function hydratePostFromResponseData(string $type, array $response): Content
     {
         $parentPostResponse = [];
 
@@ -129,6 +133,7 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
+        return $this->contentDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
         return $this->postDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
     }
 
