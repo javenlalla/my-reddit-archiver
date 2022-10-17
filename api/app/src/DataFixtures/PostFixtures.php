@@ -4,13 +4,13 @@ namespace App\DataFixtures;
 
 use App\Entity\Comment;
 use App\Entity\ContentType;
+use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
-use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\ContentTypeRepository;
+use App\Repository\KindRepository;
 use App\Repository\PostRepository;
-use App\Repository\TypeRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -19,14 +19,14 @@ class PostFixtures extends Fixture
     public function __construct(
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
-        private readonly TypeRepository $typeRepository,
+        private readonly KindRepository $kindRepository,
         private readonly ContentTypeRepository $contentTypeRepository
     ) {
     }
 
     public function load(ObjectManager $manager): void
     {
-        $this->loadTypes($manager);
+        $this->loadKinds($manager);
         $this->loadContentTypes($manager);
         $manager->flush();
 
@@ -35,7 +35,7 @@ class PostFixtures extends Fixture
         $contentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/contents.csv', 'r');
         while (($contentRow = fgetcsv($contentsDataFile)) !== FALSE) {
             // Skip header row (first row).
-            if ($contentRow[0] !== 'typeId') {
+            if ($contentRow[0] !== 'redditKindId') {
                 $content = $this->hydrateContentFromCsvRow($contentRow);
                 $manager->persist($content);
 
@@ -48,7 +48,7 @@ class PostFixtures extends Fixture
         $postsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/posts.csv', 'r');
         while (($postRow = fgetcsv($postsDataFile)) !== FALSE) {
             // Skip header row (first row).
-            if ($postRow[0] !== 'typeId') {
+            if ($postRow[0] !== 'redditKindId') {
                 $post = $this->hydratePostFromCsvRow($postRow);
                 $contentsListing[$post->getRedditId()]->setPost($post);
 
@@ -110,8 +110,8 @@ class PostFixtures extends Fixture
     {
         $content = new Content();
 
-        $type = $this->typeRepository->findOneBy(['redditTypeId' => $contentRow[0]]);
-        $content->setType($type);
+        $kind = $this->kindRepository->findOneBy(['redditKindId' => $contentRow[0]]);
+        $content->setKind($kind);
 
         $contentType = $this->contentTypeRepository->findOneBy(['name' => $contentRow[1]]);
         $content->setContentType($contentType);
@@ -121,25 +121,25 @@ class PostFixtures extends Fixture
         return $content;
     }
 
-    private function loadTypes(ObjectManager $manager): void
+    private function loadKinds(ObjectManager $manager): void
     {
-        $types = [
+        $kinds = [
             [
-                'redditTypeId' => 't1',
+                'redditKindId' => 't1',
                 'name' => 'Comment',
             ],
             [
-                'redditTypeId' => 't3',
+                'redditKindId' => 't3',
                 'name' => 'Link',
             ],
         ];
 
-        foreach ($types as $type) {
-            $typeEntity = new Type();
-            $typeEntity->setRedditTypeId($type['redditTypeId']);
-            $typeEntity->setName($type['name']);
+        foreach ($kinds as $kind) {
+            $kindEntity = new Kind();
+            $kindEntity->setRedditKindId($kind['redditKindId']);
+            $kindEntity->setName($kind['name']);
 
-            $manager->persist($typeEntity);
+            $manager->persist($kindEntity);
         }
     }
 

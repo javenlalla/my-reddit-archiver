@@ -13,10 +13,6 @@ class Content
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Type::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private $type;
-
     #[ORM\ManyToOne(targetEntity: ContentType::class, inversedBy: 'savedContents')]
     #[ORM\JoinColumn(nullable: false)]
     private $contentType;
@@ -31,21 +27,13 @@ class Content
     #[ORM\Column(type: 'datetime')]
     private $syncDate;
 
+    #[ORM\ManyToOne(targetEntity: Kind::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private $kind;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getType(): ?Type
-    {
-        return $this->type;
-    }
-
-    public function setType(?Type $type): self
-    {
-        $this->type = $type;
-
-        return $this;
     }
 
     public function getContentType(): ?ContentType
@@ -92,6 +80,18 @@ class Content
     public function setSyncDate(\DateTimeInterface $syncDate): self
     {
         $this->syncDate = $syncDate;
+
+        return $this;
+    }
+
+    public function getKind(): ?Kind
+    {
+        return $this->kind;
+    }
+
+    public function setKind(?Kind $kind): self
+    {
+        $this->kind = $kind;
 
         return $this;
     }
