@@ -3,6 +3,7 @@
 namespace App\Denormalizer;
 
 use App\Entity\Comment;
+use App\Entity\Content;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -16,7 +17,7 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
      * Denormalize a Comment and its Replies using the provided Post and Response
      * Data.
      *
-     * @param  Post  $data
+     * @param  Content  $data
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
@@ -28,7 +29,7 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Comment
     {
         $comment = $this->commentDenormalizer->denormalize($data, $type, $format, $context);
-        $post = $data;
+        $content = $data;
         $commentData = $context['commentData'];
 
         if (!empty($commentData['replies'])) {
@@ -38,7 +39,7 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
                 if ($replyCommentData['kind'] !== 'more') {
                     $context['commentData'] = $replyCommentData['data'];
 
-                    $reply = $this->denormalize($post, $type, $format, $context);
+                    $reply = $this->denormalize($content, $type, $format, $context);
                     $comment->addReply($reply);
                 }
             }

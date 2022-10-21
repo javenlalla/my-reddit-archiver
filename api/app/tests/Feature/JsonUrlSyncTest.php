@@ -39,7 +39,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $kind = Kind::KIND_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
-        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
 
         $this->assertNotEmpty($post->getId());
         $this->assertEquals($redditId, $post->getRedditId());
@@ -134,7 +134,7 @@ How's that different from what they're doing now?", $comment->getText());
         $kind = Kind::KIND_COMMENT;
         $postLink = '/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/';
 
-        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());
@@ -168,11 +168,11 @@ How's that different from what they're doing now?", $comment->getText());
         $redditId = 'f83v7ro';
         $kind = Kind::KIND_COMMENT;
         $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
-        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
 
         $kind = Kind::KIND_COMMENT;
         $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
-        $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
+        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());

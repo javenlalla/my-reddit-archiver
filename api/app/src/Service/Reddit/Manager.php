@@ -8,10 +8,12 @@ use App\Denormalizer\CommentsDenormalizer;
 use App\Denormalizer\ContentDenormalizer;
 use App\Denormalizer\Post\CommentPostDenormalizer;
 use App\Denormalizer\PostDenormalizer;
+use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Repository\CommentRepository;
+use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +28,7 @@ class Manager
     public function __construct(
         private readonly Api $api,
         private readonly PostRepository $postRepository,
+        private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly PostDenormalizer $postDenormalizer,
@@ -52,7 +55,7 @@ class Manager
     {
         $response = $this->api->getPostByRedditId($type, $redditId);
 
-        return $this->hydratePostFromResponseData($type, $response);
+        return $this->hydrateContentFromResponseData($type, $response);
     }
 
     /**
@@ -123,7 +126,7 @@ class Manager
      * @throws ExceptionInterface
      * @throws InvalidArgumentException
      */
-    public function hydratePostFromResponseData(string $type, array $response): Content
+    public function hydrateContentFromResponseData(string $type, array $response): Content
     {
         $parentPostResponse = [];
 
@@ -178,7 +181,7 @@ class Manager
      */
     public function syncPost(array $fullPostResponse): Post
     {
-        $post = $this->hydratePostFromResponseData($fullPostResponse['kind'], $fullPostResponse);
+        $post = $this->hydrateContentFromResponseData($fullPostResponse['kind'], $fullPostResponse);
         $post = $this->savePost($post);
         $comments = $this->syncCommentsFromApiByPost($post);
 
@@ -186,7 +189,7 @@ class Manager
     }
 
     /**
-     * Sync a Post and its Comments as presented in the Post's .json URL.
+     * Sync a Post and its Comments as presented in the Content's .json URL.
      *
      * Note: Comments are synced as-is. Meaning no `more` Comments are
      * dynamically loaded. To sync all Comments, including `more` loads, use the
@@ -195,10 +198,10 @@ class Manager
      * @param  string  $kind
      * @param  string  $postLink
      *
-     * @return Post
+     * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncPostFromJsonUrl(string $kind, string $postLink): Post
+    public function syncContentFromJsonUrl(string $kind, string $postLink): Content
     {
         $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
@@ -206,7 +209,7 @@ class Manager
             return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
+        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
     }
 
     /**
@@ -357,11 +360,22 @@ class Manager
      * @param  array  $postData
      * @param  array  $commentsData
      *
-     * @return Post
+     * @return Content
      */
-    private function persistLinkPostJsonUrlData(array $postData, array $commentsData): Post
+    private function persistLinkContentJsonUrlData(array $postData, array $commentsData): Content
     {
-        $post = $this->hydratePostFromResponseData($postData['kind'], $postData);
+        $content = $this->hydrateContentFromResponseData($postData['kind'], $postData);
+        $this->contentRepository->add($content, true);
+
+        $this->processJsonCommentsData($content, $commentsData);
+
+        $this->entityManager->flush();
+
+        return $content;
+
+
+
+        $post = $this->hydrateContentFromResponseData($postData['kind'], $postData);
         $this->postRepository->add($post, true);
 
         $this->processJsonCommentsData($post, $commentsData);
@@ -405,23 +419,25 @@ class Manager
 
     /**
      * Process and persist the provided JSON Comments data belonging to targeted
-     * Post.
+     * Content.
      *
-     * @param  Post  $post
+     * @param  Content  $content
      * @param  array  $commentsData
+     * @param  Comment|null  $originalComment
      *
      * @return void
      */
-    private function processJsonCommentsData(Post $post, array $commentsData, \App\Entity\Comment $originalComment = null)
+    private function processJsonCommentsData(Content $content, array $commentsData, \App\Entity\Comment $originalComment = null)
     {
         $rootParentComment = null;
         if (!empty($originalComment)) {
             $rootParentComment = $this->getRootParentCommentFromComment($originalComment);
         }
 
+        $post = $content->getPost();
         foreach ($commentsData as $commentData) {
             if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($post, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                $comment = $this->commentDenormalizer->denormalize($content, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
 
                 // Do not re-persist the Top Level Comment of the Saved Comment
                 // in order to avoid a unique constraint violation.

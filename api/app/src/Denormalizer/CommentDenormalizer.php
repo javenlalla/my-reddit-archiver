@@ -3,13 +3,14 @@
 namespace App\Denormalizer;
 
 use App\Entity\Comment;
+use App\Entity\Content;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentDenormalizer implements DenormalizerInterface
 {
     /**
-     * @param  Post  $data
+     * @param  Content  $data
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
@@ -20,7 +21,8 @@ class CommentDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Comment
     {
-        $post = $data;
+        $content = $data;
+        $post = $content->getPost();
         $commentData = $context['commentData'];
 
         $comment = new Comment();

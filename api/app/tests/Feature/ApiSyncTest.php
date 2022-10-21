@@ -89,7 +89,7 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
     ) {
-        $this->validatePost(
+        $this->validateContent(
             false,
             $this->manager->syncPostByFullRedditId($type . '_' . $redditId),
             $originalPostUrl,
@@ -137,9 +137,9 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
     ) {
-        $this->validatePost(
+        $this->validateContent(
             true,
-            $this->manager->syncPostFromJsonUrl($type, $originalPostUrl),
+            $this->manager->syncContentFromJsonUrl($type, $originalPostUrl),
             $originalPostUrl,
             $redditId,
             $type,
@@ -354,9 +354,9 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      *
      * @return void
      */
-    private function validatePost(
+    private function validateContent(
         bool $jsonUrl,
-        Post $post,
+        Content $content,
         string $originalPostUrl,
         string $redditId,
         string $type,
@@ -372,6 +372,8 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         string $gifUrl = null,
     )
     {
+        $post = $content->getPost();
+
         // This logic is needed due to Reddit-hosted GIFs having a `preview`
         // element in the API response but not in the JSON URL. So a distinction
         // is required in the URL validation here based on where the response is
@@ -389,13 +391,13 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals($targetUrl, $post->getUrl());
         $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
-        $postType = $post->getType();
-        $this->assertInstanceOf(Kind::class, $postType);
-        $this->assertEquals($type, $postType->getRedditTypeId());
+        $contentKind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $contentKind);
+        $this->assertEquals($type, $contentKind->getRedditKindId());
 
-        $postContentType = $post->getContentType();
-        $this->assertInstanceOf(ContentType::class, $postContentType);
-        $this->assertEquals($contentType, $postContentType->getName());
+        $type = $content->getContentType();
+        $this->assertInstanceOf(ContentType::class, $type);
+        $this->assertEquals($contentType, $type->getName());
 
         if ($authorText === null) {
             $this->assertEmpty($post->getAuthorText());

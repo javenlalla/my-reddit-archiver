@@ -45,7 +45,7 @@ class SyncSinglePostCommand extends Command
             }
         }
 
-        $post = $this->manager->syncPostFromJsonUrl($kind,  $postLink);
+        $post = $this->manager->syncContentFromJsonUrl($kind,  $postLink);
 
         $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
 

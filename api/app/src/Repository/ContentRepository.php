@@ -23,8 +23,12 @@ class ContentRepository extends ServiceEntityRepository
 
     public function add(Content $entity, bool $flush = false): void
     {
-        $this->getEntityManager()->persist($entity);
+        // Ensure current datetime is used as Sync Date if none has been set.
+        if (empty($entity->getSyncDate())) {
+            $entity->setSyncDate(new \DateTimeImmutable());
+        }
 
+        $this->getEntityManager()->persist($entity);
         if ($flush) {
             $this->getEntityManager()->flush();
         }

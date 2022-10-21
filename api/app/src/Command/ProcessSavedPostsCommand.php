@@ -166,7 +166,7 @@ class ProcessSavedPostsCommand extends Command
                 if (empty($syncedPost) && empty($savedPost['data']['removed_by_category'])) {
                     $messagesOutputSection->writeln(sprintf('%s: %s', $savedPost['kind'], $savedPost['data']['permalink']), OutputInterface::VERBOSITY_VERBOSE);
 
-                    $post = $this->manager->syncPostFromJsonUrl($savedPost['kind'], $savedPost['data']['permalink']);
+                    $post = $this->manager->syncContentFromJsonUrl($savedPost['kind'], $savedPost['data']['permalink']);
                 }
 
                 $progressBar->advance();
