@@ -44,7 +44,7 @@ class KindRepository extends ServiceEntityRepository
      */
     public function getLinkType(): Kind
     {
-        return $this->findOneBy(['redditKindId' => Kind::TYPE_LINK]);
+        return $this->findOneBy(['redditKindId' => Kind::KIND_LINK]);
     }
 
     /**
@@ -52,7 +52,7 @@ class KindRepository extends ServiceEntityRepository
      */
     public function getCommentType(): Kind
     {
-        return $this->findOneBy(['redditKindId' => Kind::TYPE_COMMENT]);
+        return $this->findOneBy(['redditKindId' => Kind::KIND_COMMENT]);
     }
 
 //    /**

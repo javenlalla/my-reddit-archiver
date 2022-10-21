@@ -11,12 +11,12 @@ class Kind
     /**
      * Reddit's identifier for a Content of Comment `kind`.
      */
-    const TYPE_COMMENT = 't1';
+    const KIND_COMMENT = 't1';
 
     /**
      * Reddit's identifier for a Content of Link `kind`.
      */
-    const TYPE_LINK = 't3';
+    const KIND_LINK = 't3';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

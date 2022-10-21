@@ -51,9 +51,9 @@ class ContentDenormalizer implements DenormalizerInterface
 
         $context['content'] = $content;
 
-        if ($data['kind'] === Kind::TYPE_LINK) {
+        if ($data['kind'] === Kind::KIND_LINK) {
             $post = $this->linkPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
-        } elseif ($data['kind'] === Kind::TYPE_COMMENT) {
+        } elseif ($data['kind'] === Kind::KIND_COMMENT) {
             $context['parentPost'] = $context['parentPostData']['data']['children'][0]['data'];
 
             $post = $this->commentPostDenormalizer->denormalize($data['data'], Post::class, null, $context);

@@ -28,7 +28,7 @@ class SyncSinglePostCommand extends Command
     {
         // @TODO: Convert these to arguments provided to the script.
         $redditId = 'cs8urd';
-        $kind = Kind::TYPE_LINK;
+        $kind = Kind::KIND_LINK;
         $postLink = '/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/';
 
         $purge = true;

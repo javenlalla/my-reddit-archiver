@@ -35,7 +35,7 @@ class ApiTest extends KernelTestCase
     public function testParseImagePost()
     {
         //https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
-        $postResponseData = $this->api->getPostByRedditId(Kind::TYPE_LINK, 'vepbt0');
+        $postResponseData = $this->api->getPostByRedditId(Kind::KIND_LINK, 'vepbt0');
         $this->assertIsArray($postResponseData);
 
         $postData = $postResponseData['data']['children'][0]['data'];

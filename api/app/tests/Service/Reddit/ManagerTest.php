@@ -33,7 +33,7 @@ class ManagerTest extends KernelTestCase
     public function testCreatedAtTimeZone()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -106,7 +106,7 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
 
         $type = $fetchedPost->getType();
         $this->assertInstanceOf(Kind::class, $type);
-        $this->assertEquals(Kind::TYPE_COMMENT, $type->getRedditTypeId());
+        $this->assertEquals(Kind::KIND_COMMENT, $type->getRedditTypeId());
 
         $contentType = $fetchedPost->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);

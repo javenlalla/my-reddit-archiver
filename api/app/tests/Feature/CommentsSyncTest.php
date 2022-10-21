@@ -25,7 +25,7 @@ class CommentsSyncTest extends KernelTestCase
     public function testGetComments()
     {
         $redditId = 'vlyukg';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -81,7 +81,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsLargeCount()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -130,7 +130,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsEmptyMore()
     {
         $redditId = 'won0ky';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -156,7 +156,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsInitialEmptyMore()
     {
         $redditId = 'wfylnl';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -180,7 +180,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testSyncCommentsFromCommentPostMultipleLevelsDeep()
     {
         $redditId = 'iirwrq4';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_COMMENT, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_COMMENT, $redditId);
         $this->manager->savePost($post);
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -205,7 +205,7 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testSaveCommentPostMultipleLevelsDeep()
     {
         $redditId = 'iirwrq4';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_COMMENT, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_COMMENT, $redditId);
 
         $this->manager->savePost($post);
 
@@ -228,7 +228,7 @@ Get a good heartrate monitor and don\'t go above 150. Just maintain 140-150. I w
 
         $type = $fetchedPost->getType();
         $this->assertInstanceOf(Kind::class, $type);
-        $this->assertEquals(Kind::TYPE_COMMENT, $type->getRedditTypeId());
+        $this->assertEquals(Kind::KIND_COMMENT, $type->getRedditTypeId());
 
         $contentType = $fetchedPost->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);

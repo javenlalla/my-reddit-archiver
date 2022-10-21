@@ -93,9 +93,9 @@ class Manager
         $response = $this->api->getPostByRedditId($type, $redditId);
 
         $parentPostResponse = [];
-        if ($type === Kind::TYPE_COMMENT && $response['kind'] === 'Listing') {
+        if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Kind::TYPE_COMMENT && $response['kind'] === Kind::TYPE_COMMENT) {
+        } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
@@ -127,9 +127,9 @@ class Manager
     {
         $parentPostResponse = [];
 
-        if ($type === Kind::TYPE_COMMENT && $response['kind'] === 'Listing') {
+        if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Kind::TYPE_COMMENT && $response['kind'] === Kind::TYPE_COMMENT) {
+        } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
@@ -202,7 +202,7 @@ class Manager
     {
         $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
-        if ($kind === Kind::TYPE_COMMENT) {
+        if ($kind === Kind::KIND_COMMENT) {
             return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 
