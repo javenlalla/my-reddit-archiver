@@ -8,7 +8,9 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Service\Reddit\Manager;
 use Exception;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class ApiSyncTest extends KernelTestCase
 {
@@ -63,6 +65,7 @@ class ApiSyncTest extends KernelTestCase
     /**
      * @dataProvider getSyncPostsData()
      *
+     * @param  string  $originalPostUrl
      * @param  string  $redditId
      * @param  string  $type
      * @param  string  $contentType
@@ -70,9 +73,16 @@ class ApiSyncTest extends KernelTestCase
      * @param  string  $subreddit
      * @param  string  $url
      * @param  string  $createdAt
+     * @param  string|null  $authorText
+     * @param  string|null  $authorTextRawHtml
+     * @param  string|null  $authorTextHtml
+     * @param  string|null  $redditPostUrl
+     * @param  string|null  $gifUrl
+     * @param  string|null  $commentRedditId
      *
      * @return void
-     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws ExceptionInterface
      */
     public function testSyncPostsFromApi(
         string $originalPostUrl,
@@ -88,6 +98,7 @@ class ApiSyncTest extends KernelTestCase
         string $authorTextHtml = null,
         string $redditPostUrl = null,
         string $gifUrl = null,
+        string $commentRedditId = null,
     ) {
         $this->validateContent(
             false,
@@ -105,12 +116,14 @@ class ApiSyncTest extends KernelTestCase
             $authorTextHtml,
             $redditPostUrl,
             $gifUrl,
+            $commentRedditId,
         );
     }
 
     /**
      * @dataProvider getSyncPostsData()
      *
+     * @param  string  $originalPostUrl
      * @param  string  $redditId
      * @param  string  $type
      * @param  string  $contentType
@@ -118,9 +131,15 @@ class ApiSyncTest extends KernelTestCase
      * @param  string  $subreddit
      * @param  string  $url
      * @param  string  $createdAt
+     * @param  string|null  $authorText
+     * @param  string|null  $authorTextRawHtml
+     * @param  string|null  $authorTextHtml
+     * @param  string|null  $redditPostUrl
+     * @param  string|null  $gifUrl
+     * @param  string|null  $commentRedditId
      *
      * @return void
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function testSyncPostsFromJsonUrls(
         string $originalPostUrl,
@@ -136,6 +155,7 @@ class ApiSyncTest extends KernelTestCase
         string $authorTextHtml = null,
         string $redditPostUrl = null,
         string $gifUrl = null,
+        string $commentRedditId = null,
     ) {
         $this->validateContent(
             true,
@@ -153,6 +173,7 @@ class ApiSyncTest extends KernelTestCase
             $authorTextHtml,
             $redditPostUrl,
             $gifUrl,
+            $commentRedditId,
         );
     }
 
@@ -249,18 +270,25 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             ],
             'Comment Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
-                'redditId' => 'ia1smh6',
+                'redditId' => 'uy3sx1',
                 'type' => Kind::KIND_COMMENT,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'Passed my telc B2 exam with a great score (275/300). Super stoked about it!',
                 'subreddit' => 'German',
                 'url' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/',
-                'createdAt' => '2022-05-26 10:42:40',
-                'authorText' => 'Congrats! What did your study routine look like leading up to it?',
-                'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;
-&lt;/div&gt;",
-                'authorTextHtml' => "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>
-</div>",
+                // 'commentCreatedAt' => '2022-05-26 10:42:40',
+                'createdAt' => '2022-05-26 09:36:55',
+//                 'authorText' => 'Congrats! What did your study routine look like leading up to it?',
+//                 'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;
+// &lt;/div&gt;",
+//                 'authorTextHtml' => "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>
+// </div>",
+                'authorText' => 'I’d be glad to offer any advice.',
+                'authorTextRawHtml' => "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
+                'authorTextHtml' => "<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>",
+                'redditPostUrl' => null,
+                'gifUrl' => null,
+                'commentRedditId' => 'ia1smh6',
             ],
             'GIF Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
@@ -320,25 +348,32 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             ],
             'Comment Post (Several Levels Deep)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
-                'redditId' => 'ip914eh',
+                'redditId' => 'xjarj9',
                 'type' => Kind::KIND_COMMENT,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'Gamers of old, what will the gamers of the modern console generation never be able to experience?',
                 'subreddit' => 'AskReddit',
                 'url' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
-                'createdAt' => '2022-09-20 21:45:38',
-                'authorText' => 'Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.',
-                'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.&lt;/p&gt;
-&lt;/div&gt;",
-                'authorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
-</div>",
+                // 'commentCreatedAt' => '2022-09-20 21:45:38',
+                'createdAt' => '2022-09-20 14:46:24',
+                'authorText' => null,
+                'authorTextRawHtml' => null,
+                'authorTextHtml' => null,
+//                 'authorText' => 'Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.',
+//                 'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.&lt;/p&gt;
+// &lt;/div&gt;",
+//                 'authorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
+// </div>",
                 'redditPostUrl' => 'https://reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
+                'gifUrl' => null,
+                'commentRedditId' => 'ip914eh',
             ],
         ];
     }
 
     /**
-     * @param  Post  $post
+     * @param  bool  $jsonUrl
+     * @param  Content  $content
      * @param  string  $originalPostUrl
      * @param  string  $redditId
      * @param  string  $type
@@ -351,6 +386,8 @@ It is easy to read but not boringly easy since it can get rather challenging at 
      * @param  string|null  $authorTextRawHtml
      * @param  string|null  $authorTextHtml
      * @param  string|null  $redditPostUrl
+     * @param  string|null  $gifUrl
+     * @param  string|null  $commentRedditId
      *
      * @return void
      */
@@ -370,6 +407,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         string $authorTextHtml = null,
         string $redditPostUrl = null,
         string $gifUrl = null,
+        string $commentRedditId = null,
     )
     {
         $post = $content->getPost();
@@ -419,6 +457,10 @@ It is easy to read but not boringly easy since it can get rather challenging at 
 
         if (!empty($redditPostUrl)) {
             $this->assertEquals($redditPostUrl, $post->getRedditPostUrl());
+        }
+
+        if (!empty($commentRedditId)) {
+            $this->assertEquals($commentRedditId, $content->getComment()->getRedditId());
         }
     }
 }
