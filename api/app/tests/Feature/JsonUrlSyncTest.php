@@ -2,6 +2,7 @@
 
 namespace App\Tests\Feature;
 
+use App\Entity\Comment;
 use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
@@ -190,5 +191,57 @@ How's that different from what they're doing now?", $comment->getText());
         $postContentType = $post->getContentType();
         $this->assertInstanceOf(ContentType::class, $postContentType);
         $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
+    }
+
+    public function testBasicCommentContentJsonUrlSync()
+    {
+        $originalPostUrl =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
+        $redditId =  'ia1smh6';
+        $type =  Kind::KIND_COMMENT;
+        $contentType =  ContentType::CONTENT_TYPE_TEXT;
+        $title =  'Passed my telc B2 exam with a great score (275/300). Super stoked about it!';
+        $subreddit =  'German';
+        $url =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/';
+        $createdAt =  '2022-05-26 09:36:55';
+        $authorText =  'Congrats! What did your study routine look like leading up to it?';
+        $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;
+&lt;/div&gt;";
+        $authorTextHtml = "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>
+</div>";
+
+        $content = $this->manager->syncContentFromJsonUrl($type, $originalPostUrl);
+
+        $comment = $content->getComment();
+        $this->assertInstanceOf(Comment::class, $comment);
+        $this->assertEquals($redditId, $comment->getRedditId());
+        $this->assertEquals($authorText, $comment->getText());
+        // @TODO: Enable this when createdAt is added to Comments. Date here is already the expected datetime for this Comment.
+        // $this->assertEquals('2022-05-26 10:42:40', $comment->getCreatedAt());
+        // @TODO: Enable when the following properties have been added to the Comment entity.
+        // $this->assertEquals($authorText, $comment->getAuthorText());
+        // $this->assertEquals($authorTextRawHtml, $comment->getAuthorTextRawHtml());
+        // $this->assertEquals($authorTextHtml, $comment->getAuthorTextHtml());
+
+        $post = $content->getPost();
+
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals('uy3sx1', $post->getRedditId());
+        $this->assertEquals($title, $post->getTitle());
+        $this->assertEquals($subreddit, $post->getSubreddit());
+        $this->assertEquals('https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/', $post->getUrl());
+        $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
+
+        $contentKind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $contentKind);
+        $this->assertEquals($type, $contentKind->getRedditKindId());
+
+        $type = $content->getContentType();
+        $this->assertInstanceOf(ContentType::class, $type);
+        $this->assertEquals($contentType, $type->getName());
+
+        $this->assertEquals("I’d be glad to offer any advice.", $post->getAuthorText());
+        $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getAuthorTextRawHtml());
+        $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getAuthorTextHtml());
     }
 }

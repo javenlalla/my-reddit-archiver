@@ -4,6 +4,7 @@ namespace App\Denormalizer;
 
 use App\Denormalizer\Post\CommentPostDenormalizer;
 use App\Denormalizer\Post\LinkPostDenormalizer;
+use App\Entity\Comment;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
@@ -19,6 +20,7 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly CommentPostDenormalizer $commentPostDenormalizer,
         private readonly KindRepository $kindRepository,
         private readonly ContentTypeHelper $contentTypeHelper,
+        private readonly CommentDenormalizer $commentDenormalizer,
     ) {
     }
 
@@ -35,6 +37,17 @@ class ContentDenormalizer implements DenormalizerInterface
         return is_array($data) && $type === Content::class;
     }
 
+    /**
+     * @param  array  $data
+     * @param  string  $type
+     * @param  string|null  $format
+     * @param  array{
+     *          commentData: array,
+     *          }  $context
+     *
+     * @return Content
+     * @throws Exception
+     */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Content
     {
         if ($data['kind'] === 'Listing') {
@@ -63,7 +76,14 @@ class ContentDenormalizer implements DenormalizerInterface
 
         $content->setPost($post);
 
-        return $content;
+        if (!empty($context['commentData'])) {
+            $kind = $this->kindRepository->getCommentType();
+            $content->setKind($kind);;
 
+            $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, $context);
+            $content->setComment($comment);
+        }
+
+        return $content;
     }
 }

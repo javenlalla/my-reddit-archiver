@@ -269,18 +269,20 @@ class Manager
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    private function getCommentTreeBranch(Post $post, array $postData, array $commentData): \App\Entity\Comment
+    private function getCommentTreeBranch(Content $content, array $postData, array $commentData): \App\Entity\Comment
     {
         // Persist current Comment.
-        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
-        $this->entityManager->persist($comment);
+        // $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
+        // $this->entityManager->persist($comment);
+
+        $comment = $content->getComment();
 
         // Sync Comment's Parents.
-        $this->syncCommentWithParents($post, $comment, $postData, $commentData);
+        $this->syncCommentWithParents($content, $comment, $postData, $commentData);
 
         // Sync Comment's Replies, if any.
         if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
-            $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $post, 'parentComment' => $comment]);
+            $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
 
             foreach ($replies as $reply) {
                 $comment->addReply($reply);
@@ -294,9 +296,10 @@ class Manager
         return $comment;
     }
 
-    private function syncCommentWithParents(Post $post, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
+    private function syncCommentWithParents(Content $content, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
     {
-        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
+        $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
+        $post = $content->getPost();
 
         // Do not re-persist the original Comment.
         if ($originalComment->getRedditId() !== $comment->getRedditId()) {
@@ -394,8 +397,33 @@ class Manager
      *
      * @return Post
      */
-    private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Post
+    private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Content
     {
+        // MOVE LOGIC TO CONTENTDENORMALIZER, ADD CHECK FOR COMMENT POST, CONTINUE FLOW INTO COMMENTPOSTDENORMALIZER FROM THERE
+
+        $targetComment = $commentsData[0]['data'];
+        $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
+
+        // $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
+
+        // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.
+        // @see: \App\Tests\Feature\JsonUrlSyncTest::testMultpleSavedCommentsFromSamePost()
+        // $existingPost = $this->postRepository->findOneBy(['redditPostUrl' => $post->getRedditPostUrl()]);
+        // if (!empty($existingPost)) {
+        //     return $existingPost;
+        // }
+
+        $this->contentRepository->add($content, true);
+
+        $originalComment = $this->getCommentTreeBranch($content, $postData['data'], $targetComment);
+
+        $jsonData = $this->getRawDataFromJsonUrl($content->getPost()->getRedditPostUrl());
+        $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
+
+        $this->entityManager->flush();
+
+        return $content;
+
         $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
 
         // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.

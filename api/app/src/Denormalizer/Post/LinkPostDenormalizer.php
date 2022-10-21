@@ -38,7 +38,7 @@ class LinkPostDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Post
     {
-        $contentTypeName = $context['content']->getKind()->getName();
+        $contentTypeName = $context['content']->getContentType()->getName();
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
