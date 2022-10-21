@@ -9,7 +9,6 @@ use App\Entity\MediaAsset;
 use App\Entity\Post;
 use App\Helper\ContentTypeHelper;
 use App\Helper\SanitizeHtmlHelper;
-use App\Repository\TypeRepository;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -17,7 +16,6 @@ class LinkPostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
-        private readonly TypeRepository $typeRepository,
         private readonly ContentTypeHelper $contentTypeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
     ) {
@@ -40,8 +38,7 @@ class LinkPostDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Post
     {
-        $contentTypeName = $context['content']->getType()->getName();
-        // $contentTypeName = $content->getType()->getName();
+        $contentTypeName = $context['content']->getKind()->getName();
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
@@ -57,11 +54,6 @@ class LinkPostDenormalizer implements DenormalizerInterface
         $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', $postData['created_utc']));
 
-        // $type = $this->typeRepository->getLinkType();
-        // $post->setType($type);
-
-        // $contentType = $this->contentTypeHelper->getContentTypeFromPostData($postData);
-        // $post->setContentType($contentType);
         if ($contentTypeName === ContentType::CONTENT_TYPE_TEXT) {
             $post->setAuthorText($postData['selftext']);
             $post->setAuthorTextRawHtml($postData['selftext_html']);

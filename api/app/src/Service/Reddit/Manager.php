@@ -9,8 +9,8 @@ use App\Denormalizer\ContentDenormalizer;
 use App\Denormalizer\Post\CommentPostDenormalizer;
 use App\Denormalizer\PostDenormalizer;
 use App\Entity\Content;
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Media\Downloader;
@@ -93,9 +93,9 @@ class Manager
         $response = $this->api->getPostByRedditId($type, $redditId);
 
         $parentPostResponse = [];
-        if ($type === Type::TYPE_COMMENT && $response['kind'] === 'Listing') {
+        if ($type === Kind::TYPE_COMMENT && $response['kind'] === 'Listing') {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Type::TYPE_COMMENT && $response['kind'] === Type::TYPE_COMMENT) {
+        } else if ($type === Kind::TYPE_COMMENT && $response['kind'] === Kind::TYPE_COMMENT) {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
@@ -127,9 +127,9 @@ class Manager
     {
         $parentPostResponse = [];
 
-        if ($type === Type::TYPE_COMMENT && $response['kind'] === 'Listing') {
+        if ($type === Kind::TYPE_COMMENT && $response['kind'] === 'Listing') {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Type::TYPE_COMMENT && $response['kind'] === Type::TYPE_COMMENT) {
+        } else if ($type === Kind::TYPE_COMMENT && $response['kind'] === Kind::TYPE_COMMENT) {
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
@@ -202,7 +202,7 @@ class Manager
     {
         $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
-        if ($kind === Type::TYPE_COMMENT) {
+        if ($kind === Kind::TYPE_COMMENT) {
             return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 

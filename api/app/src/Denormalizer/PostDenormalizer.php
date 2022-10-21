@@ -4,8 +4,8 @@ namespace App\Denormalizer;
 
 use App\Denormalizer\Post\CommentPostDenormalizer;
 use App\Denormalizer\Post\LinkPostDenormalizer;
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use Exception;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -36,9 +36,9 @@ class PostDenormalizer implements DenormalizerInterface
             $data = $data['data']['children'][0];
         }
 
-        if ($data['kind'] === Type::TYPE_LINK) {
+        if ($data['kind'] === Kind::TYPE_LINK) {
             return $this->linkPostDenormalizer->denormalize($data['data'], Post::class);
-        } elseif ($data['kind'] === Type::TYPE_COMMENT) {
+        } elseif ($data['kind'] === Kind::TYPE_COMMENT) {
             return $this->commentPostDenormalizer->denormalize($data['data'], Post::class, null, ['parentPost' => $context['parentPostData']['data']['children'][0]['data']]);
         }
 

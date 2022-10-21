@@ -3,8 +3,8 @@
 namespace App\Tests\Feature;
 
 use App\Entity\ContentType;
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -36,7 +36,7 @@ class JsonUrlSyncTest extends KernelTestCase
     public function testSyncCommentPostMultipleLevelsDeepFromJsonUrl()
     {
         $redditId = 'ip7pedq';
-        $kind = Type::TYPE_COMMENT;
+        $kind = Kind::TYPE_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
@@ -56,8 +56,8 @@ class JsonUrlSyncTest extends KernelTestCase
 </div>", $post->getAuthorTextHtml());
 
         $type = $post->getType();
-        $this->assertInstanceOf(Type::class, $type);
-        $this->assertEquals(Type::TYPE_COMMENT, $type->getRedditTypeId());
+        $this->assertInstanceOf(Kind::class, $type);
+        $this->assertEquals(Kind::TYPE_COMMENT, $type->getRedditTypeId());
 
         $contentType = $post->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
@@ -131,7 +131,7 @@ How's that different from what they're doing now?", $comment->getText());
     public function testSyncCommentPostMultipleLevelsDeepWithNoReplies()
     {
         $redditId = 'ip95ter';
-        $kind = Type::TYPE_COMMENT;
+        $kind = Kind::TYPE_COMMENT;
         $postLink = '/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/';
 
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
@@ -146,8 +146,8 @@ How's that different from what they're doing now?", $comment->getText());
         $this->assertEquals('2022-09-20 22:18:41', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $postType = $post->getType();
-        $this->assertInstanceOf(Type::class, $postType);
-        $this->assertEquals(Type::TYPE_COMMENT, $postType->getRedditTypeId());
+        $this->assertInstanceOf(Kind::class, $postType);
+        $this->assertEquals(Kind::TYPE_COMMENT, $postType->getRedditTypeId());
 
         $postContentType = $post->getContentType();
         $this->assertInstanceOf(ContentType::class, $postContentType);
@@ -166,11 +166,11 @@ How's that different from what they're doing now?", $comment->getText());
         $this->markTestSkipped('The logic required to make this test passable requires more investigation. Marking `Skipped` for now.');
 
         $redditId = 'f83v7ro';
-        $kind = Type::TYPE_COMMENT;
+        $kind = Kind::TYPE_COMMENT;
         $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
-        $kind = Type::TYPE_COMMENT;
+        $kind = Kind::TYPE_COMMENT;
         $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
         $post = $this->manager->syncPostFromJsonUrl($kind, $postLink);
 
@@ -184,8 +184,8 @@ How's that different from what they're doing now?", $comment->getText());
         $this->assertEquals('2019-11-20 03:51:00', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $postType = $post->getType();
-        $this->assertInstanceOf(Type::class, $postType);
-        $this->assertEquals(Type::TYPE_COMMENT, $postType->getRedditTypeId());
+        $this->assertInstanceOf(Kind::class, $postType);
+        $this->assertEquals(Kind::TYPE_COMMENT, $postType->getRedditTypeId());
 
         $postContentType = $post->getContentType();
         $this->assertInstanceOf(ContentType::class, $postContentType);

@@ -39,6 +39,22 @@ class KindRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Kind
+     */
+    public function getLinkType(): Kind
+    {
+        return $this->findOneBy(['redditKindId' => Kind::TYPE_LINK]);
+    }
+
+    /**
+     * @return Kind
+     */
+    public function getCommentType(): Kind
+    {
+        return $this->findOneBy(['redditKindId' => Kind::TYPE_COMMENT]);
+    }
+
 //    /**
 //     * @return Kind[] Returns an array of Kind objects
 //     */

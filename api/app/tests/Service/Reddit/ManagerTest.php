@@ -3,8 +3,8 @@
 namespace App\Tests\Service\Reddit;
 
 use App\Entity\ContentType;
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -33,7 +33,7 @@ class ManagerTest extends KernelTestCase
     public function testCreatedAtTimeZone()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
 
         $this->manager->savePost($post);
 
@@ -105,8 +105,8 @@ Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I wa
 </div>", $fetchedPost->getAuthorTextHtml());
 
         $type = $fetchedPost->getType();
-        $this->assertInstanceOf(Type::class, $type);
-        $this->assertEquals(Type::TYPE_COMMENT, $type->getRedditTypeId());
+        $this->assertInstanceOf(Kind::class, $type);
+        $this->assertEquals(Kind::TYPE_COMMENT, $type->getRedditTypeId());
 
         $contentType = $fetchedPost->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);

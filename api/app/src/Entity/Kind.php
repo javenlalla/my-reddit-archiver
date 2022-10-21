@@ -8,6 +8,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: KindRepository::class)]
 class Kind
 {
+    /**
+     * Reddit's identifier for a Content of Comment `kind`.
+     */
+    const TYPE_COMMENT = 't1';
+
+    /**
+     * Reddit's identifier for a Content of Link `kind`.
+     */
+    const TYPE_LINK = 't3';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

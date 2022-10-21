@@ -2,8 +2,8 @@
 
 namespace App\Command;
 
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Manager;
@@ -28,7 +28,7 @@ class SyncSinglePostCommand extends Command
     {
         // @TODO: Convert these to arguments provided to the script.
         $redditId = 'cs8urd';
-        $kind = Type::TYPE_LINK;
+        $kind = Kind::TYPE_LINK;
         $postLink = '/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/';
 
         $purge = true;

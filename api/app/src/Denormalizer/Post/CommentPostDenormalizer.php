@@ -2,16 +2,15 @@
 
 namespace App\Denormalizer\Post;
 
+use App\Entity\Content;
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\ContentTypeRepository;
-use App\Repository\TypeRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentPostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
-        private readonly TypeRepository $typeRepository,
         private readonly ContentTypeRepository $contentTypeRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
     ) {
@@ -22,7 +21,8 @@ class CommentPostDenormalizer implements DenormalizerInterface
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
-     *              parentPost: array
+     *              parentPost: array,
+     *              content: Content,
      *          } $context  `parentPost`: Post Response data.
      *
      * @return Post
@@ -41,11 +41,6 @@ class CommentPostDenormalizer implements DenormalizerInterface
         $post->setUrl($postData['url']);
         $post->setCreatedAt(\DateTimeImmutable::createFromFormat('U', $commentData['created_utc']));
 
-        $type = $this->typeRepository->getCommentType();
-        $post->setType($type);
-
-        $contentType = $this->contentTypeRepository->getTextContentType();
-        $post->setContentType($contentType);
         $post->setAuthorText($commentData['body']);
         $post->setAuthorTextRawHtml($commentData['body_html']);
         $post->setAuthorTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($commentData['body_html']));

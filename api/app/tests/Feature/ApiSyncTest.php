@@ -4,8 +4,8 @@ namespace App\Tests\Feature;
 
 use App\Entity\Content;
 use App\Entity\ContentType;
+use App\Entity\Kind;
 use App\Entity\Post;
-use App\Entity\Type;
 use App\Service\Reddit\Manager;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -31,7 +31,7 @@ class ApiSyncTest extends KernelTestCase
     public function testGetPostFromApiByRedditId()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $post = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertEquals($redditId, $post->getRedditId());
@@ -42,13 +42,13 @@ class ApiSyncTest extends KernelTestCase
     public function testBasicSync()
     {
         $redditId = 'vepbt0';
-        $content = $this->manager->getContentFromApiByRedditId(Type::TYPE_LINK, $redditId);
+        $content = $this->manager->getContentFromApiByRedditId(Kind::TYPE_LINK, $redditId);
 
         $this->assertInstanceOf(Content::class, $content);
 
-        $type = $content->getType();
-        $this->assertInstanceOf(Type::class, $type);
-        $this->assertEquals(Type::TYPE_LINK, $type->getRedditTypeId());
+        $kind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::TYPE_LINK, $kind->getRedditKindId());
 
         $contentType = $content->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
@@ -162,7 +162,7 @@ class ApiSyncTest extends KernelTestCase
             'Image Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/',
                 'redditId' => 'vepbt0',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_IMAGE,
                 'title' => 'My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…',
                 'subreddit' => 'shittyfoodporn',
@@ -172,7 +172,7 @@ class ApiSyncTest extends KernelTestCase
             'Image Post (Reddit-hosted)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/',
                 'redditId' => 'won0ky',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_IMAGE,
                 'title' => 'I learned how to whistle from this in less than 5 minutes.',
                 'subreddit' => 'coolguides',
@@ -182,7 +182,7 @@ class ApiSyncTest extends KernelTestCase
             'Text Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
                 'redditId' => 'vlyukg',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'If you are an intermediate level learner, I strongly suggest you give the book "Tintenherz" a try',
                 'subreddit' => 'German',
@@ -200,7 +200,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Text Post With Only Title (No Author Text Or Content)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/',
                 'redditId' => 'vdmg2f',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => '[serious] What should everyone learn how to do?',
                 'subreddit' => 'AskReddit',
@@ -210,7 +210,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Video Post (YouTube)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/',
                 'redditId' => 'v443nh',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_VIDEO,
                 'title' => 'Golang Tutorial | How To Implement Concurrency With Goroutines and Channels',
                 'subreddit' => 'golang',
@@ -220,7 +220,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Video Post (Reddit)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/',
                 'redditId' => 'tl8qic',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_VIDEO,
                 'title' => 'I think I married a psychopath',
                 'subreddit' => 'Unexpected',
@@ -230,7 +230,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Video Post (Reddit, No Audio)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/',
                 'redditId' => 'wfylnl',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_VIDEO,
                 'title' => 'When you use a new library without reading the documentation',
                 'subreddit' => 'ProgrammerHumor',
@@ -240,7 +240,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Gallery Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/',
                 'redditId' => 'v27nr7',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_IMAGE_GALLERY,
                 'title' => 'All my recreations of magazine covers from Tremors 2 so far',
                 'subreddit' => 'Tremors',
@@ -250,7 +250,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Comment Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
                 'redditId' => 'ia1smh6',
-                'type' => Type::TYPE_COMMENT,
+                'type' => Kind::TYPE_COMMENT,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'Passed my telc B2 exam with a great score (275/300). Super stoked about it!',
                 'subreddit' => 'German',
@@ -265,7 +265,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'GIF Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
                 'redditId' => 'wgb8wj',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_GIF,
                 'title' => 'me_irl',
                 'subreddit' => 'me_irl',
@@ -275,7 +275,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'GIF Post (Reddit-Hosted)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
                 'redditId' => 'cs8urd',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_GIF,
                 'title' => 'Matt Riddle got hit by a truck',
                 'subreddit' => 'SquaredCircle',
@@ -290,7 +290,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Text Post With Image' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988',
                 'redditId' => 'utsmkw',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'Tremors poster for Gallery1988',
                 'subreddit' => 'Tremors',
@@ -307,7 +307,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'External Link Post' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
                 'redditId' => 'urn2yw',
-                'type' => Type::TYPE_LINK,
+                'type' => Kind::TYPE_LINK,
                 'contentType' => ContentType::CONTENT_TYPE_EXTERNAL_LINK,
                 'title' => 'Mithril.js release a new version after nearly 3 years',
                 'subreddit' => 'javascript',
@@ -321,7 +321,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
             'Comment Post (Several Levels Deep)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
                 'redditId' => 'ip914eh',
-                'type' => Type::TYPE_COMMENT,
+                'type' => Kind::TYPE_COMMENT,
                 'contentType' => ContentType::CONTENT_TYPE_TEXT,
                 'title' => 'Gamers of old, what will the gamers of the modern console generation never be able to experience?',
                 'subreddit' => 'AskReddit',
@@ -390,7 +390,7 @@ It is easy to read but not boringly easy since it can get rather challenging at 
         $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $postType = $post->getType();
-        $this->assertInstanceOf(Type::class, $postType);
+        $this->assertInstanceOf(Kind::class, $postType);
         $this->assertEquals($type, $postType->getRedditTypeId());
 
         $postContentType = $post->getContentType();

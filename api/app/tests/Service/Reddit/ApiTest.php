@@ -2,7 +2,7 @@
 
 namespace App\Tests\Service\Reddit;
 
-use App\Entity\Type;
+use App\Entity\Kind;
 use App\Service\Reddit\Api;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -35,7 +35,7 @@ class ApiTest extends KernelTestCase
     public function testParseImagePost()
     {
         //https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
-        $postResponseData = $this->api->getPostByRedditId(Type::TYPE_LINK, 'vepbt0');
+        $postResponseData = $this->api->getPostByRedditId(Kind::TYPE_LINK, 'vepbt0');
         $this->assertIsArray($postResponseData);
 
         $postData = $postResponseData['data']['children'][0]['data'];

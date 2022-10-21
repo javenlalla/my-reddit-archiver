@@ -3,8 +3,6 @@
 namespace App\DataFixtures;
 
 use App\Entity\ApiUser;
-use App\Entity\ContentType;
-use App\Entity\Type;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
