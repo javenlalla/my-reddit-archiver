@@ -36,33 +36,44 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testSyncCommentPostMultipleLevelsDeepFromJsonUrl()
     {
-        $redditId = 'ip7pedq';
+        $postRedditId = 'xj8f7g';
+        $commentRedditId = 'ip7pedq';
         $kind = Kind::KIND_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
-        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+
+        $comment = $content->getComment();
+        $this->assertInstanceOf(Comment::class, $comment);
+        $this->assertEquals($commentRedditId, $comment->getRedditId());
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getText());
+        // @TODO: Enable this when createdAt is added to Comments. Date here is already the expected datetime for this Comment.
+        // $this->assertEquals('2022-09-20 16:38:58', $comment->getCreatedAt());
+        // @TODO: Enable when the following properties have been added to the Comment entity.
+        // $this->assertEquals($authorText, $comment->getAuthorText());
+        // $this->assertEquals($authorTextRawHtml, $comment->getAuthorTextRawHtml());
+        // $this->assertEquals($authorTextHtml, $comment->getAuthorTextHtml());
+
+        $post = $content->getPost();
 
         $this->assertNotEmpty($post->getId());
-        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals($postRedditId, $post->getRedditId());
         $this->assertEquals('Star Citizen passes half billion dollars funding milestone, still no game launches in sight', $post->getTitle());
         $this->assertEquals('gaming', $post->getSubreddit());
         $this->assertEquals('https://i.redd.it/d0s8oagaj0p91.png', $post->getUrl());
         $this->assertEquals('https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $post->getRedditPostUrl());
-        $this->assertEquals('2022-09-20 16:38:58', $post->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $post->getAuthorText());
-        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably&lt;/p&gt;
-&lt;/div&gt;", $post->getAuthorTextRawHtml());
+        $this->assertEquals('2022-09-20 13:10:22', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEmpty($post->getAuthorText());
+        $this->assertEmpty($post->getAuthorTextRawHtml());
+        $this->assertEmpty($post->getAuthorTextHtml());
 
-        $this->assertEquals("<div class=\"md\"><p>Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably</p>
-</div>", $post->getAuthorTextHtml());
+        $kind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $type = $post->getType();
-        $this->assertInstanceOf(Kind::class, $type);
-        $this->assertEquals(Kind::KIND_COMMENT, $type->getRedditTypeId());
-
-        $contentType = $post->getContentType();
+        $contentType = $content->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
 
         // Verify all top Comments have been persisted.
         $this->assertEquals(24, $post->getComments()->count());
@@ -100,8 +111,7 @@ class JsonUrlSyncTest extends KernelTestCase
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip73wew']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n
-How's that different from what they're doing now?", $comment->getText());
+        $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n\nHow's that different from what they're doing now?", $comment->getText());
         $this->assertEquals('ip72pep', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip72pep']);

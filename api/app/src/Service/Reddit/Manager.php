@@ -334,7 +334,7 @@ class Manager
                 $childComment = $originalComment;
             }
 
-                $this->syncCommentWithParents($post, $originalComment, $postData, $commentsData[0]['data'], $childComment);
+                $this->syncCommentWithParents($content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
         }
     }
 
