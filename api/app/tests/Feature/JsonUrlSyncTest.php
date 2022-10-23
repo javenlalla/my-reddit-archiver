@@ -3,6 +3,7 @@
 namespace App\Tests\Feature;
 
 use App\Entity\Comment;
+use App\Entity\Content;
 use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
@@ -141,12 +142,15 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testSyncCommentPostMultipleLevelsDeepWithNoReplies()
     {
-        $redditId = 'ip95ter';
+        $redditId = 'xj50gl';
+        $commentRedditId = 'ip95ter';
         $kind = Kind::KIND_COMMENT;
         $postLink = '/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/';
 
-        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $this->assertInstanceOf(Content::class, $content);
 
+        $post = $content->getPost();
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());
         $this->assertEquals($redditId, $post->getRedditId());
@@ -154,15 +158,20 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('ProgrammerHumor', $post->getSubreddit());
         $this->assertEquals('https://i.redd.it/4kp1p03jpzo91.png', $post->getUrl());
         $this->assertEquals('https://reddit.com/r/ProgrammerHumor/comments/xj50gl/microscopic/', $post->getRedditPostUrl());
-        $this->assertEquals('2022-09-20 22:18:41', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('2022-09-20 10:22:59', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
-        $postType = $post->getType();
-        $this->assertInstanceOf(Kind::class, $postType);
-        $this->assertEquals(Kind::KIND_COMMENT, $postType->getRedditTypeId());
+        $kind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $postContentType = $post->getContentType();
-        $this->assertInstanceOf(ContentType::class, $postContentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
+        $contentType = $content->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+
+        $comment = $content->getComment();
+        $this->assertEquals($commentRedditId, $comment->getRedditId());
+        // @TODO: Enable once createdAt is added to Comment Entity.
+        // $this->assertEquals('2022-09-20 22:18:41', $comment->getCreatedAt());
     }
 
     /**
