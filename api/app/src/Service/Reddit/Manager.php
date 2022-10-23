@@ -4,7 +4,7 @@ namespace App\Service\Reddit;
 
 use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
-use App\Denormalizer\CommentsDenormalizer;
+use App\Denormalizer\CommentsAndMoreDenormalizer;
 use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
@@ -19,7 +19,6 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class Manager
 {
@@ -30,7 +29,7 @@ class Manager
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly ContentDenormalizer $contentDenormalizer,
-        private readonly CommentsDenormalizer $commentsDenormalizer,
+        private readonly CommentsAndMoreDenormalizer $commentsAndMoreDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
         private readonly Downloader $mediaDownloader,
@@ -230,7 +229,7 @@ class Manager
         $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditPostId());
         $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
-        $comments = $this->commentsDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);
+        $comments = $this->commentsAndMoreDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);
         foreach ($comments as $comment) {
             $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
 
@@ -274,7 +273,7 @@ class Manager
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    private function getCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
+    private function syncCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
     {
         $comment = $content->getComment();
 
@@ -283,7 +282,7 @@ class Manager
 
         // Sync Comment's Replies, if any.
         if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
-            $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
+            $replies = $this->commentsAndMoreDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
 
             foreach ($replies as $reply) {
                 $existingComment = $this->commentRepository->findOneBy(['redditId' => $reply->getRedditId()]);
@@ -403,7 +402,7 @@ class Manager
         $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
         $this->contentRepository->add($content, true);
 
-        $originalComment = $this->getCommentTreeBranch($content, $postData['data'], $targetComment);
+        $originalComment = $this->syncCommentTreeBranch($content, $postData['data'], $targetComment);
         $jsonData = $this->getRawDataFromJsonUrl($content->getPost()->getRedditPostUrl());
         $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
 

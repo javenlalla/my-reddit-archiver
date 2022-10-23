@@ -2,7 +2,6 @@
 
 namespace App\Denormalizer;
 
-use App\Denormalizer\Post\LinkPostDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Kind;
 use App\Entity\Post;
@@ -16,7 +15,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 class ContentDenormalizer implements DenormalizerInterface
 {
     public function __construct(
-        private readonly LinkPostDenormalizer $linkPostDenormalizer,
+        private readonly PostDenormalizer $linkPostDenormalizer,
         private readonly KindRepository $kindRepository,
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly PostRepository $postRepository,

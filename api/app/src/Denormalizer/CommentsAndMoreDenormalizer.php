@@ -9,7 +9,7 @@ use App\Service\Reddit\Api;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
-class CommentsDenormalizer implements DenormalizerInterface
+class CommentsAndMoreDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly Api $api,
