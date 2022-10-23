@@ -4,13 +4,18 @@ namespace App\Denormalizer;
 
 use App\Entity\Comment;
 use App\Entity\Post;
+use App\Repository\CommentRepository;
 use App\Service\Reddit\Api;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentsDenormalizer implements DenormalizerInterface
 {
-    public function __construct(private readonly Api $api){}
+    public function __construct(
+        private readonly Api $api,
+        private readonly CommentRepository $commentRepository,
+    ){
+    }
 
     /**
      * Denormalize the provided Response Data containing a Listing of Comments
@@ -35,13 +40,18 @@ class CommentsDenormalizer implements DenormalizerInterface
                 $commentData = $commentRawData['data'];
             }
 
-            $comment = new Comment();
-            $comment->setRedditId($commentData['id']);
-            $comment->setScore((int) $commentData['score']);
-            $comment->setText($commentData['body']);
-            $comment->setAuthor($commentData['author']);
-            $comment->setParentPost($context['post']);
-            $comment->setDepth((int) $commentData['depth']);
+            $existingComment = $this->commentRepository->findOneBy(['redditId' => $commentData['id']]);
+            if (!empty($existingComment)) {
+                $comment = $existingComment;
+            } else {
+                $comment = new Comment();
+                $comment->setRedditId($commentData['id']);
+                $comment->setScore((int) $commentData['score']);
+                $comment->setText($commentData['body']);
+                $comment->setAuthor($commentData['author']);
+                $comment->setParentPost($context['post']);
+                $comment->setDepth((int) $commentData['depth']);
+            }
 
             if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
                 $comment->setParentComment($context['parentComment']);

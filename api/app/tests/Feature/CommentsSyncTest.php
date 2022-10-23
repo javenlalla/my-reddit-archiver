@@ -25,11 +25,9 @@ class CommentsSyncTest extends KernelTestCase
     public function testGetComments()
     {
         $redditId = 'vlyukg';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $this->manager->savePost($post);
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
 
-        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
         $this->assertCount(16, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
@@ -56,9 +54,7 @@ class CommentsSyncTest extends KernelTestCase
 
         $replies = $comment->getReplies();
         $this->assertCount(2, $replies);
-        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657
-
-I don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getText());
+        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getText());
 
         // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
         $commentRedditId = 'iebbk73';
@@ -81,11 +77,9 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsLargeCount()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $this->manager->savePost($post);
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
 
-        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
@@ -130,18 +124,17 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsEmptyMore()
     {
         $redditId = 'won0ky';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $this->manager->savePost($post);
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
 
+        $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(878, $comments);
+        $this->assertCount(877, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(878, $comments);
+        $this->assertCount(877, $comments);
     }
 
     /**
@@ -156,8 +149,8 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
     public function testGetCommentsInitialEmptyMore()
     {
         $redditId = 'wfylnl';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
@@ -179,12 +172,11 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
      */
     public function testSyncCommentsFromCommentPostMultipleLevelsDeep()
     {
-        $redditId = 'iirwrq4';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_COMMENT, $redditId);
-        $this->manager->savePost($post);
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $redditId = 'wf1e8p';
+        $commentRedditId = 'iirwrq4';
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
 
-        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
         $this->assertCount(524, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
@@ -204,10 +196,9 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
      */
     public function testSaveCommentPostMultipleLevelsDeep()
     {
-        $redditId = 'iirwrq4';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_COMMENT, $redditId);
-
-        $this->manager->savePost($post);
+        $redditId = 'wf1e8p';
+        $commentRedditId = 'iirwrq4';
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $this->assertInstanceOf(Post::class, $fetchedPost);
@@ -216,22 +207,17 @@ I don’t remember where I got it from. I downloaded it in my kindle", $replies[
         $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
         $this->assertEquals('science', $fetchedPost->getSubreddit());
         $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
-        $this->assertEquals('2022-08-03 12:43:19', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals('I\'ve recently started running after not running for 10+ years. This was the single biggest piece of advice I got.
+        $this->assertEquals('2022-08-03 08:51:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
 
-Get a good heartrate monitor and don\'t go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn\'t run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.', $fetchedPost->getAuthorText());
-        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;I&amp;#39;ve recently started running after not running for 10+ years. This was the single biggest piece of advice I got.&lt;/p&gt;\n
-&lt;p&gt;Get a good heartrate monitor and don&amp;#39;t go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn&amp;#39;t run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.&lt;/p&gt;\n&lt;/div&gt;", $fetchedPost->getAuthorTextRawHtml());
+        $comment = $content->getComment();
+        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getText());
 
-        $this->assertEquals("<div class=\"md\"><p>I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.</p>\n
-<p>Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.</p>\n</div>", $fetchedPost->getAuthorTextHtml());
+        $kind = $content->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $type = $fetchedPost->getType();
-        $this->assertInstanceOf(Kind::class, $type);
-        $this->assertEquals(Kind::KIND_COMMENT, $type->getRedditTypeId());
-
-        $contentType = $fetchedPost->getContentType();
+        $contentType = $content->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+        $this->assertEquals(ContentType::CONTENT_TYPE_EXTERNAL_LINK, $contentType->getName());
     }
 }

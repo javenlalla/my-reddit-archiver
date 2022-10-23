@@ -44,7 +44,6 @@ class Manager
      * @param  string  $redditId
      *
      * @return Content
-     * @throws ExceptionInterface
      * @throws InvalidArgumentException
      */
     public function getContentFromApiByRedditId(string $type, string $redditId): Content
@@ -65,14 +64,14 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentByFullRedditId(string $fullRedditId): Content
+    public function syncContentFromApiByFullRedditId(string $fullRedditId): Content
     {
         $idParts = explode('_', $fullRedditId);
         if (count($idParts) !== 2) {
             throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
         }
 
-        return $this->syncContentByRedditId($idParts[0], $idParts[1]);
+        return $this->syncContentFromApiByRedditId($idParts[0], $idParts[1]);
     }
 
     /**
@@ -86,7 +85,7 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentByRedditId(string $kind, string $redditId): Content
+    public function syncContentFromApiByRedditId(string $kind, string $redditId): Content
     {
         $response = $this->api->getPostByRedditId($kind, $redditId);
 
@@ -231,13 +230,14 @@ class Manager
 
         $comments = $this->commentsDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);
         foreach ($comments as $comment) {
-            $this->entityManager->persist($comment);
+            $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
 
-            // It is intentional that the post-to-comment relation here is
-            // only explicitly established for the top-level comments, not
-            // replies.
-            $post->addComment($comment);
-            $this->entityManager->persist($post);
+            if (empty($existingComment)) {
+                $this->entityManager->persist($comment);
+
+                $post->addComment($comment);
+                $this->entityManager->persist($post);
+            }
         }
 
         $this->entityManager->flush();
@@ -274,10 +274,6 @@ class Manager
 
     private function getCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
     {
-        // Persist current Comment.
-        // $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
-        // $this->entityManager->persist($comment);
-
         $comment = $content->getComment();
 
         // Sync Comment's Parents.

@@ -97,7 +97,7 @@ class ApiSyncTest extends KernelTestCase
 
         $this->validateContent(
             false,
-            $this->manager->syncContentByFullRedditId($fullRedditId),
+            $this->manager->syncContentFromApiByFullRedditId($fullRedditId),
             $originalPostUrl,
             $redditId,
             $type,
