@@ -13,10 +13,6 @@ class Content
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: ContentType::class, inversedBy: 'savedContents')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $contentType;
-
     #[ORM\ManyToOne(targetEntity: Post::class, cascade: ['persist', 'remove'], inversedBy: 'savedContent')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
@@ -34,18 +30,6 @@ class Content
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getContentType(): ?ContentType
-    {
-        return $this->contentType;
-    }
-
-    public function setContentType(?ContentType $contentType): self
-    {
-        $this->contentType = $contentType;
-
-        return $this;
     }
 
     public function getPost(): ?Post

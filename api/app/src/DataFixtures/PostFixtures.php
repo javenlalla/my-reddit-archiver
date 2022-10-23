@@ -3,14 +3,14 @@
 namespace App\DataFixtures;
 
 use App\Entity\Comment;
-use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
+use App\Entity\Type;
 use App\Repository\CommentRepository;
-use App\Repository\ContentTypeRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
+use App\Repository\TypeRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -20,14 +20,14 @@ class PostFixtures extends Fixture
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
         private readonly KindRepository $kindRepository,
-        private readonly ContentTypeRepository $contentTypeRepository
+        private readonly TypeRepository $typeRepository,
     ) {
     }
 
     public function load(ObjectManager $manager): void
     {
         $this->loadKinds($manager);
-        $this->loadContentTypes($manager);
+        $this->loadPostTypes($manager);
         $manager->flush();
 
         // Create Contents.
@@ -39,7 +39,7 @@ class PostFixtures extends Fixture
                 $content = $this->hydrateContentFromCsvRow($contentRow);
                 $manager->persist($content);
 
-                $contentsListing[$contentRow[2]] = $content;
+                $contentsListing[$contentRow[1]] = $content;
             }
         }
         fclose($contentsDataFile);
@@ -103,6 +103,9 @@ class PostFixtures extends Fixture
         $post->setAuthorTextRawHtml(!empty($postRow[12]) ? $postRow[12]: null);
         $post->setCreatedAt(new \DateTimeImmutable());
 
+        $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
+        $post->setType($type);
+
         return $post;
     }
 
@@ -112,9 +115,6 @@ class PostFixtures extends Fixture
 
         $kind = $this->kindRepository->findOneBy(['redditKindId' => $contentRow[0]]);
         $content->setKind($kind);
-
-        $contentType = $this->contentTypeRepository->findOneBy(['name' => $contentRow[1]]);
-        $content->setContentType($contentType);
 
         $content->setSyncDate(new \DateTimeImmutable());
 
@@ -143,9 +143,9 @@ class PostFixtures extends Fixture
         }
     }
 
-    private function loadContentTypes(ObjectManager $manager)
+    private function loadPostTypes(ObjectManager $manager)
     {
-        $contentTypes = [
+        $postTypes = [
             [
                 'name' => 'image',
                 'displayName' => 'Image',
@@ -172,12 +172,12 @@ class PostFixtures extends Fixture
             ],
         ];
 
-        foreach ($contentTypes as $contentType) {
-            $contentTypeEntity = new ContentType();
-            $contentTypeEntity->setName($contentType['name']);
-            $contentTypeEntity->setDisplayName($contentType['displayName']);
+        foreach ($postTypes as $postType) {
+            $typeEntity = new Type();
+            $typeEntity->setName($postType['name']);
+            $typeEntity->setDisplayName($postType['displayName']);
 
-            $manager->persist($contentTypeEntity);
+            $manager->persist($typeEntity);
         }
     }
 

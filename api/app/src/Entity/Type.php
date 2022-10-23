@@ -2,26 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\ContentTypeRepository;
+use App\Repository\TypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ContentTypeRepository::class)]
-class ContentType
+#[ORM\Entity(repositoryClass: TypeRepository::class)]
+class Type
 {
-    const CONTENT_TYPE_IMAGE = 'image';
-
-    const CONTENT_TYPE_GIF = 'gif';
-
-    const CONTENT_TYPE_VIDEO = 'video';
-
-    const CONTENT_TYPE_TEXT = 'text';
-
-    const CONTENT_TYPE_IMAGE_GALLERY = 'image_gallery';
-
-    const CONTENT_TYPE_EXTERNAL_LINK = 'external_link';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -33,8 +21,12 @@ class ContentType
     #[ORM\Column(type: 'string', length: 20)]
     private $displayName;
 
+    #[ORM\OneToMany(mappedBy: 'type', targetEntity: Post::class)]
+    private $posts;
+
     public function __construct()
     {
+        $this->posts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -62,6 +54,36 @@ class ContentType
     public function setDisplayName(string $displayName): self
     {
         $this->displayName = $displayName;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Post $post): self
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts[] = $post;
+            $post->setType($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Post $post): self
+    {
+        if ($this->posts->removeElement($post)) {
+            // set the owning side to null (unless already changed)
+            if ($post->getType() === $this) {
+                $post->setType(null);
+            }
+        }
 
         return $this;
     }

@@ -62,6 +62,10 @@ class Post
     #[ORM\OneToOne(mappedBy: 'post', targetEntity: Content::class, cascade: ['persist', 'remove'])]
     private $content;
 
+    #[ORM\ManyToOne(targetEntity: Type::class, inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $type;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -306,6 +310,18 @@ class Post
         }
 
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getType(): ?Type
+    {
+        return $this->type;
+    }
+
+    public function setType(?Type $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
