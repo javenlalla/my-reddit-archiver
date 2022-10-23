@@ -33,11 +33,9 @@ class ManagerTest extends KernelTestCase
     public function testCreatedAtTimeZone()
     {
         $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' .$redditId);
 
-        $this->manager->savePost($post);
-
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $fetchedPost = $this->manager->getPostByRedditId($content->getPost()->getRedditId());
 
         $postTimestamp = 1655497762;
         $targetDateTime = \DateTimeImmutable::createFromFormat('U', $postTimestamp);
@@ -76,7 +74,8 @@ class ManagerTest extends KernelTestCase
      */
     public function testParseCommentPostFromSavedListing()
     {
-        $redditId = 'iirwrq4';
+        $redditId = 'wf1e8p';
+        $commentRedditId = 'iirwrq4';
 
         $savedHistoryRawResponse = file_get_contents('/var/www/mra-api/tests/resources/sample-json/iirwrq4-from-saved-listing.json');
         $savedHistoryResponse = json_decode($savedHistoryRawResponse, true);
@@ -92,31 +91,19 @@ class ManagerTest extends KernelTestCase
         $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
         $this->assertEquals('https://reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/', $fetchedPost->getRedditPostUrl());
 
-        $this->assertEquals('2022-08-03 12:43:19', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n
-Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $fetchedPost->getAuthorText());
+        $kind = $fetchedPost->getContent()->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;I&amp;#39;ve recently started running after not running for 10+ years. This was the single biggest piece of advice I got.&lt;/p&gt;\n
-&lt;p&gt;Get a good heartrate monitor and don&amp;#39;t go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn&amp;#39;t run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.&lt;/p&gt;
-&lt;/div&gt;", $fetchedPost->getAuthorTextRawHtml());
-
-        $this->assertEquals("<div class=\"md\"><p>I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.</p>\n
-<p>Get a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.</p>
-</div>", $fetchedPost->getAuthorTextHtml());
-
-        $type = $fetchedPost->getType();
-        $this->assertInstanceOf(Kind::class, $type);
-        $this->assertEquals(Kind::KIND_COMMENT, $type->getRedditTypeId());
-
-        $contentType = $fetchedPost->getContentType();
+        $contentType = $fetchedPost->getContent()->getContentType();
         $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+        $this->assertEquals(ContentType::CONTENT_TYPE_EXTERNAL_LINK, $contentType->getName());
 
         // Verify top-level Comments count.
         $this->assertCount(524, $fetchedPost->getComments());
 
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(1346, $allCommentsCount);
+        $this->assertEquals(1345, $allCommentsCount);
     }
 }

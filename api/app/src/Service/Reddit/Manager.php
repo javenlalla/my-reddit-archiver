@@ -183,8 +183,10 @@ class Manager
      */
     public function syncPost(array $fullPostResponse): Post
     {
-        $post = $this->hydrateContentFromResponseData($fullPostResponse['kind'], $fullPostResponse);
-        $post = $this->savePost($post);
+        $content = $this->hydrateContentFromResponseData($fullPostResponse['kind'], $fullPostResponse);
+        $this->contentRepository->add($content, true);
+
+        $post = $this->savePost($content->getPost());
         $comments = $this->syncCommentsFromApiByPost($post);
 
         return $post;
