@@ -5,13 +5,11 @@ namespace App\Denormalizer\Post;
 use App\Entity\Content;
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
-use App\Repository\ContentTypeRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentPostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
-        private readonly ContentTypeRepository $contentTypeRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
     ) {
     }
