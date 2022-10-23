@@ -4,7 +4,6 @@ namespace App\Tests\Service\Reddit\Media;
 
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
-use App\Service\Reddit\Hydrator;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManager;
