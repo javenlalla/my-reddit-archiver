@@ -164,19 +164,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'vepbt0';
         $expectedPath = self::ASSET_IMAGE_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert image was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert image can be retrieved from the database and is
@@ -190,8 +187,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('f', $mediaAsset->getDirOne());
         $this->assertEquals('aa', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -203,19 +200,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'won0ky';
         $expectedPath = self::ASSET_REDDIT_HOSTED_IMAGE_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert image was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert image can be retrieved from the database and is
@@ -229,8 +223,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.redd.it/cnfk33iv9sh91.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('4', $mediaAsset->getDirOne());
         $this->assertEquals('4c', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -246,19 +240,17 @@ class DownloaderTest extends KernelTestCase
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
         }
 
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert assets were saved locally.
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
         }
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert assets were persisted to the database and associated to this
         // current Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(6, $mediaAssets);
 
         // Assert assets can be retrieved from the database and are
@@ -273,7 +265,7 @@ class DownloaderTest extends KernelTestCase
             $this->assertEquals($galleryAsset['sourceUrl'], $mediaAsset->getSourceUrl());
             $this->assertEquals($galleryAsset['dirOne'], $mediaAsset->getDirOne());
             $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
-            $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+            $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         }
     }
 
@@ -290,19 +282,17 @@ class DownloaderTest extends KernelTestCase
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
         }
 
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert assets were saved locally.
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
         }
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert assets were persisted to the database and associated to this
         // current Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(9, $mediaAssets);
 
         // Assert assets can be retrieved from the database and are
@@ -317,7 +307,7 @@ class DownloaderTest extends KernelTestCase
             $this->assertEquals($galleryAsset['sourceUrl'], $mediaAsset->getSourceUrl());
             $this->assertEquals($galleryAsset['dirOne'], $mediaAsset->getDirOne());
             $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
-            $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
+            $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         }
     }
 
@@ -330,19 +320,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'utsmkw';
         $expectedPath = self::ASSET_TEXT_WITH_IMAGE_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert image was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert image can be retrieved from the database and is
@@ -356,8 +343,7 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&s=7cab4910712115bb273171653cc754b9077c1455', $mediaAsset->getSourceUrl());
         $this->assertEquals('0', $mediaAsset->getDirOne());
         $this->assertEquals('a6', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        // $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
     }
 
     /**
@@ -369,19 +355,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'wgb8wj';
         $expectedPath = self::ASSET_GIF_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert GIF was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert image was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert image can be retrieved from the database and is
@@ -395,8 +378,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69', $mediaAsset->getSourceUrl());
         $this->assertEquals('1', $mediaAsset->getDirOne());
         $this->assertEquals('ae', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -409,19 +392,16 @@ class DownloaderTest extends KernelTestCase
         // @TODO: Add initial assertion to ensure ffmpeg is installed.
         $redditId = 'tl8qic';
         $expectedPath = self::ASSET_REDDIT_VIDEO_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert Reddit Video was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert Reddit Video was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert Reddit Video can be retrieved from the database and is
@@ -437,8 +417,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('8u3caw3zm6p81_audio.mp4', $mediaAsset->getAudioFilename());
         $this->assertEquals('a', $mediaAsset->getDirOne());
         $this->assertEquals('01', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     /**
@@ -455,19 +435,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'wfylnl';
         $expectedPath = self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH;
-
         $this->assertFileDoesNotExist($expectedPath);
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
 
-        $savedPost = $this->manager->savePost($post);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $post = $content->getPost();
 
         // Assert Reddit Video was saved locally.
         $this->assertFileExists($expectedPath);
 
-        $fetchedPost = $this->manager->getPostByRedditId($post->getRedditId());
-
         // Assert Reddit Video was persisted to the database and associated to its Post.
-        $mediaAssets = $fetchedPost->getMediaAssets();
+        $mediaAssets = $post->getMediaAssets();
         $this->assertCount(1, $mediaAssets);
 
         // Assert Reddit Video can be retrieved from the database and is
@@ -483,8 +460,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEmpty($mediaAsset->getAudioFilename());
         $this->assertEquals('1', $mediaAsset->getDirOne());
         $this->assertEquals('7d', $mediaAsset->getDirTwo());
-        $this->assertEquals($fetchedPost->getId(), $mediaAsset->getParentPost()->getId());
-        $this->assertEquals($fetchedPost->getUrl(), $mediaAsset->getSourceUrl());
+        $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+        $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
 
     public function tearDown(): void
