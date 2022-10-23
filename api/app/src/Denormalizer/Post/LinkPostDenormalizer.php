@@ -4,10 +4,11 @@ namespace App\Denormalizer\Post;
 
 use App\Denormalizer\MediaAssetsDenormalizer;
 use App\Entity\Content;
-use App\Entity\ContentType;
+use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
-use App\Helper\ContentTypeHelper;
+use App\Entity\Type;
+use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -16,7 +17,7 @@ class LinkPostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
-        private readonly ContentTypeHelper $contentTypeHelper,
+        private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
     ) {
     }
@@ -38,7 +39,7 @@ class LinkPostDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Post
     {
-        $contentTypeName = $context['content']->getContentType()->getName();
+        $kindRedditId = $context['content']->getKind()->getRedditKindId();
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
@@ -54,7 +55,15 @@ class LinkPostDenormalizer implements DenormalizerInterface
         $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', $postData['created_utc']));
 
-        if ($contentTypeName === ContentType::CONTENT_TYPE_TEXT) {
+        if ($kindRedditId === Kind::KIND_LINK) {
+            $type = $this->typeHelper->getContentTypeFromPostData($postData);
+        } elseif ($kindRedditId === Kind::KIND_COMMENT) {
+            $type = $this->typeHelper->getContentTypeFromPostData($context['parentPostData']['data']['children'][0]['data']);
+        }
+        $post->setType($type);
+        $typeName = $type->getName();
+
+        if ($typeName === Type::CONTENT_TYPE_TEXT) {
             $post->setAuthorText($postData['selftext']);
             $post->setAuthorTextRawHtml($postData['selftext_html']);
             $post->setAuthorTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
@@ -67,7 +76,7 @@ class LinkPostDenormalizer implements DenormalizerInterface
             $post->addMediaAsset($mediaAsset);
         }
 
-        if (($contentTypeName === ContentType::CONTENT_TYPE_GIF || $contentTypeName === ContentType::CONTENT_TYPE_VIDEO)
+        if (($typeName === Type::CONTENT_TYPE_GIF || $typeName === Type::CONTENT_TYPE_VIDEO)
             && !empty($mediaAssets)
         ) {
             $post->setUrl($mediaAssets[0]->getSourceUrl());

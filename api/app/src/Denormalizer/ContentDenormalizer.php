@@ -7,7 +7,6 @@ use App\Entity\Comment;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
-use App\Helper\ContentTypeHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
@@ -19,7 +18,6 @@ class ContentDenormalizer implements DenormalizerInterface
     public function __construct(
         private readonly LinkPostDenormalizer $linkPostDenormalizer,
         private readonly KindRepository $kindRepository,
-        private readonly ContentTypeHelper $contentTypeHelper,
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
@@ -65,13 +63,6 @@ class ContentDenormalizer implements DenormalizerInterface
             $kind = $this->kindRepository->getLinkType();
         }
         $content->setKind($kind);
-
-        if ($data['kind'] === Kind::KIND_LINK) {
-            $contentType = $this->contentTypeHelper->getContentTypeFromPostData($data['data']);
-        } elseif ($data['kind'] === Kind::KIND_COMMENT) {
-            $contentType = $this->contentTypeHelper->getContentTypeFromPostData($context['parentPostData']['data']['children'][0]['data']);
-        }
-        $content->setContentType($contentType);
 
         $context['content'] = $content;
         if ($data['kind'] === Kind::KIND_LINK) {

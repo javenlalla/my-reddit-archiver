@@ -2,63 +2,62 @@
 
 namespace App\Helper;
 
-use App\Entity\ContentType;
-use App\Repository\ContentTypeRepository;
+use App\Entity\Type;
+use App\Repository\TypeRepository;
 use Exception;
 
-class ContentTypeHelper
+class TypeHelper
 {
     public function __construct(
-        private readonly ContentTypeRepository $contentTypeRepository
+        private readonly TypeRepository $typeRepository
     ) {
     }
 
     /**
-     * Determine and return the Content Type from the provided Post Response
-     * Data.
+     * Determine and return the Type from the provided Post Response data.
      *
      * @param  array  $postData
      *
-     * @return ContentType
+     * @return Type
      * @throws Exception
      */
-    public function getContentTypeFromPostData(array $postData): ContentType
+    public function getContentTypeFromPostData(array $postData): Type
     {
-        $contentType = $this->getContentTypeFromDomainAndUrl($postData);
-        if ($contentType instanceof ContentType) {
-            return $contentType;
+        $type = $this->getTypeFromDomainAndUrl($postData);
+        if ($type instanceof Type) {
+            return $type;
         }
 
         if ($postData['domain'] === 'i.imgur.com'
             || ($postData['domain'] === 'i.redd.it' && $postData['is_reddit_media_domain'] === true)
         ) {
-            return $this->contentTypeRepository->getImageContentType();
+            return $this->typeRepository->getImageType();
         } else if (!empty($postData['selftext']) && $postData['is_self'] === true) {
-            return $this->contentTypeRepository->getTextContentType();
-        } else if ($this->isVideoContent($postData) === true) {
-            return $this->contentTypeRepository->getVideoContentType();
+            return $this->typeRepository->getTextType();
+        } else if ($this->isVideoType($postData) === true) {
+            return $this->typeRepository->getVideoType();
         } else if (!empty($postData['gallery_data'])) {
-            return $this->contentTypeRepository->getImageGalleryContentType();
+            return $this->typeRepository->getImageGalleryType();
         } else if (!empty($postData['preview']['images'][0]['variants']['gif']) && !empty($postData['preview']['images'][0]['variants']['mp4'])) {
-            return $this->contentTypeRepository->getGifContentType();
+            return $this->typeRepository->getGifType();
         } else if (empty($postData['selftext']) && $postData['is_self'] === true) {
-            return $this->contentTypeRepository->getTextContentType();
+            return $this->typeRepository->getTextType();
         } else if ($this->postIsExternalLink($postData) === true) {
-            return $this->contentTypeRepository->getExternalLinkContentType();
+            return $this->typeRepository->getExternalLinkType();
         }
 
-        throw new Exception(sprintf('Unable to determine Content Type for response data: %s', var_export($postData, true)));
+        throw new Exception(sprintf('Unable to determine Type for response data: %s', var_export($postData, true)));
     }
 
     /**
-     * Attempt to retrieve the Content Type for the provided Response Data based
-     * on its domain and URL properties.
+     * Attempt to retrieve the Type for the provided Response Data based on its
+     * domain and URL properties.
      *
      * @param  array  $responseData
      *
-     * @return ContentType|null
+     * @return Type|null
      */
-    private function getContentTypeFromDomainAndUrl(array $responseData): ?ContentType
+    private function getTypeFromDomainAndUrl(array $responseData): ?Type
     {
         $domain = $responseData['domain'];
         if (in_array($domain, ['i.imgur.com', 'i.redd.it'])) {
@@ -72,10 +71,10 @@ class ContentTypeHelper
                 case 'jpeg':
                 case 'png':
                 case 'webp':
-                    return $this->contentTypeRepository->getImageContentType();
+                    return $this->typeRepository->getImageType();
 
                 case 'gif':
-                    return $this->contentTypeRepository->getGifContentType();
+                    return $this->typeRepository->getGifType();
             }
         }
 
@@ -83,14 +82,13 @@ class ContentTypeHelper
     }
 
     /**
-     * Determine if the provided Post Response Data represents a Video Content
-     * Type.
+     * Determine if the provided Post Response Data represents a Video Type.
      *
      * @param  array  $responseData
      *
      * @return bool
      */
-    private function isVideoContent(array $responseData): bool
+    private function isVideoType(array $responseData): bool
     {
         if ($responseData['is_video'] === true) {
             return true;

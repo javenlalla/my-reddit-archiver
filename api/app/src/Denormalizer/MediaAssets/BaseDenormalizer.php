@@ -3,9 +3,9 @@
 namespace App\Denormalizer\MediaAssets;
 
 use App\Entity\Content;
-use App\Entity\ContentType;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
+use App\Entity\Type;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class BaseDenormalizer implements DenormalizerInterface
@@ -36,9 +36,8 @@ class BaseDenormalizer implements DenormalizerInterface
         $mediaAsset = new MediaAsset();
         $mediaAsset->setParentPost($post);
 
-
-        $contentType = $context['content']->getContentType()->getName();
-        if ($contentType === ContentType::CONTENT_TYPE_GIF) {
+        $typeName = $post->getType()->getName();
+        if ($typeName === Type::CONTENT_TYPE_GIF) {
             if (!empty($responseData['preview']['images'][0]['variants']['mp4']['source']['url'])) {
                 $overrideSourceUrl = html_entity_decode($responseData['preview']['images'][0]['variants']['mp4']['source']['url']);
             } else {
@@ -50,9 +49,9 @@ class BaseDenormalizer implements DenormalizerInterface
 
         if (!empty($assetExtension)) {
             $mediaAsset->setFilename($idHash . '.' . $assetExtension);
-        } else if ($contentType === ContentType::CONTENT_TYPE_IMAGE || $contentType === ContentType::CONTENT_TYPE_IMAGE_GALLERY) {
+        } else if ($typeName === Type::CONTENT_TYPE_IMAGE || $typeName === Type::CONTENT_TYPE_IMAGE_GALLERY) {
             $mediaAsset->setFilename($idHash . '.jpg');
-        } else if ($contentType === ContentType::CONTENT_TYPE_GIF || $contentType === ContentType::CONTENT_TYPE_VIDEO) {
+        } else if ($typeName === Type::CONTENT_TYPE_GIF || $typeName === Type::CONTENT_TYPE_VIDEO) {
             $mediaAsset->setFilename($idHash . '.mp4');
         }
 

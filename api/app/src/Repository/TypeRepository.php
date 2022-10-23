@@ -39,6 +39,54 @@ class TypeRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @return Type
+     */
+    public function getImageType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_IMAGE]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getVideoType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_VIDEO]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getTextType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_TEXT]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getImageGalleryType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_IMAGE_GALLERY]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getGifType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_GIF]);
+    }
+
+    /**
+     * @return Type
+     */
+    public function getExternalLinkType(): Type
+    {
+        return $this->findOneBy(['name' => Type::CONTENT_TYPE_EXTERNAL_LINK]);
+    }
+
 //    /**
 //     * @return Type[] Returns an array of Type objects
 //     */

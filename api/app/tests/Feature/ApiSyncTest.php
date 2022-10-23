@@ -3,9 +3,9 @@
 namespace App\Tests\Feature;
 
 use App\Entity\Content;
-use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
+use App\Entity\Type;
 use App\Service\Reddit\Manager;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -42,9 +42,9 @@ class ApiSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_LINK, $kind->getRedditKindId());
 
-        $contentType = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+        $contentType = $content->getPost()->getType();
+        $this->assertInstanceOf(Type::class, $contentType);
+        $this->assertEquals(Type::CONTENT_TYPE_IMAGE, $contentType->getName());
 
         $post = $content->getPost();
         $this->assertEquals($redditId, $post->getRedditId());
@@ -179,7 +179,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/',
                 'redditId' => 'vepbt0',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_IMAGE,
+                'contentType' => Type::CONTENT_TYPE_IMAGE,
                 'title' => 'My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…',
                 'subreddit' => 'shittyfoodporn',
                 'url' => 'https://i.imgur.com/ThRMZx5.jpg',
@@ -189,7 +189,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/',
                 'redditId' => 'won0ky',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_IMAGE,
+                'contentType' => Type::CONTENT_TYPE_IMAGE,
                 'title' => 'I learned how to whistle from this in less than 5 minutes.',
                 'subreddit' => 'coolguides',
                 'url' => 'https://i.redd.it/cnfk33iv9sh91.jpg',
@@ -199,7 +199,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
                 'redditId' => 'vlyukg',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'contentType' => Type::CONTENT_TYPE_TEXT,
                 'title' => 'If you are an intermediate level learner, I strongly suggest you give the book "Tintenherz" a try',
                 'subreddit' => 'German',
                 'url' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
@@ -212,7 +212,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/',
                 'redditId' => 'vdmg2f',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'contentType' => Type::CONTENT_TYPE_TEXT,
                 'title' => '[serious] What should everyone learn how to do?',
                 'subreddit' => 'AskReddit',
                 'url' => 'https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/',
@@ -222,7 +222,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/golang/comments/v443nh/golang_tutorial_how_to_implement_concurrency_with/',
                 'redditId' => 'v443nh',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_VIDEO,
+                'contentType' => Type::CONTENT_TYPE_VIDEO,
                 'title' => 'Golang Tutorial | How To Implement Concurrency With Goroutines and Channels',
                 'subreddit' => 'golang',
                 'url' => 'https://youtu.be/bbgip1-ZbZg',
@@ -232,7 +232,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/',
                 'redditId' => 'tl8qic',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_VIDEO,
+                'contentType' => Type::CONTENT_TYPE_VIDEO,
                 'title' => 'I think I married a psychopath',
                 'subreddit' => 'Unexpected',
                 'url' => 'https://v.redd.it/8u3caw3zm6p81/DASH_720.mp4?source=fallback',
@@ -242,7 +242,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/',
                 'redditId' => 'wfylnl',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_VIDEO,
+                'contentType' => Type::CONTENT_TYPE_VIDEO,
                 'title' => 'When you use a new library without reading the documentation',
                 'subreddit' => 'ProgrammerHumor',
                 'url' => 'https://v.redd.it/bofh9q9jkof91/DASH_720.mp4?source=fallback',
@@ -252,7 +252,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/',
                 'redditId' => 'v27nr7',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_IMAGE_GALLERY,
+                'contentType' => Type::CONTENT_TYPE_IMAGE_GALLERY,
                 'title' => 'All my recreations of magazine covers from Tremors 2 so far',
                 'subreddit' => 'Tremors',
                 'url' => 'https://www.reddit.com/gallery/v27nr7',
@@ -262,7 +262,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
                 'redditId' => 'uy3sx1',
                 'type' => Kind::KIND_COMMENT,
-                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'contentType' => Type::CONTENT_TYPE_TEXT,
                 'title' => 'Passed my telc B2 exam with a great score (275/300). Super stoked about it!',
                 'subreddit' => 'German',
                 'url' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/',
@@ -284,7 +284,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
                 'redditId' => 'wgb8wj',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_GIF,
+                'contentType' => Type::CONTENT_TYPE_GIF,
                 'title' => 'me_irl',
                 'subreddit' => 'me_irl',
                 'url' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69',
@@ -294,7 +294,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
                 'redditId' => 'cs8urd',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_GIF,
+                'contentType' => Type::CONTENT_TYPE_GIF,
                 'title' => 'Matt Riddle got hit by a truck',
                 'subreddit' => 'SquaredCircle',
                 'url' => 'https://preview.redd.it/aha06x6skah31.gif?format=mp4&s=4538ed4f9e9c0cb4d692f7d4a795d64a21447efa',
@@ -309,7 +309,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988',
                 'redditId' => 'utsmkw',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'contentType' => Type::CONTENT_TYPE_TEXT,
                 'title' => 'Tremors poster for Gallery1988',
                 'subreddit' => 'Tremors',
                 'url' => 'https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988/',
@@ -322,7 +322,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
                 'redditId' => 'urn2yw',
                 'type' => Kind::KIND_LINK,
-                'contentType' => ContentType::CONTENT_TYPE_EXTERNAL_LINK,
+                'contentType' => Type::CONTENT_TYPE_EXTERNAL_LINK,
                 'title' => 'Mithril.js release a new version after nearly 3 years',
                 'subreddit' => 'javascript',
                 'url' => 'https://github.com/MithrilJS/mithril.js/releases',
@@ -336,7 +336,7 @@ class ApiSyncTest extends KernelTestCase
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
                 'redditId' => 'xjarj9',
                 'type' => Kind::KIND_COMMENT,
-                'contentType' => ContentType::CONTENT_TYPE_TEXT,
+                'contentType' => Type::CONTENT_TYPE_TEXT,
                 'title' => 'Gamers of old, what will the gamers of the modern console generation never be able to experience?',
                 'subreddit' => 'AskReddit',
                 'url' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
@@ -419,8 +419,8 @@ class ApiSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $contentKind);
         $this->assertEquals($type, $contentKind->getRedditKindId());
 
-        $type = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $type);
+        $type = $post->getType();
+        $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals($contentType, $type->getName());
 
         if ($authorText === null) {

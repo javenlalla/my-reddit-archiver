@@ -10,6 +10,18 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: TypeRepository::class)]
 class Type
 {
+    const CONTENT_TYPE_IMAGE = 'image';
+
+    const CONTENT_TYPE_GIF = 'gif';
+
+    const CONTENT_TYPE_VIDEO = 'video';
+
+    const CONTENT_TYPE_TEXT = 'text';
+
+    const CONTENT_TYPE_IMAGE_GALLERY = 'image_gallery';
+
+    const CONTENT_TYPE_EXTERNAL_LINK = 'external_link';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
