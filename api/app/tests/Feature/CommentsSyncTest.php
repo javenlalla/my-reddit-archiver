@@ -3,9 +3,9 @@
 namespace App\Tests\Feature;
 
 use App\Entity\Comment;
-use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
+use App\Entity\Type;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -216,8 +216,8 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $contentType = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_EXTERNAL_LINK, $contentType->getName());
+        $type = $fetchedPost->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::CONTENT_TYPE_EXTERNAL_LINK, $type->getName());
     }
 }

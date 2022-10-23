@@ -4,9 +4,9 @@ namespace App\Tests\Feature;
 
 use App\Entity\Comment;
 use App\Entity\Content;
-use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
+use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -72,9 +72,9 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $contentType = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+        $type = $post->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::CONTENT_TYPE_IMAGE, $type->getName());
 
         // Verify all top Comments have been persisted.
         $this->assertEquals(24, $post->getComments()->count());
@@ -164,9 +164,9 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $contentType = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_IMAGE, $contentType->getName());
+        $type = $post->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::CONTENT_TYPE_IMAGE, $type->getName());
 
         $comment = $content->getComment();
         $this->assertEquals($commentRedditId, $comment->getRedditId());
@@ -212,9 +212,9 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $contentType = $firstComment->getContent()->getContentType();
-        $this->assertInstanceOf(ContentType::class, $contentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
+        $type = $firstComment->getParentPost()->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals(Type::CONTENT_TYPE_TEXT, $type->getName());
     }
 
     public function testBasicCommentContentJsonUrlSync()
@@ -222,7 +222,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $originalPostUrl =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
         $redditId =  'ia1smh6';
         $type =  Kind::KIND_COMMENT;
-        $contentType =  ContentType::CONTENT_TYPE_TEXT;
+        $postType =  Type::CONTENT_TYPE_TEXT;
         $title =  'Passed my telc B2 exam with a great score (275/300). Super stoked about it!';
         $subreddit =  'German';
         $url =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/';
@@ -260,9 +260,9 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $contentKind);
         $this->assertEquals($type, $contentKind->getRedditKindId());
 
-        $type = $content->getContentType();
-        $this->assertInstanceOf(ContentType::class, $type);
-        $this->assertEquals($contentType, $type->getName());
+        $type = $post->getType();
+        $this->assertInstanceOf(Type::class, $type);
+        $this->assertEquals($postType, $type->getName());
 
         $this->assertEquals("I’d be glad to offer any advice.", $post->getAuthorText());
         $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getAuthorTextRawHtml());
