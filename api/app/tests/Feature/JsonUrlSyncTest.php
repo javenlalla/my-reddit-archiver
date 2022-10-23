@@ -183,17 +183,22 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testMultpleSavedCommentsFromSamePost()
     {
-        $this->markTestSkipped('The logic required to make this test passable requires more investigation. Marking `Skipped` for now.');
-
-        $redditId = 'f83v7ro';
+        $redditId = 'dyu2uy';
         $kind = Kind::KIND_COMMENT;
-        $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
-        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $contentLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
+        $content = $this->manager->syncContentFromJsonUrl($kind, $contentLink);
 
         $kind = Kind::KIND_COMMENT;
-        $postLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
-        $post = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $contentLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
+        $content = $this->manager->syncContentFromJsonUrl($kind, $contentLink);
 
+        $firstComment = $this->commentRepository->findOneBy(['redditId' => 'f83v7ro']);
+        $secondComment = $this->commentRepository->findOneBy(['redditId' => 'f83nvbg']);
+
+        $this->assertNotEquals($firstComment->getContent()->getId(), $secondComment->getContent()->getId(), 'Separate Comments within the same Post should have different Content parents.');
+        $this->assertEquals($firstComment->getParentPost()->getId(), $secondComment->getParentPost()->getId(), 'Separate Comments within the same Post should share the same Post record.');
+
+        $post = $firstComment->getParentPost();
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());
         $this->assertEquals($redditId, $post->getRedditId());
@@ -201,15 +206,15 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('AskReddit', $post->getSubreddit());
         $this->assertEquals('https://www.reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getUrl());
         $this->assertEquals('https://reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getRedditPostUrl());
-        $this->assertEquals('2019-11-20 03:51:00', $post->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('2019-11-20 00:57:10', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
-        $postType = $post->getType();
-        $this->assertInstanceOf(Kind::class, $postType);
-        $this->assertEquals(Kind::KIND_COMMENT, $postType->getRedditTypeId());
+        $kind = $firstComment->getContent()->getKind();
+        $this->assertInstanceOf(Kind::class, $kind);
+        $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $postContentType = $post->getContentType();
-        $this->assertInstanceOf(ContentType::class, $postContentType);
-        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $postContentType->getName());
+        $contentType = $firstComment->getContent()->getContentType();
+        $this->assertInstanceOf(ContentType::class, $contentType);
+        $this->assertEquals(ContentType::CONTENT_TYPE_TEXT, $contentType->getName());
     }
 
     public function testBasicCommentContentJsonUrlSync()

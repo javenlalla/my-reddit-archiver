@@ -8,7 +8,9 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
 use App\Helper\ContentTypeHelper;
+use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
+use App\Repository\PostRepository;
 use Exception;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -19,6 +21,8 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly KindRepository $kindRepository,
         private readonly ContentTypeHelper $contentTypeHelper,
         private readonly CommentDenormalizer $commentDenormalizer,
+        private readonly PostRepository $postRepository,
+        private readonly CommentRepository $commentRepository,
     ) {
     }
 
@@ -77,14 +81,26 @@ class ContentDenormalizer implements DenormalizerInterface
         } else {
             throw new Exception(sprintf('Unexpected Post type %s: %s', $data['kind'], var_export($data, true)));
         }
-        $content->setPost($post);
+
+        $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
+        if (!empty($existingPost)) {
+            $content->setPost($existingPost);
+        } else {
+            $content->setPost($post);
+        }
 
         if (!empty($context['commentData'])) {
             $kind = $this->kindRepository->getCommentType();
             $content->setKind($kind);;
 
             $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, $context);
-            $content->setComment($comment);
+
+            $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
+            if (!empty($existingComment)) {
+                $content->setComment($existingComment);
+            } else {
+                $content->setComment($comment);
+            }
         }
 
         return $content;

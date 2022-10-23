@@ -17,7 +17,7 @@ class Content
     #[ORM\JoinColumn(nullable: false)]
     private $contentType;
 
-    #[ORM\OneToOne(inversedBy: 'savedContent', targetEntity: Post::class, cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(targetEntity: Post::class, cascade: ['persist', 'remove'], inversedBy: 'savedContent')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 

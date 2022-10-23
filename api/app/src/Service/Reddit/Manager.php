@@ -288,8 +288,12 @@ class Manager
             $replies = $this->commentsDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
 
             foreach ($replies as $reply) {
-                $comment->addReply($reply);
-                $this->entityManager->persist($reply);
+                $existingComment = $this->commentRepository->findOneBy(['redditId' => $reply->getRedditId()]);
+
+                if (empty($existingComment)) {
+                    $comment->addReply($reply);
+                    $this->entityManager->persist($reply);
+                }
             }
         }
 
@@ -302,6 +306,12 @@ class Manager
     private function syncCommentWithParents(Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
     {
         $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
+
+        $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
+        if (!empty($existingComment)) {
+            $comment = $existingComment;
+        }
+
         $post = $content->getPost();
 
         // Do not re-persist the original Comment.
@@ -337,7 +347,7 @@ class Manager
                 $childComment = $originalComment;
             }
 
-                $this->syncCommentWithParents($content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
+            $this->syncCommentWithParents($content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
         }
     }
 
@@ -393,18 +403,9 @@ class Manager
     {
         $targetComment = $commentsData[0]['data'];
         $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
-
-        // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.
-        // @see: \App\Tests\Feature\JsonUrlSyncTest::testMultpleSavedCommentsFromSamePost()
-        // $existingPost = $this->postRepository->findOneBy(['redditPostUrl' => $post->getRedditPostUrl()]);
-        // if (!empty($existingPost)) {
-        //     return $existingPost;
-        // }
-
         $this->contentRepository->add($content, true);
 
         $originalComment = $this->getCommentTreeBranch($content, $postData['data'], $targetComment);
-
         $jsonData = $this->getRawDataFromJsonUrl($content->getPost()->getRedditPostUrl());
         $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
 
@@ -434,6 +435,17 @@ class Manager
         foreach ($commentsData as $commentData) {
             if ($commentData['kind'] !== 'more') {
                 $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, ['commentData' => $commentData['data']]);
+
+                $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
+                if (!empty($existingComment)) {
+                    $comment = $existingComment;
+
+                    // Existing Comment is already associated to the target
+                    // Post. Skip additional processing.
+                    if ($comment->getParentPost()->getRedditId() === $post->getRedditId()) {
+                        continue;
+                    }
+                }
 
                 // Do not re-persist the Top Level Comment of the Saved Comment
                 // in order to avoid a unique constraint violation.
