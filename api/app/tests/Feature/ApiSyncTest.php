@@ -7,7 +7,6 @@ use App\Entity\ContentType;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Service\Reddit\Manager;
-use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -29,19 +28,10 @@ class ApiSyncTest extends KernelTestCase
      * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
      *
      * @return void
+     * @throws ExceptionInterface
+     * @throws InvalidArgumentException
      */
-    public function testGetPostFromApiByRedditId()
-    {
-        $redditId = 'vepbt0';
-        $post = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
-
-        $this->assertInstanceOf(Post::class, $post);
-        $this->assertEquals($redditId, $post->getRedditId());
-        $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
-        $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
-    }
-
-    public function testBasicSync()
+    public function testBasicSyncFromApi()
     {
         $redditId = 'vepbt0';
         $content = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
@@ -100,9 +90,14 @@ class ApiSyncTest extends KernelTestCase
         string $gifUrl = null,
         string $commentRedditId = null,
     ) {
+        $fullRedditId = $type . '_' . $redditId;
+        if ($type === Kind::KIND_COMMENT) {
+            $fullRedditId = $type . '_' . $commentRedditId;
+        }
+
         $this->validateContent(
             false,
-            $this->manager->syncPostByFullRedditId($type . '_' . $redditId),
+            $this->manager->syncContentByFullRedditId($fullRedditId),
             $originalPostUrl,
             $redditId,
             $type,

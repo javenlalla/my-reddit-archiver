@@ -6,8 +6,6 @@ use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
 use App\Denormalizer\CommentsDenormalizer;
 use App\Denormalizer\ContentDenormalizer;
-use App\Denormalizer\Post\CommentPostDenormalizer;
-use App\Denormalizer\PostDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\Kind;
@@ -31,12 +29,10 @@ class Manager
         private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly PostDenormalizer $postDenormalizer,
         private readonly ContentDenormalizer $contentDenormalizer,
         private readonly CommentsDenormalizer $commentsDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
-        private readonly CommentPostDenormalizer $commentPostDenormalizer,
         private readonly Downloader $mediaDownloader,
     ) {
     }
@@ -59,58 +55,67 @@ class Manager
     }
 
     /**
-     * Convenience function to execute a sync of a Reddit Post by its full
+     * Convenience function to execute a sync of a Reddit Content by its full
      * Reddit ID.
      *
      * Full Reddit ID example: t3_vepbt0
      *
      * @param  string  $fullRedditId
      *
-     * @return Post
-     * @throws ExceptionInterface
+     * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncPostByFullRedditId(string $fullRedditId): Post
+    public function syncContentByFullRedditId(string $fullRedditId): Content
     {
         $idParts = explode('_', $fullRedditId);
         if (count($idParts) !== 2) {
             throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
         }
 
-        return $this->syncPostByRedditId($idParts[0], $idParts[1]);
+        return $this->syncContentByRedditId($idParts[0], $idParts[1]);
     }
 
     /**
-     * Core function to sync a Reddit Post and persist it to the local database
-     * while also downloading any associated media.
+     * Core function to sync a Reddit Content directly from the Reddit API and
+     * persist it to the local database while also downloading any associated
+     * media.
      *
-     * @param  string  $type
+     * @param  string  $kind
      * @param  string  $redditId
      *
-     * @return Post
-     * @throws ExceptionInterface
+     * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncPostByRedditId(string $type, string $redditId): Post
+    public function syncContentByRedditId(string $kind, string $redditId): Content
     {
-        $response = $this->api->getPostByRedditId($type, $redditId);
+        $response = $this->api->getPostByRedditId($kind, $redditId);
 
-        $parentPostResponse = [];
-        if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
+        $context = [
+            'parentPostData' => [],
+            'commentData' => [],
+        ];
+
+        if ($kind === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
+            $commentData = $response['data']['children'][0]['data'];
+
+            $context['commentData'] = $commentData;
+            $context['parentPostData'] = $this->api->getPostByFullRedditId($commentData['link_id']);
+        } else if ($kind === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
+            $commentData = $response['data'];
+
+            $context['commentData'] = $commentData;
+            $context['parentPostData'] = $this->api->getPostByFullRedditId($commentData['link_id']);
         }
 
-        $post = $this->postDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
+        $content = $this->contentDenormalizer->denormalize($response, Content::class, null, $context);
 
-        foreach ($post->getMediaAssets() as $mediaAsset) {
+        foreach ($content->getPost()->getMediaAssets() as $mediaAsset) {
             $this->mediaDownloader->executeDownload($mediaAsset);
         }
 
-        $this->postRepository->add($post, true);
+        $this->contentRepository->add($content, true);
 
-        return $post;
+        return $content;
     }
 
     /**
@@ -123,7 +128,6 @@ class Manager
      * @param  array  $response
      *
      * @return Content
-     * @throws ExceptionInterface
      * @throws InvalidArgumentException
      */
     public function hydrateContentFromResponseData(string $type, array $response): Content
@@ -137,7 +141,6 @@ class Manager
         }
 
         return $this->contentDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
-        return $this->postDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
     }
 
     public function getPostByRedditId(string $redditId): ?Post
@@ -262,14 +265,14 @@ class Manager
      *
      * @param  string  $redditId
      *
-     * @return \App\Entity\Comment|null
+     * @return Comment|null
      */
-    public function getCommentByRedditId(string $redditId): ?\App\Entity\Comment
+    public function getCommentByRedditId(string $redditId): ?Comment
     {
         return $this->commentRepository->findOneBy(['redditId' => $redditId]);
     }
 
-    private function getCommentTreeBranch(Content $content, array $postData, array $commentData): \App\Entity\Comment
+    private function getCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
     {
         // Persist current Comment.
         // $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
@@ -296,7 +299,7 @@ class Manager
         return $comment;
     }
 
-    private function syncCommentWithParents(Content $content, \App\Entity\Comment $originalComment, array $postData, array $commentData, ?\App\Entity\Comment $childComment = null): void
+    private function syncCommentWithParents(Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
     {
         $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
         $post = $content->getPost();
@@ -375,17 +378,6 @@ class Manager
         $this->entityManager->flush();
 
         return $content;
-
-
-
-        $post = $this->hydrateContentFromResponseData($postData['kind'], $postData);
-        $this->postRepository->add($post, true);
-
-        $this->processJsonCommentsData($post, $commentsData);
-
-        $this->entityManager->flush();
-
-        return $post;
     }
 
     /**
@@ -399,12 +391,8 @@ class Manager
      */
     private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Content
     {
-        // MOVE LOGIC TO CONTENTDENORMALIZER, ADD CHECK FOR COMMENT POST, CONTINUE FLOW INTO COMMENTPOSTDENORMALIZER FROM THERE
-
         $targetComment = $commentsData[0]['data'];
         $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
-
-        // $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
 
         // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.
         // @see: \App\Tests\Feature\JsonUrlSyncTest::testMultpleSavedCommentsFromSamePost()
@@ -423,26 +411,6 @@ class Manager
         $this->entityManager->flush();
 
         return $content;
-
-        $post = $this->commentPostDenormalizer->denormalize($commentsData[0]['data'], Post::class, null, ['parentPost' => $postData['data']]);
-
-        // @TODO: This is a temporary bandaid solution to the scenario of multiple Comments Saved within the same Post. Requires more investigation for a proper solution.
-        // @see: \App\Tests\Feature\JsonUrlSyncTest::testMultpleSavedCommentsFromSamePost()
-        $existingPost = $this->postRepository->findOneBy(['redditPostUrl' => $post->getRedditPostUrl()]);
-        if (!empty($existingPost)) {
-            return $existingPost;
-        }
-
-        $this->postRepository->add($post, true);
-
-        $originalComment = $this->getCommentTreeBranch($post, $postData['data'], $commentsData[0]['data']);
-
-        $jsonData = $this->getRawDataFromJsonUrl($post->getRedditPostUrl());
-        $this->processJsonCommentsData($post, $jsonData['commentsData'], $originalComment);
-
-        $this->entityManager->flush();
-
-        return $post;
     }
 
     /**
@@ -455,7 +423,7 @@ class Manager
      *
      * @return void
      */
-    private function processJsonCommentsData(Content $content, array $commentsData, \App\Entity\Comment $originalComment = null)
+    private function processJsonCommentsData(Content $content, array $commentsData, Comment $originalComment = null)
     {
         $rootParentComment = null;
         if (!empty($originalComment)) {
@@ -465,7 +433,7 @@ class Manager
         $post = $content->getPost();
         foreach ($commentsData as $commentData) {
             if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($content, \App\Entity\Comment::class, null, ['commentData' => $commentData['data']]);
+                $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, ['commentData' => $commentData['data']]);
 
                 // Do not re-persist the Top Level Comment of the Saved Comment
                 // in order to avoid a unique constraint violation.
@@ -509,14 +477,14 @@ class Manager
      * Recursively travel up the Comment Tree of the provided Comment and return
      * the root parent Comment.
      *
-     * @param  \App\Entity\Comment  $comment
+     * @param  Comment  $comment
      *
-     * @return \App\Entity\Comment
+     * @return Comment
      */
-    private function getRootParentCommentFromComment(\App\Entity\Comment $comment): \App\Entity\Comment
+    private function getRootParentCommentFromComment(Comment $comment): Comment
     {
         $parentComment = $comment->getParentComment();
-        if ($parentComment instanceof \App\Entity\Comment) {
+        if ($parentComment instanceof Comment) {
             return $this->getRootParentCommentFromComment($parentComment);
         }
 

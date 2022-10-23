@@ -31,7 +31,9 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setText($commentData['body']);
         $comment->setAuthor($commentData['author']);
         $comment->setParentPost($post);
-        $comment->setDepth((int) $commentData['depth']);
+
+        $depth = $commentData['depth'] ?? 0;
+        $comment->setDepth((int) $depth);
 
         if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
             $comment->setParentComment($context['parentComment']);

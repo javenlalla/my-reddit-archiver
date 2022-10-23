@@ -42,6 +42,7 @@ class ContentDenormalizer implements DenormalizerInterface
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
+     *          parentPostData: array,
      *          commentData: array,
      *          }  $context
      *
@@ -56,10 +57,19 @@ class ContentDenormalizer implements DenormalizerInterface
 
         $content = new Content();
 
-        $kind = $this->kindRepository->getLinkType();
+        if ($data['kind'] === Kind::KIND_COMMENT) {
+            $kind = $this->kindRepository->getCommentType();
+        } else {
+            $kind = $this->kindRepository->getLinkType();
+        }
         $content->setKind($kind);;
 
-        $contentType = $this->contentTypeHelper->getContentTypeFromPostData($data['data']);
+        if ($data['kind'] === Kind::KIND_LINK) {
+            $contentType = $this->contentTypeHelper->getContentTypeFromPostData($data['data']);
+        } elseif ($data['kind'] === Kind::KIND_COMMENT) {
+            $contentType = $this->contentTypeHelper->getContentTypeFromPostData($context['parentPostData']['data']['children'][0]['data']);
+        }
+
         $content->setContentType($contentType);
 
         $context['content'] = $content;
@@ -67,12 +77,20 @@ class ContentDenormalizer implements DenormalizerInterface
         if ($data['kind'] === Kind::KIND_LINK) {
             $post = $this->linkPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
         } elseif ($data['kind'] === Kind::KIND_COMMENT) {
-            $context['parentPost'] = $context['parentPostData']['data']['children'][0]['data'];
-
-            $post = $this->commentPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
+            $post = $this->linkPostDenormalizer->denormalize($context['parentPostData']['data']['children'][0]['data'], Post::class, null, $context);
         } else {
             throw new Exception(sprintf('Unexpected Post type %s: %s', $data['kind'], var_export($data, true)));
         }
+
+        // if ($data['kind'] === Kind::KIND_LINK) {
+        //     $post = $this->linkPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
+        // } elseif ($data['kind'] === Kind::KIND_COMMENT) {
+        //     $context['parentPost'] = $context['parentPostData']['data']['children'][0]['data'];
+        //
+        //     $post = $this->commentPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
+        // } else {
+        //     throw new Exception(sprintf('Unexpected Post type %s: %s', $data['kind'], var_export($data, true)));
+        // }
 
         $content->setPost($post);
 
