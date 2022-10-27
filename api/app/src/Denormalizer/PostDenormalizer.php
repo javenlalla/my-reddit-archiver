@@ -3,10 +3,12 @@
 namespace App\Denormalizer;
 
 use App\Denormalizer\MediaAssetsDenormalizer;
+use App\Entity\AuthorText;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
+use App\Entity\PostAuthorText;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
@@ -63,10 +65,17 @@ class PostDenormalizer implements DenormalizerInterface
         $post->setType($type);
         $typeName = $type->getName();
 
-        if ($typeName === Type::CONTENT_TYPE_TEXT) {
-            $post->setAuthorText($postData['selftext']);
-            $post->setAuthorTextRawHtml($postData['selftext_html']);
-            $post->setAuthorTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
+        if ($typeName === Type::CONTENT_TYPE_TEXT && !empty($postData['selftext'])) {
+            $authorText = new AuthorText();
+            $authorText->setText($postData['selftext']);
+            $authorText->setTextRawHtml($postData['selftext_html']);
+            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
+
+            $postAuthorText = new PostAuthorText();
+            $postAuthorText->setAuthorText($authorText);
+            $postAuthorText->setCreatedAt($post->getCreatedAt());
+
+            $post->addAuthorText($postAuthorText);
         }
 
         $post->setUrl($postData['url']);

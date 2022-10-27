@@ -29,9 +29,6 @@ class Post
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $url;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $authorText;
-
     #[ORM\Column(type: 'datetime_immutable')]
     private $createdAt;
 
@@ -43,12 +40,6 @@ class Post
 
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $comments;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $authorTextHtml;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $authorTextRawHtml;
 
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $mediaAssets;
@@ -66,10 +57,14 @@ class Post
     #[ORM\JoinColumn(nullable: false)]
     private $type;
 
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $authorTexts;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->mediaAssets = new ArrayCollection();
+        $this->authorTexts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -121,18 +116,6 @@ class Post
     public function setUrl(?string $url): self
     {
         $this->url = $url;
-
-        return $this;
-    }
-
-    public function getAuthorText(): ?string
-    {
-        return $this->authorText;
-    }
-
-    public function setAuthorText(?string $authorText): self
-    {
-        $this->authorText = $authorText;
 
         return $this;
     }
@@ -219,30 +202,6 @@ class Post
         return $this;
     }
 
-    public function getAuthorTextHtml(): ?string
-    {
-        return $this->authorTextHtml;
-    }
-
-    public function setAuthorTextHtml(?string $authorTextHtml): self
-    {
-        $this->authorTextHtml = $authorTextHtml;
-
-        return $this;
-    }
-
-    public function getAuthorTextRawHtml(): ?string
-    {
-        return $this->authorTextRawHtml;
-    }
-
-    public function setAuthorTextRawHtml(?string $authorTextRawHtml): self
-    {
-        $this->authorTextRawHtml = $authorTextRawHtml;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, MediaAsset>
      */
@@ -322,6 +281,36 @@ class Post
     public function setType(?Type $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PostAuthorText>
+     */
+    public function getAuthorTexts(): Collection
+    {
+        return $this->authorTexts;
+    }
+
+    public function addAuthorText(PostAuthorText $authorText): self
+    {
+        if (!$this->authorTexts->contains($authorText)) {
+            $this->authorTexts[] = $authorText;
+            $authorText->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAuthorText(PostAuthorText $authorText): self
+    {
+        if ($this->authorTexts->removeElement($authorText)) {
+            // set the owning side to null (unless already changed)
+            if ($authorText->getPost() === $this) {
+                $authorText->setPost(null);
+            }
+        }
 
         return $this;
     }

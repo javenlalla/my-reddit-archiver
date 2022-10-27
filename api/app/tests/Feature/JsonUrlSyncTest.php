@@ -64,9 +64,9 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('https://i.redd.it/d0s8oagaj0p91.png', $post->getUrl());
         $this->assertEquals('https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $post->getRedditPostUrl());
         $this->assertEquals('2022-09-20 13:10:22', $post->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEmpty($post->getAuthorText());
-        $this->assertEmpty($post->getAuthorTextRawHtml());
-        $this->assertEmpty($post->getAuthorTextHtml());
+        $this->assertEmpty($post->getAuthorTexts());
+        $this->assertEmpty($post->getAuthorTexts());
+        $this->assertEmpty($post->getAuthorTexts());
 
         $kind = $content->getKind();
         $this->assertInstanceOf(Kind::class, $kind);
@@ -264,8 +264,8 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals($postType, $type->getName());
 
-        $this->assertEquals("I’d be glad to offer any advice.", $post->getAuthorText());
-        $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getAuthorTextRawHtml());
-        $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getAuthorTextHtml());
+        $this->assertEquals("I’d be glad to offer any advice.", $post->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
+        $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
     }
 }

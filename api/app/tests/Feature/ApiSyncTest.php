@@ -424,21 +424,24 @@ class ApiSyncTest extends KernelTestCase
         $this->assertEquals($contentType, $type->getName());
 
         if ($authorText === null) {
-            $this->assertEmpty($post->getAuthorText());
+            $this->assertEmpty($post->getAuthorTexts());
         } else {
-            $this->assertEquals($authorText, $post->getAuthorText());
+            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getText();
+            $this->assertEquals($authorText, $targetText);
         }
 
         if ($authorTextRawHtml === null) {
-            $this->assertEmpty($post->getAuthorTextRawHtml());
+            $this->assertEmpty($post->getAuthorTexts());
         } else {
-            $this->assertEquals($authorTextRawHtml, $post->getAuthorTextRawHtml());
+            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml();
+            $this->assertEquals($authorTextRawHtml, $targetText);
         }
 
         if ($authorTextHtml === null) {
-            $this->assertEmpty($post->getAuthorTextHtml());
+            $this->assertEmpty($post->getAuthorTexts());
         } else {
-            $this->assertEquals($authorTextHtml, $post->getAuthorTextHtml());
+            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml();
+            $this->assertEquals($authorTextHtml, $targetText);
         }
 
         if (!empty($redditPostUrl)) {
