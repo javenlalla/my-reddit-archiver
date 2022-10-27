@@ -2,7 +2,9 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\AuthorText;
 use App\Entity\Comment;
+use App\Entity\CommentAuthorText;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
@@ -194,11 +196,22 @@ class PostFixtures extends Fixture
 
         $comment = new Comment();
         $comment->setParentPost($post);
-        $comment->setText($commentRow[2]);
         $comment->setAuthor($commentRow[3]);
         $comment->setScore((int) $commentRow[4]);
         $comment->setRedditId($commentRow[5]);
         $comment->setDepth((int) $commentRow[6]);
+
+        $authorText = new AuthorText();
+        $authorText->setText($commentRow[2]);
+        $authorText->setTextRawHtml($commentRow[2]);
+        $authorText->setTextHtml($commentRow[2]);
+
+        $commentAuthorText = new CommentAuthorText();
+        $commentAuthorText->setAuthorText($authorText);
+        // @TODO: `createdAt` should be derived from the actual Comment's creation date; not the Post's creation date.
+        $commentAuthorText->setCreatedAt($post->getCreatedAt());
+
+        $comment->addAuthorText($commentAuthorText);
 
         if (!empty($commentRow[1])) {
             $parentComment = $this->commentRepository->findOneBy(['redditId' => $commentRow[1]]);

@@ -25,6 +25,9 @@ class AuthorText
     #[ORM\OneToOne(mappedBy: 'authorText', targetEntity: PostAuthorText::class, cascade: ['persist', 'remove'])]
     private $postAuthorText;
 
+    #[ORM\OneToOne(mappedBy: 'authorText', targetEntity: CommentAuthorText::class, cascade: ['persist', 'remove'])]
+    private $commentAuthorText;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -79,6 +82,23 @@ class AuthorText
         }
 
         $this->postAuthorText = $postAuthorText;
+
+        return $this;
+    }
+
+    public function getCommentAuthorText(): ?CommentAuthorText
+    {
+        return $this->commentAuthorText;
+    }
+
+    public function setCommentAuthorText(CommentAuthorText $commentAuthorText): self
+    {
+        // set the owning side of the relation if necessary
+        if ($commentAuthorText->getAuthorText() !== $this) {
+            $commentAuthorText->setAuthorText($this);
+        }
+
+        $this->commentAuthorText = $commentAuthorText;
 
         return $this;
     }

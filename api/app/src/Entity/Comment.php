@@ -15,9 +15,6 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'text')]
-    private $text;
-
     #[ORM\Column(type: 'string', length: 25)]
     private $author;
 
@@ -43,26 +40,18 @@ class Comment
     #[ORM\OneToOne(mappedBy: 'comment', targetEntity: Content::class, cascade: ['persist', 'remove'])]
     private $content;
 
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $authorTexts;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
+        $this->authorTexts = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getText(): ?string
-    {
-        return $this->text;
-    }
-
-    public function setText(string $text): self
-    {
-        $this->text = $text;
-
-        return $this;
     }
 
     public function getAuthor(): ?string
@@ -185,6 +174,36 @@ class Comment
         }
 
         $this->content = $content;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CommentAuthorText>
+     */
+    public function getAuthorTexts(): Collection
+    {
+        return $this->authorTexts;
+    }
+
+    public function addAuthorText(CommentAuthorText $authorText): self
+    {
+        if (!$this->authorTexts->contains($authorText)) {
+            $this->authorTexts[] = $authorText;
+            $authorText->setComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAuthorText(CommentAuthorText $authorText): self
+    {
+        if ($this->authorTexts->removeElement($authorText)) {
+            // set the owning side to null (unless already changed)
+            if ($authorText->getComment() === $this) {
+                $authorText->setComment(null);
+            }
+        }
 
         return $this;
     }

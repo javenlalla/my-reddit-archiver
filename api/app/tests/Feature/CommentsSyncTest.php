@@ -41,7 +41,7 @@ class CommentsSyncTest extends KernelTestCase
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getText());
+        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         // Test fetch Comment replies from Comment.
@@ -49,12 +49,12 @@ class CommentsSyncTest extends KernelTestCase
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getText());
+        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         $replies = $comment->getReplies();
         $this->assertCount(2, $replies);
-        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getText());
+        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
         $commentRedditId = 'iebbk73';
@@ -92,23 +92,23 @@ class CommentsSyncTest extends KernelTestCase
 
         // Basic Comment verification.
         $comment = $this->manager->getCommentByRedditId('icrhr47');
-        $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getText());
+        $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify top-level Comment with highest up-votes.
         $comment = $this->manager->getCommentByRedditId('icrxv93');
-        $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getText());
+        $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         //Verify a Reply found within "Continue this thread."
         $comment = $this->manager->getCommentByRedditId('icrovq6');
-        $this->assertEquals('And things can be neither.', $comment->getText());
+        $this->assertEquals('And things can be neither.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify last or closest-to-last Comment on Post.
         $comment = $this->manager->getCommentByRedditId('icta0qr');
-        $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getText());
+        $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify Comment found in "x more replies."
         $comment = $this->manager->getCommentByRedditId('icti9mw');
-        $this->assertEquals('I got more!', $comment->getText());
+        $this->assertEquals('I got more!', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
     }
 
     /**
@@ -210,7 +210,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('2022-08-03 08:51:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $comment = $content->getComment();
-        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getText());
+        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
 
         $kind = $content->getKind();
         $this->assertInstanceOf(Kind::class, $kind);

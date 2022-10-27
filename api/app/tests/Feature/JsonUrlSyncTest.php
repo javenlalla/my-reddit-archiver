@@ -47,13 +47,11 @@ class JsonUrlSyncTest extends KernelTestCase
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($commentRedditId, $comment->getRedditId());
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getText());
-        // @TODO: Enable this when createdAt is added to Comments. Date here is already the expected datetime for this Comment.
-        // $this->assertEquals('2022-09-20 16:38:58', $comment->getCreatedAt());
-        // @TODO: Enable when the following properties have been added to the Comment entity.
-        // $this->assertEquals($authorText, $comment->getAuthorText());
-        // $this->assertEquals($authorTextRawHtml, $comment->getAuthorTextRawHtml());
-        // $this->assertEquals($authorTextHtml, $comment->getAuthorTextHtml());
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('2022-09-20 16:38:58', $comment->getAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably&lt;/p&gt;\n&lt;/div&gt;", $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
+        $this->assertEquals("<div class=\"md\"><p>Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably</p>\n</div>", $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
 
         $post = $content->getPost();
 
@@ -82,53 +80,73 @@ class JsonUrlSyncTest extends KernelTestCase
         // Verify persisted Saved Comment as matching the Saved Post record.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7pedq']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getText());
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip7o4ld', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7o4ld']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('Yes. He\'s yelling in one and not the other.', $comment->getText());
+        $this->assertEquals('Yes. He\'s yelling in one and not the other.',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip7mwwz', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7mwwz']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('Did they at least use a different picture of him?', $comment->getText());
+        $this->assertEquals('Did they at least use a different picture of him?',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip7liqr', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7liqr']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('Lol, not for fifa 21 and 22. Both are Mbappe', $comment->getText());
+        $this->assertEquals('Lol, not for fifa 21 and 22. Both are Mbappe',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip7goiv', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7goiv']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('Hey, That\'s not true! They also change the person on the cover too. It\'s like tens of minutes of work.', $comment->getText());
+        $this->assertEquals('Hey, That\'s not true! They also change the person on the cover too. It\'s like tens of minutes of work.',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip75qvb', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip75qvb']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('To be fair changing the 21 to 22 on the cover of *insert sports game here* is still more substantial than the progress we\'re seeing on Star Citizen. Now if EA starts charging $10,000 for away game colors they\'ll be in the same ballpark.', $comment->getText());
+        $this->assertEquals('To be fair changing the 21 to 22 on the cover of *insert sports game here* is still more substantial than the progress we\'re seeing on Star Citizen. Now if EA starts charging $10,000 for away game colors they\'ll be in the same ballpark.',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip73wew', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip73wew']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n\nHow's that different from what they're doing now?", $comment->getText());
+        $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n\nHow's that different from what they're doing now?",
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip72pep', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip72pep']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('At the same time, EA execs might be "huh, so we don\'t actually have to develop any game to get a product in the first place."', $comment->getText());
+        $this->assertEquals('At the same time, EA execs might be "huh, so we don\'t actually have to develop any game to get a product in the first place."',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip721ih', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip721ih']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('EA execs point at this and go "See!? This is what you get when there is no set timetable and no crunch!"', $comment->getText());
+        $this->assertEquals('EA execs point at this and go "See!? This is what you get when there is no set timetable and no crunch!"',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEquals('ip6va91', $comment->getParentComment()->getRedditId());
 
         // Top-level Comment.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip6va91']);
         $this->assertCount(1, $comment->getReplies());
-        $this->assertEquals('I have to say it is a very interesting case study of open game development and crowdfunding.', $comment->getText());
+        $this->assertEquals('I have to say it is a very interesting case study of open game development and crowdfunding.',
+            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+        );
         $this->assertEmpty($comment->getParentComment());
         $this->assertEquals(0, $comment->getDepth());
     }
@@ -228,23 +246,19 @@ class JsonUrlSyncTest extends KernelTestCase
         $url =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/';
         $createdAt =  '2022-05-26 09:36:55';
         $authorText =  'Congrats! What did your study routine look like leading up to it?';
-        $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;
-&lt;/div&gt;";
-        $authorTextHtml = "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>
-</div>";
+        $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;\n&lt;/div&gt;";
+        $authorTextHtml = "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>\n</div>";
 
         $content = $this->manager->syncContentFromJsonUrl($type, $originalPostUrl);
 
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getRedditId());
-        $this->assertEquals($authorText, $comment->getText());
-        // @TODO: Enable this when createdAt is added to Comments. Date here is already the expected datetime for this Comment.
-        // $this->assertEquals('2022-05-26 10:42:40', $comment->getCreatedAt());
-        // @TODO: Enable when the following properties have been added to the Comment entity.
-        // $this->assertEquals($authorText, $comment->getAuthorText());
-        // $this->assertEquals($authorTextRawHtml, $comment->getAuthorTextRawHtml());
-        // $this->assertEquals($authorTextHtml, $comment->getAuthorTextHtml());
+        $this->assertEquals($authorText, $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('2022-05-26 10:42:40', $comment->getAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals($authorText, $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals($authorTextRawHtml, $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
+        $this->assertEquals($authorTextHtml, $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
 
         $post = $content->getPost();
 
