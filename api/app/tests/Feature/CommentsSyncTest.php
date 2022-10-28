@@ -84,11 +84,11 @@ class CommentsSyncTest extends KernelTestCase
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
 
         // Verify top-level Comments count.
-        $this->assertCount(409, $fetchedPost->getComments());
+        $this->assertCount(408, $fetchedPost->getComments());
 
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(576, $allCommentsCount);
+        $this->assertEquals(575, $allCommentsCount);
 
         // Basic Comment verification.
         $comment = $this->manager->getCommentByRedditId('icrhr47');
@@ -128,13 +128,13 @@ class CommentsSyncTest extends KernelTestCase
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(877, $comments);
+        $this->assertCount(876, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(877, $comments);
+        $this->assertCount(876, $comments);
     }
 
     /**

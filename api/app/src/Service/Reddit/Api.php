@@ -29,7 +29,7 @@ class Api
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
-    const MORE_CHILDREN_ENDPOINT = 'https://oauth.reddit.com/api/morechildren';
+    const MORE_CHILDREN_ENDPOINT = 'https://www.reddit.com/api/morechildren/.json?api_type=json&limit_children=false&link_id=t3_%s&children=%s';
 
     const METHOD_GET = 'GET';
 
@@ -146,17 +146,11 @@ class Api
      */
     public function getMoreChildren(string $postRedditId, array $moreChildrenData): array
     {
-        $body = [
-            'link_id' => sprintf('t3_%s', $postRedditId),
-            'children' => implode(',', $moreChildrenData['children']),
-            'api_type' => 'json',
-            'limit_children' => false,
-        ];
+        $url = $this->buildMoreChildrenUrl($postRedditId, $moreChildrenData['children']);
+        $cacheKey = md5('more-children-'. $url);
 
-        $cacheKey = md5('more-children-'. $postRedditId . '-' . $body['children']);
-
-        return $this->cachePoolRedis->get($cacheKey, function() use ($body) {
-            $response = $this->executeCall(self::METHOD_POST, self::MORE_CHILDREN_ENDPOINT, ['body' => $body]);
+        return $this->cachePoolRedis->get($cacheKey, function() use ($url) {
+            $response = $this->executeSimpleCall(self::METHOD_GET, $url);
 
             return $response->toArray();
         });
@@ -374,5 +368,21 @@ class Api
         }
 
         return $sanitizedPostLink;
+    }
+
+    /**
+     * Build the URL for the retrieving `more children` data based on the
+     * provided Post Reddit ID and array of target children Reddit IDs.
+     *
+     * @param  string  $postRedditId
+     * @param  array  $childrenArray
+     *
+     * @return string
+     */
+    private function buildMoreChildrenUrl(string $postRedditId, array $childrenArray): string
+    {
+        $childrenString = implode(',', $childrenArray);
+
+        return sprintf(self::MORE_CHILDREN_ENDPOINT, $postRedditId, $childrenString);
     }
 }
