@@ -41,12 +41,12 @@ class Comment
     private $content;
 
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $authorTexts;
+    private $commentAuthorTexts;
 
     public function __construct()
     {
         $this->replies = new ArrayCollection();
-        $this->authorTexts = new ArrayCollection();
+        $this->commentAuthorTexts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -181,30 +181,44 @@ class Comment
     /**
      * @return Collection<int, CommentAuthorText>
      */
-    public function getAuthorTexts(): Collection
+    public function getCommentAuthorTexts(): Collection
     {
-        return $this->authorTexts;
+        return $this->commentAuthorTexts;
     }
 
-    public function addAuthorText(CommentAuthorText $authorText): self
+    public function addCommentAuthorText(CommentAuthorText $commentAuthorText): self
     {
-        if (!$this->authorTexts->contains($authorText)) {
-            $this->authorTexts[] = $authorText;
-            $authorText->setComment($this);
+        if (!$this->commentAuthorTexts->contains($commentAuthorText)) {
+            $this->commentAuthorTexts[] = $commentAuthorText;
+            $commentAuthorText->setComment($this);
         }
 
         return $this;
     }
 
-    public function removeAuthorText(CommentAuthorText $authorText): self
+    public function removeCommentAuthorText(CommentAuthorText $commentAuthorText): self
     {
-        if ($this->authorTexts->removeElement($authorText)) {
+        if ($this->commentAuthorTexts->removeElement($commentAuthorText)) {
             // set the owning side to null (unless already changed)
-            if ($authorText->getComment() === $this) {
-                $authorText->setComment(null);
+            if ($commentAuthorText->getComment() === $this) {
+                $commentAuthorText->setComment(null);
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Retrieve the latest/current revision of this Comment's Comment Author
+     * Text entity.
+     *
+     * @return CommentAuthorText
+     */
+    public function getLatestCommentAuthorText(): CommentAuthorText
+    {
+        return $this->getCommentAuthorTexts()
+            ->matching(CommentRepository::createLatestCommentAuthorTextCriteria())
+            ->first()
+        ;
     }
 }

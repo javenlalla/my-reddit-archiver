@@ -2,16 +2,25 @@
 
 namespace App\Tests\Feature;
 
+use App\Entity\AuthorText;
 use App\Entity\Comment;
+use App\Entity\CommentAuthorText;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
+use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class CommentsSyncTest extends KernelTestCase
 {
     private Manager $manager;
+
+    private CommentRepository $commentRepository;
+
+    private EntityManagerInterface $entityManager;
 
     public function setUp(): void
     {
@@ -20,6 +29,8 @@ class CommentsSyncTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
+        $this->commentRepository = $container->get(CommentRepository::class);
+        $this->entityManager = $container->get(EntityManagerInterface::class);
     }
 
     public function testGetComments()
@@ -41,7 +52,7 @@ class CommentsSyncTest extends KernelTestCase
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         // Test fetch Comment replies from Comment.
@@ -49,12 +60,12 @@ class CommentsSyncTest extends KernelTestCase
         $comment = $this->manager->getCommentByRedditId($commentRedditId);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         $replies = $comment->getReplies();
         $this->assertCount(2, $replies);
-        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
         $commentRedditId = 'iebbk73';
@@ -92,23 +103,23 @@ class CommentsSyncTest extends KernelTestCase
 
         // Basic Comment verification.
         $comment = $this->manager->getCommentByRedditId('icrhr47');
-        $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify top-level Comment with highest up-votes.
         $comment = $this->manager->getCommentByRedditId('icrxv93');
-        $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         //Verify a Reply found within "Continue this thread."
         $comment = $this->manager->getCommentByRedditId('icrovq6');
-        $this->assertEquals('And things can be neither.', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('And things can be neither.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify last or closest-to-last Comment on Post.
         $comment = $this->manager->getCommentByRedditId('icta0qr');
-        $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify Comment found in "x more replies."
         $comment = $this->manager->getCommentByRedditId('icti9mw');
-        $this->assertEquals('I got more!', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('I got more!', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
     }
 
     /**
@@ -210,7 +221,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('2022-08-03 08:51:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $comment = $content->getComment();
-        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         $kind = $content->getKind();
         $this->assertInstanceOf(Kind::class, $kind);
@@ -219,5 +230,69 @@ class CommentsSyncTest extends KernelTestCase
         $type = $fetchedPost->getType();
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals(Type::CONTENT_TYPE_EXTERNAL_LINK, $type->getName());
+    }
+
+    /**
+     * Verify that when a Comment has edited or modified revisions, the latest
+     * version of the text can be retrieved.
+     *
+     * @return void
+     */
+    public function testRetrieveLatestCommentAuthorTextVersion()
+    {
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'xc0006']);
+        $this->assertCount(1, $comment->getCommentAuthorTexts());
+
+        $commentAuthorText = $comment->getCommentAuthorTexts()->get(0);
+        $authorText = $commentAuthorText->getAuthorText();
+        $this->assertEquals("It’s called Ultra Ego", $authorText->getText());
+
+        // Manually out-date the current Comment Author Text.
+        $commentAuthorText->setCreatedAt(DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2015-01-01 00:00:00'));
+        $this->entityManager->persist($commentAuthorText);
+
+        $updatedRevisions = [
+            [
+                'text' => 'Updated revision text 1.',
+                'createdAt' => DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2022-01-05 00:00:00'),
+            ],
+            [
+                'text' => 'Updated revision text 2.',
+                'createdAt' => DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2022-06-05 00:00:00'),
+            ],
+            [
+                'text' => 'Updated revision text 3.',
+                'createdAt' => DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2021-01-05 00:00:00'),
+            ],
+            [
+                'text' => 'Updated revision text 4.',
+                'createdAt' => DateTimeImmutable::createFromFormat('Y-m-d H:i:s', '2021-04-05 00:00:00'),
+            ],
+        ];
+
+        // Create new revisions.
+        foreach ($updatedRevisions as $updatedRevision) {
+            $updatedText = $updatedRevision['text'];
+            $authorText = new AuthorText();
+            $authorText->setText($updatedText);
+            $authorText->setTextRawHtml($updatedText);
+            $authorText->setTextHtml($updatedText);
+            $commentAuthorText = new CommentAuthorText();
+            $commentAuthorText->setAuthorText($authorText);
+            $commentAuthorText->setCreatedAt($updatedRevision['createdAt']);
+
+            $comment->addCommentAuthorText($commentAuthorText);
+            $this->entityManager->persist($comment);
+        }
+        $this->entityManager->flush();
+
+        // Re-fetch Comment.
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'xc0006']);
+        $this->assertCount(5, $comment->getCommentAuthorTexts());
+
+        // Verify the latest Author Text was retrieved.
+        $currentCommentAuthorTextRevision = $comment->getLatestCommentAuthorText();
+        $authorText = $currentCommentAuthorTextRevision->getAuthorText();
+        $this->assertEquals($updatedRevisions[1]['text'], $authorText->getText());
     }
 }

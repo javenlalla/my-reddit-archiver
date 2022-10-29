@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Comment;
 use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -22,6 +23,20 @@ class CommentRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Comment::class);
+    }
+
+    /**
+     * Create the Criteria needed for retrieving the latest/current version of
+     * a Comment's Comment Author Text entity.
+     *
+     * @return Criteria
+     */
+    public static function createLatestCommentAuthorTextCriteria(): Criteria
+    {
+        return Criteria::create()
+            ->orderBy(['createdAt' => Criteria::DESC])
+            ->setMaxResults(1)
+            ;
     }
 
     public function add(Comment $entity, bool $flush = false): void

@@ -211,7 +211,7 @@ class PostFixtures extends Fixture
         // @TODO: `createdAt` should be derived from the actual Comment's creation date; not the Post's creation date.
         $commentAuthorText->setCreatedAt($post->getCreatedAt());
 
-        $comment->addAuthorText($commentAuthorText);
+        $comment->addCommentAuthorText($commentAuthorText);
 
         if (!empty($commentRow[1])) {
             $parentComment = $this->commentRepository->findOneBy(['redditId' => $commentRow[1]]);

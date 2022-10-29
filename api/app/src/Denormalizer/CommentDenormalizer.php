@@ -52,7 +52,7 @@ class CommentDenormalizer implements DenormalizerInterface
         $commentAuthorText->setAuthorText($authorText);
         $commentAuthorText->setCreatedAt(DateTimeImmutable::createFromFormat('U', $commentData['created_utc']));
 
-        $comment->addAuthorText($commentAuthorText);
+        $comment->addCommentAuthorText($commentAuthorText);
 
         if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
             $comment->setParentComment($context['parentComment']);

@@ -47,11 +47,11 @@ class JsonUrlSyncTest extends KernelTestCase
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($commentRedditId, $comment->getRedditId());
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals('2022-09-20 16:38:58', $comment->getAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably&lt;/p&gt;\n&lt;/div&gt;", $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
-        $this->assertEquals("<div class=\"md\"><p>Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably</p>\n</div>", $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('2022-09-20 16:38:58', $comment->getCommentAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals("&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably&lt;/p&gt;\n&lt;/div&gt;", $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
+        $this->assertEquals("<div class=\"md\"><p>Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably</p>\n</div>", $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
 
         $post = $content->getPost();
 
@@ -81,63 +81,63 @@ class JsonUrlSyncTest extends KernelTestCase
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7pedq']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Yeah, same photoshoot probably, they had to decide between the two pics bit decided that they would just use the extra next year. Ea marketing meeting probably',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip7o4ld', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7o4ld']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Yes. He\'s yelling in one and not the other.',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip7mwwz', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7mwwz']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Did they at least use a different picture of him?',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip7liqr', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7liqr']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Lol, not for fifa 21 and 22. Both are Mbappe',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip7goiv', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip7goiv']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('Hey, That\'s not true! They also change the person on the cover too. It\'s like tens of minutes of work.',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip75qvb', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip75qvb']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('To be fair changing the 21 to 22 on the cover of *insert sports game here* is still more substantial than the progress we\'re seeing on Star Citizen. Now if EA starts charging $10,000 for away game colors they\'ll be in the same ballpark.',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip73wew', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip73wew']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n\nHow's that different from what they're doing now?",
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip72pep', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip72pep']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('At the same time, EA execs might be "huh, so we don\'t actually have to develop any game to get a product in the first place."',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip721ih', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip721ih']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('EA execs point at this and go "See!? This is what you get when there is no set timetable and no crunch!"',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEquals('ip6va91', $comment->getParentComment()->getRedditId());
 
@@ -145,7 +145,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip6va91']);
         $this->assertCount(1, $comment->getReplies());
         $this->assertEquals('I have to say it is a very interesting case study of open game development and crowdfunding.',
-            $comment->getAuthorTexts()->get(0)->getAuthorText()->getText()
+            $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
         $this->assertEmpty($comment->getParentComment());
         $this->assertEquals(0, $comment->getDepth());
@@ -254,11 +254,11 @@ class JsonUrlSyncTest extends KernelTestCase
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getRedditId());
-        $this->assertEquals($authorText, $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals('2022-05-26 10:42:40', $comment->getAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
-        $this->assertEquals($authorText, $comment->getAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals($authorTextRawHtml, $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
-        $this->assertEquals($authorTextHtml, $comment->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
+        $this->assertEquals($authorText, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('2022-05-26 10:42:40', $comment->getCommentAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals($authorText, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals($authorTextRawHtml, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
+        $this->assertEquals($authorTextHtml, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
 
         $post = $content->getPost();
 
