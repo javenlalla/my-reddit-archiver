@@ -25,6 +25,7 @@ class Comment
     private $redditId;
 
     #[ORM\ManyToOne(targetEntity: self::class, cascade: ['persist', 'remove'], inversedBy: 'replies')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private $parentComment;
 
     #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: self::class, cascade: ['persist', 'remove'])]
