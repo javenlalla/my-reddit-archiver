@@ -75,7 +75,7 @@ class PostDenormalizer implements DenormalizerInterface
             $postAuthorText->setAuthorText($authorText);
             $postAuthorText->setCreatedAt($post->getCreatedAt());
 
-            $post->addAuthorText($postAuthorText);
+            $post->addPostAuthorText($postAuthorText);
         }
 
         $post->setUrl($postData['url']);

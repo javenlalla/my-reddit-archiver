@@ -424,23 +424,23 @@ class ApiSyncTest extends KernelTestCase
         $this->assertEquals($contentType, $type->getName());
 
         if ($authorText === null) {
-            $this->assertEmpty($post->getAuthorTexts());
+            $this->assertEmpty($post->getPostAuthorTexts());
         } else {
-            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getText();
+            $targetText = $post->getPostAuthorTexts()->get(0)->getAuthorText()->getText();
             $this->assertEquals($authorText, $targetText);
         }
 
         if ($authorTextRawHtml === null) {
-            $this->assertEmpty($post->getAuthorTexts());
+            $this->assertEmpty($post->getPostAuthorTexts());
         } else {
-            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml();
+            $targetText = $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml();
             $this->assertEquals($authorTextRawHtml, $targetText);
         }
 
         if ($authorTextHtml === null) {
-            $this->assertEmpty($post->getAuthorTexts());
+            $this->assertEmpty($post->getPostAuthorTexts());
         } else {
-            $targetText = $post->getAuthorTexts()->get(0)->getAuthorText()->getTextHtml();
+            $targetText = $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextHtml();
             $this->assertEquals($authorTextHtml, $targetText);
         }
 

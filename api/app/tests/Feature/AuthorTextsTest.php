@@ -104,7 +104,7 @@ class AuthorTextsTest extends KernelTestCase
     {
         $post = $this->postRepository->findOneBy(['redditId' => 'x00002']);
 
-        $postAuthorText = $post->getAuthorTexts()->get(0);
+        $postAuthorText = $post->getPostAuthorTexts()->get(0);
         $authorText = $postAuthorText->getAuthorText();
 
         $this->assertEquals('Just their standard naan disclosure agreement.', $authorText->getText());
@@ -145,14 +145,14 @@ class AuthorTextsTest extends KernelTestCase
             $postAuthorText->setAuthorText($authorText);
             $postAuthorText->setCreatedAt($updatedRevision['createdAt']);
 
-            $post->addAuthorText($postAuthorText);
+            $post->addPostAuthorText($postAuthorText);
             $this->entityManager->persist($post);
         }
         $this->entityManager->flush();
 
         // Re-fetch Post.
         $post = $this->postRepository->findOneBy(['redditId' => 'x00002']);
-        $this->assertCount(5, $post->getAuthorTexts());
+        $this->assertCount(5, $post->getPostAuthorTexts());
 
         // Verify the latest Author Text was retrieved.
         $currentPostAuthorTextRevision = $post->getLatestPostAuthorText();

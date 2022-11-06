@@ -58,13 +58,13 @@ class Post
     private $type;
 
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $authorTexts;
+    private $postAuthorTexts;
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->mediaAssets = new ArrayCollection();
-        $this->authorTexts = new ArrayCollection();
+        $this->postAuthorTexts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -288,27 +288,27 @@ class Post
     /**
      * @return Collection<int, PostAuthorText>
      */
-    public function getAuthorTexts(): Collection
+    public function getPostAuthorTexts(): Collection
     {
-        return $this->authorTexts;
+        return $this->postAuthorTexts;
     }
 
-    public function addAuthorText(PostAuthorText $authorText): self
+    public function addPostAuthorText(PostAuthorText $postAuthorText): self
     {
-        if (!$this->authorTexts->contains($authorText)) {
-            $this->authorTexts[] = $authorText;
-            $authorText->setPost($this);
+        if (!$this->postAuthorTexts->contains($postAuthorText)) {
+            $this->postAuthorTexts[] = $postAuthorText;
+            $postAuthorText->setPost($this);
         }
 
         return $this;
     }
 
-    public function removeAuthorText(PostAuthorText $authorText): self
+    public function removePostAuthorText(PostAuthorText $postAuthorText): self
     {
-        if ($this->authorTexts->removeElement($authorText)) {
+        if ($this->postAuthorTexts->removeElement($postAuthorText)) {
             // set the owning side to null (unless already changed)
-            if ($authorText->getPost() === $this) {
-                $authorText->setPost(null);
+            if ($postAuthorText->getPost() === $this) {
+                $postAuthorText->setPost(null);
             }
         }
 
@@ -323,7 +323,7 @@ class Post
      */
     public function getLatestPostAuthorText(): PostAuthorText
     {
-        return $this->getAuthorTexts()
+        return $this->getPostAuthorTexts()
             ->matching(PostRepository::createLatestPostAuthorTextCriteria())
             ->first()
             ;

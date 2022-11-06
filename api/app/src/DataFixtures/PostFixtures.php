@@ -117,7 +117,7 @@ class PostFixtures extends Fixture
             $postAuthorText->setAuthorText($authorText);
             $postAuthorText->setCreatedAt(new \DateTimeImmutable());
 
-            $post->addAuthorText($postAuthorText);
+            $post->addPostAuthorText($postAuthorText);
         }
 
         return $post;
