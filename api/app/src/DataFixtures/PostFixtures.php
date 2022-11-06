@@ -8,7 +8,9 @@ use App\Entity\CommentAuthorText;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
+use App\Entity\PostAuthorText;
 use App\Entity\Type;
+use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
@@ -23,6 +25,7 @@ class PostFixtures extends Fixture
         private readonly CommentRepository $commentRepository,
         private readonly KindRepository $kindRepository,
         private readonly TypeRepository $typeRepository,
+        private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
     ) {
     }
 
@@ -104,6 +107,18 @@ class PostFixtures extends Fixture
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);
+
+        if (!empty($postRow[10])) {
+            $authorText = new AuthorText();
+            $authorText->setText($postRow[10]);
+            $authorText->setTextRawHtml($postRow[11]);
+            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postRow[11]));
+            $postAuthorText = new PostAuthorText();
+            $postAuthorText->setAuthorText($authorText);
+            $postAuthorText->setCreatedAt(new \DateTimeImmutable());
+
+            $post->addAuthorText($postAuthorText);
+        }
 
         return $post;
     }

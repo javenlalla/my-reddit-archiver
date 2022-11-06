@@ -314,4 +314,18 @@ class Post
 
         return $this;
     }
+
+    /**
+     * Retrieve the latest/current revision of this Post's Post Author
+     * Text entity.
+     *
+     * @return PostAuthorText
+     */
+    public function getLatestPostAuthorText(): PostAuthorText
+    {
+        return $this->getAuthorTexts()
+            ->matching(PostRepository::createLatestPostAuthorTextCriteria())
+            ->first()
+            ;
+    }
 }

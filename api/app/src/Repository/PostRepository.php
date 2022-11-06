@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,6 +20,20 @@ class PostRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
+    }
+
+    /**
+     * Create the Criteria needed for retrieving the latest/current version of
+     * a Post's Post Author Text entity.
+     *
+     * @return Criteria
+     */
+    public static function createLatestPostAuthorTextCriteria(): Criteria
+    {
+        return Criteria::create()
+            ->orderBy(['createdAt' => Criteria::DESC])
+            ->setMaxResults(1)
+            ;
     }
 
     public function add(Post $entity, bool $flush = false): void
