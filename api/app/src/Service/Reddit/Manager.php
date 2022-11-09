@@ -226,7 +226,7 @@ class Manager
      */
     public function syncCommentsFromApiByPost(Post $post): array
     {
-        $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditPostId());
+        $commentsRawResponse = $this->api->getPostCommentsByRedditId($post->getRedditId());
         $commentsRawData = $commentsRawResponse[1]['data']['children'];
 
         $comments = $this->commentsAndMoreDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);

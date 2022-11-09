@@ -111,7 +111,7 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
         $comments = [];
         foreach ($commentsRawData as $commentRawData) {
             if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
-                $extractedMoreComments = $this->extractMoreCommentChildren($post->getRedditPostId(), $commentRawData['data']);
+                $extractedMoreComments = $this->extractMoreCommentChildren($post->getRedditId(), $commentRawData['data']);
 
                 array_push($comments, ...$extractedMoreComments);
             } else if ($commentRawData['kind'] !== 'more') {

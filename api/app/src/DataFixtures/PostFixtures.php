@@ -101,18 +101,17 @@ class PostFixtures extends Fixture
         $post->setUrl($postRow[5]);
         $post->setAuthor($postRow[6]);
         $post->setSubreddit($postRow[7]);
-        $post->setRedditPostId($postRow[8]);
-        $post->setRedditPostUrl($postRow[9]);
+        $post->setRedditPostUrl($postRow[8]);
         $post->setCreatedAt(new \DateTimeImmutable());
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);
 
-        if (!empty($postRow[10])) {
+        if (!empty($postRow[9])) {
             $authorText = new AuthorText();
-            $authorText->setText($postRow[10]);
-            $authorText->setTextRawHtml($postRow[11]);
-            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postRow[11]));
+            $authorText->setText($postRow[9]);
+            $authorText->setTextRawHtml($postRow[10]);
+            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postRow[10]));
             $postAuthorText = new PostAuthorText();
             $postAuthorText->setAuthorText($authorText);
             $postAuthorText->setCreatedAt(new \DateTimeImmutable());

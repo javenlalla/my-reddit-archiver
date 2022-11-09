@@ -47,9 +47,6 @@ class Post
     #[ORM\Column(type: 'string', length: 255)]
     private $redditPostUrl;
 
-    #[ORM\Column(type: 'string', length: 10)]
-    private $redditPostId;
-
     #[ORM\OneToOne(mappedBy: 'post', targetEntity: Content::class, cascade: ['persist', 'remove'])]
     private $content;
 
@@ -240,18 +237,6 @@ class Post
     public function setRedditPostUrl(string $redditPostUrl): self
     {
         $this->redditPostUrl = $redditPostUrl;
-
-        return $this;
-    }
-
-    public function getRedditPostId(): ?string
-    {
-        return $this->redditPostId;
-    }
-
-    public function setRedditPostId(string $redditPostId): self
-    {
-        $this->redditPostId = $redditPostId;
 
         return $this;
     }
