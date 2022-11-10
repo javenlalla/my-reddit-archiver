@@ -57,11 +57,15 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $postAuthorTexts;
 
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $postAwards;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->mediaAssets = new ArrayCollection();
         $this->postAuthorTexts = new ArrayCollection();
+        $this->postAwards = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -312,5 +316,51 @@ class Post
             ->matching(PostRepository::createLatestPostAuthorTextCriteria())
             ->first()
             ;
+    }
+
+    /**
+     * @return Collection<int, PostAward>
+     */
+    public function getPostAwards(): Collection
+    {
+        return $this->postAwards;
+    }
+
+    public function addPostAward(PostAward $postAward): self
+    {
+        if (!$this->postAwards->contains($postAward)) {
+            $this->postAwards[] = $postAward;
+            $postAward->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostAward(PostAward $postAward): self
+    {
+        if ($this->postAwards->removeElement($postAward)) {
+            // set the owning side to null (unless already changed)
+            if ($postAward->getPost() === $this) {
+                $postAward->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Loop through this Post's Post Awards and sum together the counts for
+     * each Award, if any, and return the total.
+     *
+     * @return int
+     */
+    public function getPostAwardsTrueCount(): int
+    {
+        $count = 0;
+        foreach ($this->getPostAwards() as $postAward) {
+            $count += $postAward->getCount();
+        }
+
+        return $count;
     }
 }

@@ -4,11 +4,13 @@ namespace App\Denormalizer;
 
 use App\Denormalizer\MediaAssetsDenormalizer;
 use App\Entity\AuthorText;
+use App\Entity\Award;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
+use App\Entity\PostAward;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
@@ -19,6 +21,7 @@ class PostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
+        private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
     ) {
@@ -88,6 +91,18 @@ class PostDenormalizer implements DenormalizerInterface
             && !empty($mediaAssets)
         ) {
             $post->setUrl($mediaAssets[0]->getSourceUrl());
+        }
+
+        if (!empty($postData['all_awardings'])) {
+            foreach ($postData['all_awardings'] as $awarding) {
+                $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
+
+                $postAward = new PostAward();
+                $postAward->setAward($award);
+                $postAward->setCount((int) $awarding['count']);
+
+                $post->addPostAward($postAward);
+            }
         }
 
         return $post;
