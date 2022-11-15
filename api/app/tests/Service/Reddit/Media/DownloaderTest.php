@@ -18,6 +18,8 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_REDDIT_HOSTED_IMAGE_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0.jpg';
 
+    const ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0_thumb.jpg';
+
     const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
 
     const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/1/ae/1aeefb8b0eb681ac3aaa5ee8e4fd2bcb.mp4';
@@ -29,44 +31,56 @@ class DownloaderTest extends KernelTestCase
     const IMAGE_GALLERY_ASSETS = [
         [
             'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
+            'thumbFilename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d_thumb.jpg',
             'dirOne' => 'a',
             'dirTwo' => 'be',
             'filePath' => '/var/www/mra-api/public/assets/a/be/abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/a/be/abe4e7c93ae266ca7d6043c4f8a82c5d_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&s=2f4c3f05a428019b6754ca3c9ab8d3122df14664',
         ],
         [
             'filename' => 'd3961edaeaef4913869b6d30e4472d1a.jpg',
+            'thumbFilename' => 'd3961edaeaef4913869b6d30e4472d1a_thumb.jpg',
             'dirOne' => 'd',
             'dirTwo' => '39',
             'filePath' => '/var/www/mra-api/public/assets/d/39/d3961edaeaef4913869b6d30e4472d1a.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/d/39/d3961edaeaef4913869b6d30e4472d1a_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&s=1aadfb05549500b4a3e61f377a87b6739d7e92e7',
         ],
         [
             'filename' => '9676a19295d2317fdd111c28324d438b.jpg',
+            'thumbFilename' => '9676a19295d2317fdd111c28324d438b_thumb.jpg',
             'dirOne' => '9',
             'dirTwo' => '67',
             'filePath' => '/var/www/mra-api/public/assets/9/67/9676a19295d2317fdd111c28324d438b.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/9/67/9676a19295d2317fdd111c28324d438b_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&s=d6d30ce00bf261edf76802fd79a455ad08bc0d62',
         ],
         [
             'filename' => '4b59d9f517130e6233d5e7982ee97376.jpg',
+            'thumbFilename' => '4b59d9f517130e6233d5e7982ee97376_thumb.jpg',
             'dirOne' => '4',
             'dirTwo' => 'b5',
             'filePath' => '/var/www/mra-api/public/assets/4/b5/4b59d9f517130e6233d5e7982ee97376.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/4/b5/4b59d9f517130e6233d5e7982ee97376_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&s=b7442ac83a19780a34ababb9439ef857a672a13f',
         ],
         [
             'filename' => '901411feb2aaa0f697396cf1c0caadfe.jpg',
+            'thumbFilename' => '901411feb2aaa0f697396cf1c0caadfe_thumb.jpg',
             'dirOne' => '9',
             'dirTwo' => '01',
             'filePath' => '/var/www/mra-api/public/assets/9/01/901411feb2aaa0f697396cf1c0caadfe.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/9/01/901411feb2aaa0f697396cf1c0caadfe_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&s=0ea1e60464a6905e72f06a70c4e781ec16ac0af6',
         ],
         [
             'filename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
+            'thumbFilename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15_thumb.jpg',
             'dirOne' => '7',
             'dirTwo' => 'd0',
             'filePath' => '/var/www/mra-api/public/assets/7/d0/7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/7/d0/7d0f3d94afea696aeaf6b8b6d6e5ee15_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&s=5914dc1cd03aa246d5a22810bf64098674092691',
         ],
     ];
@@ -74,65 +88,83 @@ class DownloaderTest extends KernelTestCase
     const IMAGE_GALLERY_GIF_ASSETS = [
         [
             'filename' => '7aa0a5546105afba1c31947897880dba.mp4',
+            'thumbFilename' => '7aa0a5546105afba1c31947897880dba_thumb.jpg',
             'dirOne' => '7',
             'dirTwo' => 'aa',
             'filePath' => '/var/www/mra-api/public/assets/7/aa/7aa0a5546105afba1c31947897880dba.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/7/aa/7aa0a5546105afba1c31947897880dba_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/hzhtz9fydej91.gif?format=mp4&s=43a197453fe9eebf82404c643507ed622f9760e4',
         ],
         [
             'filename' => '6c82276ca3b65eb70fdbe7c149d95023.mp4',
+            'thumbFilename' => '6c82276ca3b65eb70fdbe7c149d95023_thumb.jpg',
             'dirOne' => '6',
             'dirTwo' => 'c8',
             'filePath' => '/var/www/mra-api/public/assets/6/c8/6c82276ca3b65eb70fdbe7c149d95023.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/6/c8/6c82276ca3b65eb70fdbe7c149d95023_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/pwhjkwyxdej91.gif?format=mp4&s=25ac9c9a6dc03ad3d7ef36f859c13f5edcde08fb',
         ],
         [
             'filename' => 'e0d5057f173251a71ae3319b53c55c7c.mp4',
+            'thumbFilename' => 'e0d5057f173251a71ae3319b53c55c7c_thumb.jpg',
             'dirOne' => 'e',
             'dirTwo' => '0d',
             'filePath' => '/var/www/mra-api/public/assets/e/0d/e0d5057f173251a71ae3319b53c55c7c.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/e/0d/e0d5057f173251a71ae3319b53c55c7c_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/59hsb44ydej91.gif?format=mp4&s=77fff215f5af86ce035b0d05de9ca66649458ebc',
         ],
         [
             'filename' => '532770974cf94176ab9fccca2c895a17.mp4',
+            'thumbFilename' => '532770974cf94176ab9fccca2c895a17_thumb.jpg',
             'dirOne' => '5',
             'dirTwo' => '32',
             'filePath' => '/var/www/mra-api/public/assets/5/32/532770974cf94176ab9fccca2c895a17.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/5/32/532770974cf94176ab9fccca2c895a17_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/h7tin1jydej91.gif?format=mp4&s=4eb0e10b22e5e6962c2f58bf57e7f78ab8dab98d',
         ],
         [
             'filename' => 'eb7508f732614348dcb4a64dea720824.mp4',
+            'thumbFilename' => 'eb7508f732614348dcb4a64dea720824_thumb.jpg',
             'dirOne' => 'e',
             'dirTwo' => 'b7',
             'filePath' => '/var/www/mra-api/public/assets/e/b7/eb7508f732614348dcb4a64dea720824.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/e/b7/eb7508f732614348dcb4a64dea720824_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/lkve7ervdej91.gif?format=mp4&s=5a76bc4c82dcb15cb9d23dc6f62eb4c65e424598',
         ],
         [
             'filename' => 'c955af9f84d1906e8c3766fdd7bc889d.mp4',
+            'thumbFilename' => 'c955af9f84d1906e8c3766fdd7bc889d_thumb.jpg',
             'dirOne' => 'c',
             'dirTwo' => '95',
             'filePath' => '/var/www/mra-api/public/assets/c/95/c955af9f84d1906e8c3766fdd7bc889d.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/c/95/c955af9f84d1906e8c3766fdd7bc889d_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/9fy58fazdej91.gif?format=mp4&s=d7f53d9e580e2520acd7a02bd22db1d645249141',
         ],
         [
             'filename' => 'a9d328a856f6a16f3047f1072ab369a0.mp4',
+            'thumbFilename' => 'a9d328a856f6a16f3047f1072ab369a0_thumb.jpg',
             'dirOne' => 'a',
             'dirTwo' => '9d',
             'filePath' => '/var/www/mra-api/public/assets/a/9d/a9d328a856f6a16f3047f1072ab369a0.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/a/9d/a9d328a856f6a16f3047f1072ab369a0_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/42cnannxdej91.gif?format=mp4&s=7376b9c6327d07dbfbc2b23e903f0a0b8e28e559',
         ],
         [
             'filename' => 'ff96a712f2417f1b551bcb80e3093e78.mp4',
+            'thumbFilename' => 'ff96a712f2417f1b551bcb80e3093e78_thumb.jpg',
             'dirOne' => 'f',
             'dirTwo' => 'f9',
             'filePath' => '/var/www/mra-api/public/assets/f/f9/ff96a712f2417f1b551bcb80e3093e78.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/f/f9/ff96a712f2417f1b551bcb80e3093e78_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/yvs1hq2zdej91.gif?format=mp4&s=91d6ca9b40ba839f9d16b5f187332646df4047a4',
         ],
         [
             'filename' => 'e1700a5bc0cd6f102b67b8ad3ead6700.mp4',
+            'thumbFilename' => 'e1700a5bc0cd6f102b67b8ad3ead6700_thumb.jpg',
             'dirOne' => 'e',
             'dirTwo' => '17',
             'filePath' => '/var/www/mra-api/public/assets/e/17/e1700a5bc0cd6f102b67b8ad3ead6700.mp4',
+            'thumbFilePath' => '/var/www/mra-api/public/assets/e/17/e1700a5bc0cd6f102b67b8ad3ead6700_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/6b6pwxvydej91.gif?format=mp4&s=22b28c51afe45f9586f83a2d722522154704b62b',
         ],
     ];
@@ -206,13 +238,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'won0ky';
         $expectedPath = self::ASSET_REDDIT_HOSTED_IMAGE_PATH;
+        $expectedThumbPath = self::ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert image was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -229,6 +264,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.redd.it/cnfk33iv9sh91.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('4', $mediaAsset->getDirOne());
         $this->assertEquals('4c', $mediaAsset->getDirTwo());
+        $this->assertEquals('https://b.thumbs.redditmedia.com/_9QxeKKVgR-o6E9JE-vydP1i5OpkyEziomCERjBlSOU.jpg', $mediaAsset->getThumbnailSourceUrl());
+        $this->assertEquals('44cdd5b77a44b3ebd1e955946e71efc0_thumb.jpg', $mediaAsset->getThumbnailFilename());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
@@ -244,6 +281,7 @@ class DownloaderTest extends KernelTestCase
 
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
+            $this->assertFileDoesNotExist($galleryAsset['thumbFilePath']);
         }
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
@@ -252,6 +290,7 @@ class DownloaderTest extends KernelTestCase
         // Assert assets were saved locally.
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
+            $this->assertFileExists($galleryAsset['thumbFilePath']);
         }
 
         // Assert assets were persisted to the database and associated to this
@@ -286,6 +325,7 @@ class DownloaderTest extends KernelTestCase
 
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
+            $this->assertFileDoesNotExist($galleryAsset['thumbFilePath']);
         }
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
@@ -294,6 +334,7 @@ class DownloaderTest extends KernelTestCase
         // Assert assets were saved locally.
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
+            $this->assertFileExists($galleryAsset['thumbFilePath']);
         }
 
         // Assert assets were persisted to the database and associated to this
@@ -490,6 +531,7 @@ class DownloaderTest extends KernelTestCase
             self::ASSET_IMAGE_PATH,
             self::ASSET_IMAGE_THUMB_PATH,
             self::ASSET_REDDIT_HOSTED_IMAGE_PATH,
+            self::ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH,
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
             self::ASSET_REDDIT_VIDEO_PATH,
@@ -502,10 +544,12 @@ class DownloaderTest extends KernelTestCase
 
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $filesystem->remove($galleryAsset['filePath']);
+            $filesystem->remove($galleryAsset['thumbFilePath']);
         }
 
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $filesystem->remove($galleryAsset['filePath']);
+            $filesystem->remove($galleryAsset['thumbFilePath']);
         }
     }
 }
