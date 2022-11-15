@@ -14,6 +14,8 @@ class DownloaderTest extends KernelTestCase
 {
     const ASSET_IMAGE_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
+    const ASSET_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9_thumb.jpg';
+
     const ASSET_REDDIT_HOSTED_IMAGE_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0.jpg';
 
     const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
@@ -163,13 +165,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'vepbt0';
         $expectedPath = self::ASSET_IMAGE_PATH;
+        $expectedThumbPath= self::ASSET_IMAGE_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert image was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -186,6 +191,8 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('f', $mediaAsset->getDirOne());
         $this->assertEquals('aa', $mediaAsset->getDirTwo());
+        $this->assertEquals('https://b.thumbs.redditmedia.com/eVhpmEiR3ItbKk6R0SDI6C1XM5ONek_xcQIIhtCA5YQ.jpg', $mediaAsset->getThumbnailSourceUrl());
+        $this->assertEquals('faac0cc02f38ca7aa896f5dafdeaacb9_thumb.jpg', $mediaAsset->getThumbnailFilename());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
     }
@@ -481,6 +488,7 @@ class DownloaderTest extends KernelTestCase
 
         $paths = [
             self::ASSET_IMAGE_PATH,
+            self::ASSET_IMAGE_THUMB_PATH,
             self::ASSET_REDDIT_HOSTED_IMAGE_PATH,
             self::ASSET_GIF_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,

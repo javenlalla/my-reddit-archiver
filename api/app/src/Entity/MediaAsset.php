@@ -35,6 +35,12 @@ class MediaAsset
     #[ORM\Column(type: 'string', length: 55, nullable: true)]
     private $audioFilename;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $thumbnailSourceUrl;
+
+    #[ORM\Column(type: 'string', length: 75, nullable: true)]
+    private $thumbnailFilename;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +126,30 @@ class MediaAsset
     public function setAudioFilename(?string $audioFilename): self
     {
         $this->audioFilename = $audioFilename;
+
+        return $this;
+    }
+
+    public function getThumbnailSourceUrl(): ?string
+    {
+        return $this->thumbnailSourceUrl;
+    }
+
+    public function setThumbnailSourceUrl(?string $thumbnailSourceUrl): self
+    {
+        $this->thumbnailSourceUrl = $thumbnailSourceUrl;
+
+        return $this;
+    }
+
+    public function getThumbnailFilename(): ?string
+    {
+        return $this->thumbnailFilename;
+    }
+
+    public function setThumbnailFilename(?string $thumbnailFilename): self
+    {
+        $this->thumbnailFilename = $thumbnailFilename;
 
         return $this;
     }

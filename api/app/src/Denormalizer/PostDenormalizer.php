@@ -82,7 +82,6 @@ class PostDenormalizer implements DenormalizerInterface
 
         $post->setUrl($postData['url']);
         $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData, 'content' => $context['content']]);
-
         foreach ($mediaAssets as $mediaAsset) {
             $post->addMediaAsset($mediaAsset);
         }

@@ -10,6 +10,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class BaseDenormalizer implements DenormalizerInterface
 {
+    private const THUMBNAIL_FILENAME_FORMAT = '%s_thumb.jpg';
+
     /**
      * Analyze the provided Post and denormalize its associated data into a
      * Media Asset Entity.
@@ -62,6 +64,11 @@ class BaseDenormalizer implements DenormalizerInterface
             $mediaAsset->setSourceUrl($overrideSourceUrl);
         } else {
             $mediaAsset->setSourceUrl($post->getUrl());
+        }
+
+        if (!empty($responseData['thumbnail'])) {
+            $mediaAsset->setThumbnailSourceUrl($responseData['thumbnail']);
+            $mediaAsset->setThumbnailFilename(sprintf(self::THUMBNAIL_FILENAME_FORMAT, $idHash));
         }
 
         return $mediaAsset;

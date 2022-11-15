@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service\Reddit\Media;
 
@@ -25,7 +26,7 @@ class Downloader
      * @return void
      * @throws Exception
      */
-    public function executeDownload(MediaAsset $mediaAsset): void
+    public function downloadMediaAsset(MediaAsset $mediaAsset): void
     {
         $basePath = $this->getBasePathFromMediaAsset($mediaAsset);
 
@@ -39,6 +40,10 @@ class Downloader
         $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
         if ($downloadResult === false) {
             throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
+        }
+
+        if (!empty($mediaAsset->getThumbnailSourceUrl())) {
+            $this->downloadThumbnail($mediaAsset, $basePath);
         }
 
         if (!empty($mediaAsset->getAudioSourceUrl())) {
@@ -102,10 +107,7 @@ class Downloader
     private function downloadAndMergeVideoAudio(MediaAsset $mediaAsset, string $videoDownloadPath, string $basePath): void
     {
         $audioDownloadPath = $basePath . '/' . $mediaAsset->getAudioFilename();
-        $downloadResult = file_put_contents($audioDownloadPath, file_get_contents($mediaAsset->getAudioSourceUrl()));
-        if ($downloadResult === false) {
-            throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $audioDownloadPath, $mediaAsset->getParentPost()->getTitle()));
-        }
+        $this->executeDownload($mediaAsset->getAudioSourceUrl(), $audioDownloadPath);
 
         $this->mergeVideoAndAudioFiles($basePath, $videoDownloadPath, $audioDownloadPath);
         // Audio file is no longer needed locally once merged into the Video file.
@@ -137,5 +139,38 @@ class Downloader
         }
 
         $this->filesystem->rename($combinedOutputPath, $videoDownloadPath, true);
+    }
+
+    /**
+     * Download the Thumbnail associated to the provided Media Asset.
+     *
+     * @param  MediaAsset  $mediaAsset
+     * @param  string  $basePath
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function downloadThumbnail(MediaAsset $mediaAsset, string $basePath): void
+    {
+        $thumbnailAssetPath = $basePath . '/' . $mediaAsset->getThumbnailFilename();
+        $this->executeDownload($mediaAsset->getThumbnailSourceUrl(), $thumbnailAssetPath);
+    }
+
+    /**
+     * Core function to download an asset or file from the provided URL to the
+     * targeted local download path.
+     *
+     * @param  string  $sourceUrl
+     * @param  string  $targetDownloadPath
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function executeDownload(string $sourceUrl, string $targetDownloadPath): void
+    {
+        $downloadResult = file_put_contents($targetDownloadPath, file_get_contents($sourceUrl));
+        if ($downloadResult === false) {
+            throw new Exception(sprintf('Unable to download asset `%s` to `%s`.', $sourceUrl, $targetDownloadPath));
+        }
     }
 }

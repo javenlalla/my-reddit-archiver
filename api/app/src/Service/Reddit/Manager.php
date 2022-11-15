@@ -108,7 +108,7 @@ class Manager
         $content = $this->contentDenormalizer->denormalize($response, Content::class, null, $context);
 
         foreach ($content->getPost()->getMediaAssets() as $mediaAsset) {
-            $this->mediaDownloader->executeDownload($mediaAsset);
+            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
         }
 
         $this->contentRepository->add($content, true);
@@ -165,7 +165,7 @@ class Manager
 
         $this->postRepository->save($post);
         foreach ($post->getMediaAssets() as $mediaAsset) {
-            $this->mediaDownloader->executeDownload($mediaAsset);
+            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
         }
 
         return $this->postRepository->find($post->getId());
