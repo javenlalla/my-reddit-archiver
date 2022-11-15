@@ -19,7 +19,7 @@ class Award
     #[ORM\Column(type: 'string', length: 30)]
     private $name;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    #[ORM\Column(type: 'string', length: 200, nullable: true)]
     private $description;
 
     #[ORM\Column(type: 'string', length: 10)]

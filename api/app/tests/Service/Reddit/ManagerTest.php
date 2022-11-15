@@ -104,6 +104,6 @@ class ManagerTest extends KernelTestCase
 
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(1345, $allCommentsCount);
+        $this->assertEquals(1344, $allCommentsCount);
     }
 }

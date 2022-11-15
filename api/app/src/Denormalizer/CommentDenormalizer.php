@@ -3,8 +3,10 @@
 namespace App\Denormalizer;
 
 use App\Entity\AuthorText;
+use App\Entity\Award;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
+use App\Entity\CommentAward;
 use App\Entity\Content;
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
@@ -14,7 +16,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 class CommentDenormalizer implements DenormalizerInterface
 {
     public function __construct(
-        private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
+        private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
+        private readonly AwardDenormalizer $awardDenormalizer,
     ) {
     }
 
@@ -56,6 +59,18 @@ class CommentDenormalizer implements DenormalizerInterface
 
         if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
             $comment->setParentComment($context['parentComment']);
+        }
+
+        if (!empty($commentData['all_awardings'])) {
+            foreach ($commentData['all_awardings'] as $awarding) {
+                $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
+
+                $commentAward = new CommentAward();
+                $commentAward->setAward($award);
+                $commentAward->setCount((int) $awarding['count']);
+
+                $comment->addCommentAward($commentAward);
+            }
         }
 
         return $comment;

@@ -52,6 +52,14 @@ class AwardsTest extends KernelTestCase
      */
     public function testGetCommentAwards()
     {
+        $commentUrl = 'https://www.reddit.com/r/Jokes/comments/y1vmdf/comment/is022vs';
 
+        $content = $this->manager->syncContentFromJsonUrl(Kind::KIND_COMMENT, $commentUrl);
+        $comment = $content->getComment();
+
+        // Verify each type of expected Award has been persisted and associated.
+        $this->assertCount(2, $comment->getCommentAwards());
+
+        $this->assertEquals(2, $comment->getCommentAwardsTrueCount());
     }
 }

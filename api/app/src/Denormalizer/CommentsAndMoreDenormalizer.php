@@ -3,8 +3,10 @@
 namespace App\Denormalizer;
 
 use App\Entity\AuthorText;
+use App\Entity\Award;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
+use App\Entity\CommentAward;
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
@@ -19,6 +21,7 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
         private readonly Api $api,
         private readonly CommentRepository $commentRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
+        private readonly AwardDenormalizer $awardDenormalizer,
     ){
     }
 
@@ -49,6 +52,7 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
             if (!empty($existingComment)) {
                 $comment = $existingComment;
             } else {
+                // @TODO: This is repetetive logic. Replace with a call to the CommentDenormalizer.
                 $comment = new Comment();
                 $comment->setRedditId($commentData['id']);
                 $comment->setScore((int) $commentData['score']);
@@ -70,6 +74,18 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
 
             if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
                 $comment->setParentComment($context['parentComment']);
+            }
+
+            if (!empty($commentData['all_awardings'])) {
+                foreach ($commentData['all_awardings'] as $awarding) {
+                    $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
+
+                    $commentAward = new CommentAward();
+                    $commentAward->setAward($award);
+                    $commentAward->setCount((int) $awarding['count']);
+
+                    $comment->addCommentAward($commentAward);
+                }
             }
 
             if (!empty($commentData['replies'])) {

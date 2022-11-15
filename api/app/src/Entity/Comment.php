@@ -44,10 +44,14 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAuthorText::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $commentAuthorTexts;
 
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private $commentAwards;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
         $this->commentAuthorTexts = new ArrayCollection();
+        $this->commentAwards = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -221,5 +225,51 @@ class Comment
             ->matching(CommentRepository::createLatestCommentAuthorTextCriteria())
             ->first()
         ;
+    }
+
+    /**
+     * @return Collection<int, CommentAward>
+     */
+    public function getCommentAwards(): Collection
+    {
+        return $this->commentAwards;
+    }
+
+    public function addCommentAward(CommentAward $commentAward): self
+    {
+        if (!$this->commentAwards->contains($commentAward)) {
+            $this->commentAwards[] = $commentAward;
+            $commentAward->setComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommentAward(CommentAward $commentAward): self
+    {
+        if ($this->commentAwards->removeElement($commentAward)) {
+            // set the owning side to null (unless already changed)
+            if ($commentAward->getComment() === $this) {
+                $commentAward->setComment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Loop through this Comment's Comment Awards and sum together the counts for
+     * each Award, if any, and return the total.
+     *
+     * @return int
+     */
+    public function getCommentAwardsTrueCount(): int
+    {
+        $count = 0;
+        foreach ($this->getCommentAwards() as $postAward) {
+            $count += $postAward->getCount();
+        }
+
+        return $count;
     }
 }
