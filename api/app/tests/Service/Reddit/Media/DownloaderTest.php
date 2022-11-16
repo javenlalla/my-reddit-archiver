@@ -18,72 +18,70 @@ class DownloaderTest extends KernelTestCase
 
     const ASSET_REDDIT_HOSTED_IMAGE_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0.jpg';
 
-    const ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0_thumb.jpg';
+    const ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/5/f1/5f1ff800d8d3dbdec298e3969b5fcbd2_thumb.jpg';
 
     const ASSET_TEXT_WITH_IMAGE_PATH = '/var/www/mra-api/public/assets/0/a6/0a6f67fe20592b9c659e7deee5efe877.jpg';
 
+    const ASSET_TEXT_WITH_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/5/a5/5a5859e3f92e5fb89c5971666c37a682_thumb.jpg';
+
     const ASSET_GIF_PATH = '/var/www/mra-api/public/assets/1/ae/1aeefb8b0eb681ac3aaa5ee8e4fd2bcb.mp4';
+
+    const ASSET_GIF_THUMB_PATH = '/var/www/mra-api/public/assets/f/e2/fe2b035aaeed849079008231923cf160_thumb.jpg';
 
     const ASSET_REDDIT_VIDEO_PATH = '/var/www/mra-api/public/assets/a/01/a01b41d34f5bb8bceb7540fa1b84728a.mp4';
 
+    const ASSET_REDDIT_VIDEO_THUMB_PATH = '/var/www/mra-api/public/assets/e/70/e70ab5ad74e5a52e6d1f14d92b7f2187_thumb.jpg';
+
     const ASSET_REDDIT_VIDEO_NO_AUDIO_PATH = '/var/www/mra-api/public/assets/1/7d/17de4f10fe97940aba8170d1eec6caf0.mp4';
+
+    const ASSET_REDDIT_VIDEO_NO_AUDIO_THUMB_PATH = '/var/www/mra-api/public/assets/7/15/7151e2d464c3e108fc921134cd003d25_thumb.jpg';
 
     const IMAGE_GALLERY_ASSETS = [
         [
             'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
-            'thumbFilename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d_thumb.jpg',
             'dirOne' => 'a',
             'dirTwo' => 'be',
             'filePath' => '/var/www/mra-api/public/assets/a/be/abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/a/be/abe4e7c93ae266ca7d6043c4f8a82c5d_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&s=2f4c3f05a428019b6754ca3c9ab8d3122df14664',
         ],
         [
             'filename' => 'd3961edaeaef4913869b6d30e4472d1a.jpg',
-            'thumbFilename' => 'd3961edaeaef4913869b6d30e4472d1a_thumb.jpg',
             'dirOne' => 'd',
             'dirTwo' => '39',
             'filePath' => '/var/www/mra-api/public/assets/d/39/d3961edaeaef4913869b6d30e4472d1a.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/d/39/d3961edaeaef4913869b6d30e4472d1a_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&s=1aadfb05549500b4a3e61f377a87b6739d7e92e7',
         ],
         [
             'filename' => '9676a19295d2317fdd111c28324d438b.jpg',
-            'thumbFilename' => '9676a19295d2317fdd111c28324d438b_thumb.jpg',
             'dirOne' => '9',
             'dirTwo' => '67',
             'filePath' => '/var/www/mra-api/public/assets/9/67/9676a19295d2317fdd111c28324d438b.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/9/67/9676a19295d2317fdd111c28324d438b_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&s=d6d30ce00bf261edf76802fd79a455ad08bc0d62',
         ],
         [
             'filename' => '4b59d9f517130e6233d5e7982ee97376.jpg',
-            'thumbFilename' => '4b59d9f517130e6233d5e7982ee97376_thumb.jpg',
             'dirOne' => '4',
             'dirTwo' => 'b5',
             'filePath' => '/var/www/mra-api/public/assets/4/b5/4b59d9f517130e6233d5e7982ee97376.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/4/b5/4b59d9f517130e6233d5e7982ee97376_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&s=b7442ac83a19780a34ababb9439ef857a672a13f',
         ],
         [
             'filename' => '901411feb2aaa0f697396cf1c0caadfe.jpg',
-            'thumbFilename' => '901411feb2aaa0f697396cf1c0caadfe_thumb.jpg',
             'dirOne' => '9',
             'dirTwo' => '01',
             'filePath' => '/var/www/mra-api/public/assets/9/01/901411feb2aaa0f697396cf1c0caadfe.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/9/01/901411feb2aaa0f697396cf1c0caadfe_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&s=0ea1e60464a6905e72f06a70c4e781ec16ac0af6',
         ],
         [
             'filename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
-            'thumbFilename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15_thumb.jpg',
             'dirOne' => '7',
             'dirTwo' => 'd0',
             'filePath' => '/var/www/mra-api/public/assets/7/d0/7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
-            'thumbFilePath' => '/var/www/mra-api/public/assets/7/d0/7d0f3d94afea696aeaf6b8b6d6e5ee15_thumb.jpg',
             'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&s=5914dc1cd03aa246d5a22810bf64098674092691',
         ],
     ];
+
+    const IMAGE_GALLERY_THUMB_PATH = '/var/www/mra-api/public/assets/b/1b/b1b23689fb7fc4e8e27202f40b5f0cdb_thumb.jpg';
 
     const IMAGE_GALLERY_GIF_ASSETS = [
         [
@@ -169,6 +167,8 @@ class DownloaderTest extends KernelTestCase
         ],
     ];
 
+    const IMAGE_GALLERY_GIF_THUMB_PATH = '/var/www/mra-api/public/assets/5/b7/5b7e653f25f3e1ac3233e510d295b7ba_thumb.jpg';
+
     private Manager $manager;
 
     private Downloader $mediaDownloader;
@@ -232,6 +232,16 @@ class DownloaderTest extends KernelTestCase
     }
 
     /**
+     * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
+     *
+     * @return void
+     */
+    public function testSaveSingleImageFromImagePostJsonUrl()
+    {
+        $this->markTestSkipped('Revisit after Thumbnail refactor.');
+    }
+
+    /**
      * https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
      *
      * @return void
@@ -266,10 +276,12 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.redd.it/cnfk33iv9sh91.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('4', $mediaAsset->getDirOne());
         $this->assertEquals('4c', $mediaAsset->getDirTwo());
-        $this->assertEquals('https://b.thumbs.redditmedia.com/_9QxeKKVgR-o6E9JE-vydP1i5OpkyEziomCERjBlSOU.jpg', $mediaAsset->getThumbnailSourceUrl());
-        $this->assertEquals('44cdd5b77a44b3ebd1e955946e71efc0_thumb.jpg', $mediaAsset->getThumbnailFilename());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/_9QxeKKVgR-o6E9JE-vydP1i5OpkyEziomCERjBlSOU.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('5f1ff800d8d3dbdec298e3969b5fcbd2_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -280,19 +292,20 @@ class DownloaderTest extends KernelTestCase
     public function testSaveImagesFromImageGallery()
     {
         $redditId = 'v27nr7';
+        $expectedThumbPath = self::IMAGE_GALLERY_THUMB_PATH;
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
-            $this->assertFileDoesNotExist($galleryAsset['thumbFilePath']);
         }
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert assets were saved locally.
+        $this->assertFileExists($expectedThumbPath);
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
-            $this->assertFileExists($galleryAsset['thumbFilePath']);
         }
 
         // Assert assets were persisted to the database and associated to this
@@ -314,6 +327,10 @@ class DownloaderTest extends KernelTestCase
             $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
             $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         }
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://a.thumbs.redditmedia.com/oicSvcPsUxSfSzil8Hh7b1QD1T_GJq_vIo7iFtrkDd0.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('b1b23689fb7fc4e8e27202f40b5f0cdb_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -324,19 +341,20 @@ class DownloaderTest extends KernelTestCase
     public function testSaveGifsFromImageGallery()
     {
         $redditId = 'wvg39c';
+        $expectedThumbPath = self::IMAGE_GALLERY_GIF_THUMB_PATH;
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $this->assertFileDoesNotExist($galleryAsset['filePath']);
-            $this->assertFileDoesNotExist($galleryAsset['thumbFilePath']);
         }
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert assets were saved locally.
+        $this->assertFileExists($expectedThumbPath);
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $this->assertFileExists($galleryAsset['filePath']);
-            $this->assertFileExists($galleryAsset['thumbFilePath']);
         }
 
         // Assert assets were persisted to the database and associated to this
@@ -358,6 +376,10 @@ class DownloaderTest extends KernelTestCase
             $this->assertEquals($galleryAsset['dirTwo'], $mediaAsset->getDirTwo());
             $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         }
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/J-7WpMcyHF7C8e75BZiVEgJyK6jSJLpuTJ4srJI1ojM.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('5b7e653f25f3e1ac3233e510d295b7ba_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -369,13 +391,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'utsmkw';
         $expectedPath = self::ASSET_TEXT_WITH_IMAGE_PATH;
+        $expectedThumbPath= self::ASSET_TEXT_WITH_IMAGE_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert image was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert image was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -393,6 +418,10 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('0', $mediaAsset->getDirOne());
         $this->assertEquals('a6', $mediaAsset->getDirTwo());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/q06gPIAKixPJS38j1dkiwiEqiA6k4kqie84T5yLgt4o.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('5a5859e3f92e5fb89c5971666c37a682_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -404,13 +433,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'wgb8wj';
         $expectedPath = self::ASSET_GIF_PATH;
+        $expectedThumbPath= self::ASSET_GIF_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert GIF was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert image was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -429,6 +461,10 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('ae', $mediaAsset->getDirTwo());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://a.thumbs.redditmedia.com/DI9yoWanjzCXyy5kF8-JFfP-SPg2__nhBo0HNSxU8W4.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('fe2b035aaeed849079008231923cf160_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -441,13 +477,16 @@ class DownloaderTest extends KernelTestCase
         // @TODO: Add initial assertion to ensure ffmpeg is installed.
         $redditId = 'tl8qic';
         $expectedPath = self::ASSET_REDDIT_VIDEO_PATH;
+        $expectedThumbPath= self::ASSET_REDDIT_VIDEO_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert Reddit Video was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert Reddit Video was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -468,6 +507,10 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('01', $mediaAsset->getDirTwo());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/CPQpNEdyLw1Q2bK0jIpY8dLUtLzmegTqKJQMp5ONxto.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('e70ab5ad74e5a52e6d1f14d92b7f2187_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**
@@ -484,13 +527,16 @@ class DownloaderTest extends KernelTestCase
     {
         $redditId = 'wfylnl';
         $expectedPath = self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH;
+        $expectedThumbPath= self::ASSET_REDDIT_VIDEO_NO_AUDIO_THUMB_PATH;
         $this->assertFileDoesNotExist($expectedPath);
+        $this->assertFileDoesNotExist($expectedThumbPath);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
         $post = $content->getPost();
 
         // Assert Reddit Video was saved locally.
         $this->assertFileExists($expectedPath);
+        $this->assertFileExists($expectedThumbPath);
 
         // Assert Reddit Video was persisted to the database and associated to its Post.
         $mediaAssets = $post->getMediaAssets();
@@ -511,6 +557,10 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('7d', $mediaAsset->getDirTwo());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/EP5Wgd7mgrsKVgPOFgiAvDblLmm5qNSBnSAvqzAZFcE.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('7151e2d464c3e108fc921134cd003d25_thumb.jpg', $thumbnail->getFilename());
     }
 
     public function tearDown(): void
@@ -535,9 +585,15 @@ class DownloaderTest extends KernelTestCase
             self::ASSET_REDDIT_HOSTED_IMAGE_PATH,
             self::ASSET_REDDIT_HOSTED_IMAGE_THUMB_PATH,
             self::ASSET_GIF_PATH,
+            self::ASSET_GIF_THUMB_PATH,
             self::ASSET_TEXT_WITH_IMAGE_PATH,
+            self::ASSET_TEXT_WITH_IMAGE_THUMB_PATH,
             self::ASSET_REDDIT_VIDEO_PATH,
+            self::ASSET_REDDIT_VIDEO_THUMB_PATH,
             self::ASSET_REDDIT_VIDEO_NO_AUDIO_PATH,
+            self::ASSET_REDDIT_VIDEO_NO_AUDIO_THUMB_PATH,
+            self::IMAGE_GALLERY_THUMB_PATH,
+            self::IMAGE_GALLERY_GIF_THUMB_PATH,
         ];
 
         foreach ($paths as $path) {
@@ -546,12 +602,10 @@ class DownloaderTest extends KernelTestCase
 
         foreach (self::IMAGE_GALLERY_ASSETS as $galleryAsset) {
             $filesystem->remove($galleryAsset['filePath']);
-            $filesystem->remove($galleryAsset['thumbFilePath']);
         }
 
         foreach (self::IMAGE_GALLERY_GIF_ASSETS as $galleryAsset) {
             $filesystem->remove($galleryAsset['filePath']);
-            $filesystem->remove($galleryAsset['thumbFilePath']);
         }
     }
 }
