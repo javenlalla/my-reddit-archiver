@@ -2,18 +2,18 @@
 
 namespace App\Entity;
 
-use App\Repository\MediaAssetRepository;
+use App\Repository\ThumbnailRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: MediaAssetRepository::class)]
-class MediaAsset
+#[ORM\Entity(repositoryClass: ThumbnailRepository::class)]
+class Thumbnail
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 40)]
+    #[ORM\Column(type: 'string', length: 75)]
     private $filename;
 
     #[ORM\Column(type: 'string', length: 5)]
@@ -22,18 +22,8 @@ class MediaAsset
     #[ORM\Column(type: 'string', length: 5)]
     private $dirTwo;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'mediaAssets')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $parentPost;
-
     #[ORM\Column(type: 'string', length: 255)]
     private $sourceUrl;
-
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private $audioSourceUrl;
-
-    #[ORM\Column(type: 'string', length: 55, nullable: true)]
-    private $audioFilename;
 
     public function getId(): ?int
     {
@@ -76,18 +66,6 @@ class MediaAsset
         return $this;
     }
 
-    public function getParentPost(): ?Post
-    {
-        return $this->parentPost;
-    }
-
-    public function setParentPost(?Post $parentPost): self
-    {
-        $this->parentPost = $parentPost;
-
-        return $this;
-    }
-
     public function getSourceUrl(): ?string
     {
         return $this->sourceUrl;
@@ -96,30 +74,6 @@ class MediaAsset
     public function setSourceUrl(string $sourceUrl): self
     {
         $this->sourceUrl = $sourceUrl;
-
-        return $this;
-    }
-
-    public function getAudioSourceUrl(): ?string
-    {
-        return $this->audioSourceUrl;
-    }
-
-    public function setAudioSourceUrl(?string $audioSourceUrl): self
-    {
-        $this->audioSourceUrl = $audioSourceUrl;
-
-        return $this;
-    }
-
-    public function getAudioFilename(): ?string
-    {
-        return $this->audioFilename;
-    }
-
-    public function setAudioFilename(?string $audioFilename): self
-    {
-        $this->audioFilename = $audioFilename;
 
         return $this;
     }

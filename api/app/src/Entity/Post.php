@@ -60,6 +60,9 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $postAwards;
 
+    #[ORM\OneToOne(targetEntity: Thumbnail::class, cascade: ['persist', 'remove'])]
+    private $thumbnail;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -362,5 +365,17 @@ class Post
         }
 
         return $count;
+    }
+
+    public function getThumbnail(): ?Thumbnail
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(?Thumbnail $thumbnail): self
+    {
+        $this->thumbnail = $thumbnail;
+
+        return $this;
     }
 }

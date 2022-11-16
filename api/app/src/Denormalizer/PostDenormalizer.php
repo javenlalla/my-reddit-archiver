@@ -2,7 +2,6 @@
 
 namespace App\Denormalizer;
 
-use App\Denormalizer\MediaAssetsDenormalizer;
 use App\Entity\AuthorText;
 use App\Entity\Award;
 use App\Entity\Content;
@@ -11,6 +10,7 @@ use App\Entity\MediaAsset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
+use App\Entity\Thumbnail;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
@@ -23,7 +23,8 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
-        private readonly SanitizeHtmlHelper $sanitizeHtmlHelper
+        private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
+        private readonly ThumbnailDenormalizer $thumbnailDenormalizer,
     ) {
     }
 
@@ -102,6 +103,11 @@ class PostDenormalizer implements DenormalizerInterface
 
                 $post->addPostAward($postAward);
             }
+        }
+
+        if (!empty($postData['thumbnail'])) {
+            $thumbnail = $this->thumbnailDenormalizer->denormalize($post, Thumbnail::class, null, ['sourceUrl' => $postData['thumbnail']]);
+            $post->setThumbnail($thumbnail);
         }
 
         return $post;

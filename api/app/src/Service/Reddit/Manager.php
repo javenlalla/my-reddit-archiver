@@ -107,8 +107,13 @@ class Manager
 
         $content = $this->contentDenormalizer->denormalize($response, Content::class, null, $context);
 
-        foreach ($content->getPost()->getMediaAssets() as $mediaAsset) {
+        $post = $content->getPost();
+        foreach ($post->getMediaAssets() as $mediaAsset) {
             $this->mediaDownloader->downloadMediaAsset($mediaAsset);
+        }
+
+        if (!empty($post->getThumbnail())) {
+            $this->mediaDownloader->downloadThumbnail($post->getThumbnail());
         }
 
         $this->contentRepository->add($content, true);

@@ -14,7 +14,7 @@ class DownloaderTest extends KernelTestCase
 {
     const ASSET_IMAGE_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9.jpg';
 
-    const ASSET_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/f/aa/faac0cc02f38ca7aa896f5dafdeaacb9_thumb.jpg';
+    const ASSET_IMAGE_THUMB_PATH = '/var/www/mra-api/public/assets/c/d7/cd79c58c96cbc4684f4aef775c47f5a5_thumb.jpg';
 
     const ASSET_REDDIT_HOSTED_IMAGE_PATH = '/var/www/mra-api/public/assets/4/4c/44cdd5b77a44b3ebd1e955946e71efc0.jpg';
 
@@ -223,10 +223,12 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $mediaAsset->getSourceUrl());
         $this->assertEquals('f', $mediaAsset->getDirOne());
         $this->assertEquals('aa', $mediaAsset->getDirTwo());
-        $this->assertEquals('https://b.thumbs.redditmedia.com/eVhpmEiR3ItbKk6R0SDI6C1XM5ONek_xcQIIhtCA5YQ.jpg', $mediaAsset->getThumbnailSourceUrl());
-        $this->assertEquals('faac0cc02f38ca7aa896f5dafdeaacb9_thumb.jpg', $mediaAsset->getThumbnailFilename());
         $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
         $this->assertEquals($post->getUrl(), $mediaAsset->getSourceUrl());
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals('https://b.thumbs.redditmedia.com/eVhpmEiR3ItbKk6R0SDI6C1XM5ONek_xcQIIhtCA5YQ.jpg', $thumbnail->getSourceUrl());
+        $this->assertEquals('cd79c58c96cbc4684f4aef775c47f5a5_thumb.jpg', $thumbnail->getFilename());
     }
 
     /**

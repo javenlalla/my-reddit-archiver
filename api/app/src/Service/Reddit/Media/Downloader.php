@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Service\Reddit\Media;
 
 use App\Entity\MediaAsset;
+use App\Entity\Thumbnail;
 use Exception;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -42,13 +43,25 @@ class Downloader
             throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
         }
 
-        if (!empty($mediaAsset->getThumbnailSourceUrl())) {
-            $this->downloadThumbnail($mediaAsset, $basePath);
-        }
-
         if (!empty($mediaAsset->getAudioSourceUrl())) {
             $this->downloadAndMergeVideoAudio($mediaAsset, $assetDownloadPath, $basePath);
         }
+    }
+
+    /**
+     * Download the provided Thumbnail Entity.
+     *
+     * @param  Thumbnail  $thumbnail
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function downloadThumbnail(Thumbnail $thumbnail): void
+    {
+        $basePath = $this->getBasePathFromDirectoryTargets($thumbnail->getDirOne(), $thumbnail->getDirTwo());
+        $thumbnailAssetPath = $basePath . '/' . $thumbnail->getFilename();
+
+        $this->executeDownload($thumbnail->getSourceUrl(), $thumbnailAssetPath);
     }
 
     /**
@@ -73,6 +86,29 @@ class Downloader
     private function getBasePathFromMediaAsset(MediaAsset $mediaAsset): string
     {
         return $this->getAssetsPath() . '/' . $mediaAsset->getDirOne() . '/' . $mediaAsset->getDirTwo();
+    }
+
+    /**
+     * Formulate and return a base path based on the provided Directory One
+     * and Directory Two target folder names.
+     *
+     * @param  string  $dirOne
+     * @param  string  $dirTwo
+     *
+     * @return string
+     * @throws Exception
+     */
+    private function getBasePathFromDirectoryTargets(string $dirOne, string $dirTwo): string
+    {
+        $basePath = $this->getAssetsPath() . '/' . $dirOne . '/' . $dirTwo;
+
+        try {
+            $this->filesystem->mkdir(Path::normalize($basePath));
+        } catch (IOExceptionInterface $e) {
+            throw new Exception(sprintf('An error occurred while creating assets directory at %s: %s', $e->getPath(), $e->getMessage()));
+        }
+
+        return $basePath;
     }
 
     /**
@@ -139,21 +175,6 @@ class Downloader
         }
 
         $this->filesystem->rename($combinedOutputPath, $videoDownloadPath, true);
-    }
-
-    /**
-     * Download the Thumbnail associated to the provided Media Asset.
-     *
-     * @param  MediaAsset  $mediaAsset
-     * @param  string  $basePath
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function downloadThumbnail(MediaAsset $mediaAsset, string $basePath): void
-    {
-        $thumbnailAssetPath = $basePath . '/' . $mediaAsset->getThumbnailFilename();
-        $this->executeDownload($mediaAsset->getThumbnailSourceUrl(), $thumbnailAssetPath);
     }
 
     /**
