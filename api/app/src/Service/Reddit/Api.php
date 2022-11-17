@@ -130,7 +130,7 @@ class Api
 
         return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
-            $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
+            $response = $this->executeSimpleCall(self::METHOD_GET, $commentsUrl);
 
             return $response->toArray();
         });
