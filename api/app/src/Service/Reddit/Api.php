@@ -25,7 +25,7 @@ class Api
 {
     const OAUTH_ENDPOINT = 'https://www.reddit.com/api/v1/access_token';
 
-    const POST_DETAIL_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=';
+    const POST_DETAIL_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=%s';
 
     const POST_COMMENTS_ENDPOINT = 'https://www.reddit.com/comments/%s/.json?raw_json=1';
 
