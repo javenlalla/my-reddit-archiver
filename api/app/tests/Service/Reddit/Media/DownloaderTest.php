@@ -5,7 +5,6 @@ namespace App\Tests\Service\Reddit\Media;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Service\Reddit\Manager;
-use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
