@@ -52,7 +52,7 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
             if (!empty($existingComment)) {
                 $comment = $existingComment;
             } else {
-                // @TODO: This is repetetive logic. Replace with a call to the CommentDenormalizer.
+                // @TODO: This is repetitive logic. Replace with a call to the CommentDenormalizer.
                 $comment = new Comment();
                 $comment->setRedditId($commentData['id']);
                 $comment->setScore((int) $commentData['score']);
