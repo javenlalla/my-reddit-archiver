@@ -1,16 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Tests\Feature;
 
-use App\Entity\AuthorText;
 use App\Entity\Comment;
-use App\Entity\CommentAuthorText;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 

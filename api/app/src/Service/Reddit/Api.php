@@ -25,7 +25,9 @@ class Api
 {
     const OAUTH_ENDPOINT = 'https://www.reddit.com/api/v1/access_token';
 
-    const POST_DETAIL_ENDPOINT = 'https://oauth.reddit.com/api/info?id=%s';
+    const POST_DETAIL_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=';
+
+    const POST_COMMENTS_ENDPOINT = 'https://www.reddit.com/comments/%s/.json?raw_json=1';
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
@@ -81,7 +83,7 @@ class Api
 
         return $this->cachePoolRedis->get($cacheKey, function() use ($fullRedditId) {
             $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $fullRedditId);
-            $response = $this->executeCall(self::METHOD_GET, $endpoint);
+            $response = $this->executeSimpleCall(self::METHOD_GET, $endpoint);
 
             return $response->toArray();
         });
@@ -127,7 +129,7 @@ class Api
         $cacheKey = md5('comments-'.$redditId);
 
         return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
-            $commentsUrl = sprintf('https://oauth.reddit.com/comments/%s?raw_json=1', $redditId);
+            $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
             $response = $this->executeCall(self::METHOD_GET, $commentsUrl);
 
             return $response->toArray();
@@ -251,15 +253,6 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
-        // $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
-
-        // if ($response->getStatusCode() === 401 && $retry === false) {
-        //     $this->refreshToken();
-        //     return $this->executeCall($method, $endpoint, $options, true);
-        // } else if ($response->getStatusCode() === 401 && $retry === true) {
-        //     throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
-        // }
-
         if ($response->getStatusCode() !== 200) {
             throw new Exception(sprintf(
                 'API call failed. Response: %s. Status Code: %d. Endpoint: %s. Options: %s',
