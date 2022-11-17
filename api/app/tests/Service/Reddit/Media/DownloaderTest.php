@@ -232,16 +232,6 @@ class DownloaderTest extends KernelTestCase
     }
 
     /**
-     * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
-     *
-     * @return void
-     */
-    public function testSaveSingleImageFromImagePostJsonUrl()
-    {
-        $this->markTestSkipped('Revisit after Thumbnail refactor.');
-    }
-
-    /**
      * https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
      *
      * @return void
