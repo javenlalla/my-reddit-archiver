@@ -108,7 +108,10 @@ class PostDenormalizer implements DenormalizerInterface
         // Process the Post's Thumbnail, if any.
         // The `height` check is included to avoid false positives such as when
         // `thumbnail` = "self" in the case of a Text Post (for example).
-        if (!empty($postData['thumbnail']) && !empty($postData['thumbnail_height'])) {
+        if (!empty($postData['thumbnail'])
+            && !in_array($postData['thumbnail'], ThumbnailDenormalizer::THUMBNAIL_DEFAULT_IMAGE_NAMES)
+            && !empty($postData['thumbnail_height'])
+        ) {
             $thumbnail = $this->thumbnailDenormalizer->denormalize($post, Thumbnail::class, null, ['sourceUrl' => $postData['thumbnail']]);
             $post->setThumbnail($thumbnail);
         }

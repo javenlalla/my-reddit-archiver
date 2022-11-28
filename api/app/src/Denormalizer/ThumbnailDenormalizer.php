@@ -9,6 +9,15 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class ThumbnailDenormalizer implements DenormalizerInterface
 {
+    /**
+     * Array of default image references within the `thumbnail` property on
+     * Reddit's side to indicate a default image be used.
+     */
+    public const THUMBNAIL_DEFAULT_IMAGE_NAMES = [
+        'image',
+        'default',
+    ];
+
     private const THUMBNAIL_FILENAME_FORMAT = '%s_thumb.jpg';
 
     /**
