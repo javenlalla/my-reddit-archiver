@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
@@ -266,12 +267,20 @@ class Api
         return $response;
     }
 
-    private function getSavedPostsUrl(): string
-    {
-        return sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
-    }
-
-    private function getAccessToken()
+    /**
+     * Attempt to the retrieve the current Access Token for the configured user.
+     *
+     * First, attempt to retrieve the token from the database. If no token
+     * found, generate a new one from the Reddit API.
+     *
+     * @return string
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    private function getAccessToken(): string
     {
         if (!isset($this->accessToken) || empty($this->accessToken)) {
             $this->accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
@@ -284,6 +293,17 @@ class Api
         return $this->accessToken;
     }
 
+    /**
+     * Generate a fresh Access Token from the Reddit API for the current user.
+     * Also, persist the new token to the database once generated.
+     *
+     * @return string
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     private function refreshToken()
     {
         if (empty($this->userAgent)) {
