@@ -137,13 +137,13 @@ class CommentsSyncTest extends KernelTestCase
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(874, $comments);
+        $this->assertCount(871, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(874, $comments);
+        $this->assertCount(871, $comments);
     }
 
     /**
@@ -228,5 +228,83 @@ class CommentsSyncTest extends KernelTestCase
         $type = $fetchedPost->getType();
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals(Type::CONTENT_TYPE_EXTERNAL_LINK, $type->getName());
+    }
+
+    /**
+     * Verify syncing a Comment Tree in which the target Comment's Parent was
+     * deleted on Reddit's side.
+     *
+     * Verify that despite the deletion, the entire Tree can still be synced.
+     *
+     * https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikcjn2n/?utm_source=share&utm_medium=web2x&context=3
+     *
+     * @return void
+     */
+    public function testParentCommentWasDeleted()
+    {
+        $commentRedditId = 'ikcjn2n';
+        $kind = Kind::KIND_COMMENT;
+        $commentLink = 'https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikcjn2n';
+
+        $content = $this->manager->syncContentFromJsonUrl($kind, $commentLink);
+
+        $comment = $content->getComment();
+        $this->assertInstanceOf(Comment::class, $comment);
+        $this->assertEquals($commentRedditId, $comment->getRedditId());
+        $this->assertEquals('I\'m tongue tied too, but all I got was slobber. Let us know if you manage. I\'ll practice and share too.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+
+        // https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikcgnfz/.json
+        $deletedParentComment = $comment->getParentComment();
+        $this->assertEquals('ikcgnfz', $deletedParentComment->getRedditId());
+        $this->assertEquals('[deleted]', $deletedParentComment->getAuthor());
+        $this->assertEquals('[deleted]', $deletedParentComment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
+        // Assert Comment Tree continues above deleted Comment.
+        // https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikcd40i/.json
+        $comment = $deletedParentComment->getParentComment();
+        $this->assertEquals('ikcd40i', $comment->getRedditId());
+        $this->assertEquals("Right? I don't understand the whole, push your tongue back in on itself step? Why are my fingers underneath my tongue? I'm just a slobbering mess...\n\nI can whistle normally. I can play the flute which is like advanced whitelisting, kind of? But this seems foreign to me", $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
+        // https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikc4kki/.json
+        $comment = $comment->getParentComment();
+        $this->assertEquals('ikc4kki', $comment->getRedditId());
+        $this->assertEquals("Out of breath, and mouth is numb, didn’t work", $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
+    }
+
+    /**
+     * Verify a deleted Top Level Comment is pulled in when syncing its Post.
+     *
+     * https://www.reddit.com/r/mildlyinfuriating/comments/a6ezwg/your_comment_was_removed_for_being_a_very_short/
+     * Deleted Top Level Comment: https://www.reddit.com/r/mildlyinfuriating/comments/a6ezwg/comment/ebu7bsm/.json
+     *
+     * @return void
+     */
+    public function testTopLevelDeletedComment()
+    {
+        $deletedCommentRedditId = 'ebu7bsm';
+        $kind = Kind::KIND_LINK;
+        $postLink = 'https://www.reddit.com/r/mildlyinfuriating/comments/a6ezwg/your_comment_was_removed_for_being_a_very_short/';
+
+        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $comments = $content->getPost()->getComments();
+
+        $deletedComment = null;
+        foreach ($comments as $comment) {
+            if ($comment->getRedditId() === $deletedCommentRedditId) {
+                $deletedComment = $comment;
+            }
+        }
+
+        // Assert the Top Level deleted Comment was pulled in.
+        $this->assertInstanceOf(Comment::class, $deletedComment);
+        $this->assertEquals('[deleted]', $deletedComment->getAuthor());
+        $this->assertEquals('[deleted]', $deletedComment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
+        // Assert the deleted Comment's replies were pulled in.
+        $replies = $deletedComment->getReplies();
+        $this->assertCount(1, $replies);
+        $replyComment = $replies->get(0);
+        $this->assertEquals('[deleted]', $replyComment->getAuthor());
+        $this->assertEquals('I like your thinking.', $replyComment->getLatestCommentAuthorText()->getAuthorText()->getText());
     }
 }
