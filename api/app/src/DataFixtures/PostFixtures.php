@@ -31,8 +31,6 @@ class PostFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $this->loadKinds($manager);
-        $this->loadPostTypes($manager);
         $manager->flush();
 
         // Create Contents.
@@ -132,66 +130,6 @@ class PostFixtures extends Fixture
         $content->setSyncDate(new \DateTimeImmutable());
 
         return $content;
-    }
-
-    private function loadKinds(ObjectManager $manager): void
-    {
-        $kinds = [
-            [
-                'redditKindId' => 't1',
-                'name' => 'Comment',
-            ],
-            [
-                'redditKindId' => 't3',
-                'name' => 'Link',
-            ],
-        ];
-
-        foreach ($kinds as $kind) {
-            $kindEntity = new Kind();
-            $kindEntity->setRedditKindId($kind['redditKindId']);
-            $kindEntity->setName($kind['name']);
-
-            $manager->persist($kindEntity);
-        }
-    }
-
-    private function loadPostTypes(ObjectManager $manager)
-    {
-        $postTypes = [
-            [
-                'name' => 'image',
-                'displayName' => 'Image',
-            ],
-            [
-                'name' => 'video',
-                'displayName' => 'Video',
-            ],
-            [
-                'name' => 'text',
-                'displayName' => 'Text',
-            ],
-            [
-                'name' => 'image_gallery',
-                'displayName' => 'Image Gallery',
-            ],
-            [
-                'name' => 'gif',
-                'displayName' => 'GIF',
-            ],
-            [
-                'name' => 'external_link',
-                'displayName' => 'External Link',
-            ],
-        ];
-
-        foreach ($postTypes as $postType) {
-            $typeEntity = new Type();
-            $typeEntity->setName($postType['name']);
-            $typeEntity->setDisplayName($postType['displayName']);
-
-            $manager->persist($typeEntity);
-        }
     }
 
     /**

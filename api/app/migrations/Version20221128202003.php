@@ -50,6 +50,23 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE post_author_text ADD CONSTRAINT FK_3324A5372CB7AA0B FOREIGN KEY (author_text_id) REFERENCES author_text (id)');
         $this->addSql('ALTER TABLE post_award ADD CONSTRAINT FK_1D40A2084B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE post_award ADD CONSTRAINT FK_1D40A2083D5282CF FOREIGN KEY (award_id) REFERENCES award (id)');
+
+        // Insert setup data.
+        // Kinds.
+        $this->addSql('INSERT INTO kind (reddit_kind_id, name) VALUES
+            ("t1","Comment"),
+            ("t3", "Link")
+        ');
+
+        // Types.
+        $this->addSql('INSERT INTO type (name, display_name) VALUES
+            ("image","Image"),
+            ("video", "Video"),
+            ("text", "Text"),
+            ("image_gallery", "Image Gallery"),
+            ("gif", "GIF"),
+            ("external_link", "External Link")
+        ');
     }
 
     public function down(Schema $schema): void
