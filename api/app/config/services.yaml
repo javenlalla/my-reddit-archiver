@@ -9,6 +9,7 @@ parameters:
     app.reddit.password: '%env(REDDIT_PASSWORD)%'
     app.reddit.client_id: '%env(REDDIT_CLIENT_ID)%'
     app.reddit.client_secret: '%env(REDDIT_CLIENT_SECRET)%'
+    app.redis.host: 'localhost'
 
 services:
     # default configuration for services in *this* file
