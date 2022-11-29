@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 
-
-namespace App\Controller\API;
+namespace App\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
