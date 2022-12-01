@@ -59,6 +59,7 @@ class PostDenormalizer implements DenormalizerInterface
         $post->setAuthor($postData['author']);
         $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', $postData['created_utc']));
+        $post->setIsArchived($postData['archived']);
 
         if ($kindRedditId === Kind::KIND_LINK) {
             $type = $this->typeHelper->getContentTypeFromPostData($postData);

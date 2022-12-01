@@ -24,7 +24,7 @@ class Post
     private $title;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private $score;
+    private $score = 0;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $url;
@@ -62,6 +62,9 @@ class Post
 
     #[ORM\OneToOne(targetEntity: Thumbnail::class, cascade: ['persist', 'remove'])]
     private $thumbnail;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => 0])]
+    private $isArchived = false;
 
     public function __construct()
     {
@@ -375,6 +378,18 @@ class Post
     public function setThumbnail(?Thumbnail $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
+
+        return $this;
+    }
+
+    public function isIsArchived(): ?bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setIsArchived(bool $isArchived): self
+    {
+        $this->isArchived = $isArchived;
 
         return $this;
     }
