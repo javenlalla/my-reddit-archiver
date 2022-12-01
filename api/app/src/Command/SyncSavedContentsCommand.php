@@ -25,7 +25,9 @@ use Symfony\Contracts\Cache\CacheInterface;
 )]
 class SyncSavedContentsCommand extends Command
 {
-    const DEFAULT_LIMIT = 100;
+    const MAX_LIMIT = 100;
+
+    const BATCH_SIZE = 100;
 
     const CACHE_KEY = 'saved-contents-command';
 
@@ -99,7 +101,7 @@ class SyncSavedContentsCommand extends Command
         if (!empty($maxContents) && is_numeric($maxContents)) {
             $maxContents = (int) $maxContents;
 
-            if ($maxContents > 100) {
+            if ($maxContents > self::MAX_LIMIT) {
                 $output->writeln('<error>The max number allowed when limiting is 100.</error>');
 
                 return Command::FAILURE;
@@ -114,7 +116,7 @@ class SyncSavedContentsCommand extends Command
         $output->writeln('<comment>Retrieving `Saved` Posts from Reddit profile.</comment>');
 
         return $this->cachePoolRedis->get($cacheKey, function () use ($maxContents, $output) {
-            $limit = self::DEFAULT_LIMIT;
+            $limit = self::BATCH_SIZE;
             if (!empty($maxContents)) {
                 $limit = $maxContents;
             }
