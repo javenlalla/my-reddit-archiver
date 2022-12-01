@@ -13,11 +13,11 @@ class Content
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, cascade: ['persist', 'remove'], inversedBy: 'savedContent')]
+    #[ORM\ManyToOne(targetEntity: Post::class, cascade: ['persist', 'remove'], inversedBy: 'content')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
-    #[ORM\OneToOne(inversedBy: 'savedContent', targetEntity: Comment::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'content', targetEntity: Comment::class, cascade: ['persist', 'remove'])]
     private $comment;
 
     #[ORM\Column(type: 'datetime')]

@@ -100,7 +100,7 @@ class Api
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getSavedPosts(int $limit = 100, string $after = ''): array
+    public function getSavedContents(int $limit = 100, string $after = ''): array
     {
         $endpoint = sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
         $endpoint = $endpoint . sprintf('?limit=%d', $limit);

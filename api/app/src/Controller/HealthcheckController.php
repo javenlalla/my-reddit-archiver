@@ -107,7 +107,7 @@ class HealthcheckController extends AbstractController
             }
         }
 
-        $savedPosts = $redditApi->getSavedPosts(1);
+        $savedPosts = $redditApi->getSavedContents(1);
         if (isset($savedPosts['children'])) {
             return true;
         }

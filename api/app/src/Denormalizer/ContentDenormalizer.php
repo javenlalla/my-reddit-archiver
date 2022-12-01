@@ -72,7 +72,7 @@ class ContentDenormalizer implements DenormalizerInterface
             throw new Exception(sprintf('Unexpected Post type %s: %s', $data['kind'], var_export($data, true)));
         }
 
-        $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
+            $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
         if (!empty($existingPost)) {
             $content->setPost($existingPost);
         } else {

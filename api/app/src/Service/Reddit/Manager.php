@@ -405,7 +405,13 @@ class Manager
     {
         $targetComment = $commentsData[0]['data'];
         $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
-        $this->contentRepository->add($content, true);
+
+        $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
+        if ($existingContent instanceof Content) {
+            $content = $existingContent;
+        } else {
+            $this->contentRepository->add($content, true);
+        }
 
         $originalComment = $this->syncCommentTreeBranch($content, $postData['data'], $targetComment);
         $jsonData = $this->getRawDataFromJsonUrl($content->getPost()->getRedditPostUrl());

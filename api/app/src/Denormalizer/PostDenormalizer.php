@@ -53,7 +53,7 @@ class PostDenormalizer implements DenormalizerInterface
         $post = new Post();
         $post->setRedditId($postData['id']);
         // @TODO: Replace hard-coded URL here.
-        $post->setRedditPostUrl('https://reddit.com' . $postData['permalink']);
+        $post->setRedditPostUrl('https://www.reddit.com' . $postData['permalink']);
         $post->setTitle($postData['title']);
         $post->setScore((int)$postData['score']);
         $post->setAuthor($postData['author']);
