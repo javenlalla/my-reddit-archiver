@@ -42,3 +42,6 @@ services:
 
     App\Service\Reddit\Manager:
         public: true
+
+    App\Service\Reddit\SyncScheduler:
+        public: true
