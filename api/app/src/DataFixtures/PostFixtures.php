@@ -127,8 +127,6 @@ class PostFixtures extends Fixture
         $kind = $this->kindRepository->findOneBy(['redditKindId' => $contentRow[0]]);
         $content->setKind($kind);
 
-        $content->setSyncDate(new \DateTimeImmutable());
-
         return $content;
     }
 

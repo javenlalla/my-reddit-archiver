@@ -20,8 +20,8 @@ class Content
     #[ORM\OneToOne(inversedBy: 'content', targetEntity: Comment::class, cascade: ['persist', 'remove'])]
     private $comment;
 
-    #[ORM\Column(type: 'datetime')]
-    private $syncDate;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private $nextSyncDate;
 
     #[ORM\ManyToOne(targetEntity: Kind::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -56,14 +56,14 @@ class Content
         return $this;
     }
 
-    public function getSyncDate(): ?\DateTimeInterface
+    public function getNextSyncDate(): ?\DateTimeInterface
     {
-        return $this->syncDate;
+        return $this->nextSyncDate;
     }
 
-    public function setSyncDate(\DateTimeInterface $syncDate): self
+    public function setNextSyncDate(?\DateTimeInterface $nextSyncDate): self
     {
-        $this->syncDate = $syncDate;
+        $this->nextSyncDate = $nextSyncDate;
 
         return $this;
     }
