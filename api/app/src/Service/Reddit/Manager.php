@@ -22,6 +22,16 @@ use Psr\Cache\InvalidArgumentException;
 
 class Manager
 {
+    /**
+     * Regex pattern to detect if a given URL is a direct Reddit Comment link
+     * such as:
+     * https://www.reddit.com/r/golang/comments/z2ngmf/comment/ixhzp48/
+     *
+     * It is meant to NOT match a Post URL such as:
+     * https://www.reddit.com/r/golang/comments/z2ngmf/
+     */
+    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/comment\/[a-zA-Z0-9]{4,10}/i';
+
     public function __construct(
         private readonly Api $api,
         private readonly PostRepository $postRepository,
@@ -194,6 +204,25 @@ class Manager
         $comments = $this->syncCommentsFromApiByPost($post);
 
         return $post;
+    }
+
+    /**
+     * Sync a piece of Content by its URL.
+     * @param  string  $url
+     *
+     * @return Content
+     * @throws InvalidArgumentException
+     */
+    public function syncContentByUrl(string $url): Content
+    {
+        $kind = Kind::KIND_LINK;
+
+        $isCommentUrl = preg_match(self::COMMENT_URL_REGEX_PATTERN, $url);
+        if ($isCommentUrl === 1) {
+            $kind = Kind::KIND_COMMENT;
+        }
+
+        return $this->syncContentFromJsonUrl($kind, $url);
     }
 
     /**
