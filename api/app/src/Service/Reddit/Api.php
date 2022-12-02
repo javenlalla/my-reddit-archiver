@@ -38,6 +38,8 @@ class Api
 
     const METHOD_POST = 'POST';
 
+    const MORE_CHILDREN_BATCH_SIZE = 750;
+
     private string $accessToken;
 
     private string $userAgent;
@@ -141,6 +143,9 @@ class Api
      * Retrieve the "more" Comments data under the specified Reddit ID using
      * the provided Children data.
      *
+     * The More Children data is batched in order to avoid a `414` error
+     * returned from Reddit due to the URI being too long.
+     *
      * @param  string  $postRedditId
      * @param  array  $moreChildrenData
      *
@@ -149,14 +154,23 @@ class Api
      */
     public function getMoreChildren(string $postRedditId, array $moreChildrenData): array
     {
-        $url = $this->buildMoreChildrenUrl($postRedditId, $moreChildrenData['children']);
-        $cacheKey = md5('more-children-'. $url);
+        $childrenDataGroups = array_chunk($moreChildrenData['children'], self::MORE_CHILDREN_BATCH_SIZE);
+        $allRetrievedChildren = [];
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($url) {
-            $response = $this->executeSimpleCall(self::METHOD_GET, $url);
+        foreach ($childrenDataGroups as $childrenData) {
+            $url = $this->buildMoreChildrenUrl($postRedditId, $childrenData);
+            $cacheKey = md5('more-children-'. $url);
 
-            return $response->toArray();
-        });
+            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($url) {
+                $response = $this->executeSimpleCall(self::METHOD_GET, $url);
+
+                return $response->toArray();
+            });
+
+            $allRetrievedChildren = [...$allRetrievedChildren, ...$retrievedChildren];
+        }
+
+        return $allRetrievedChildren;
     }
 
     /**

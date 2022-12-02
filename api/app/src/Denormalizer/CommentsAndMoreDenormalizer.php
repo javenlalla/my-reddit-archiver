@@ -39,7 +39,8 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): array
     {
-        $sanitizedCommentsRawData = $this->retrieveAllComments($context['post'], $data);
+        $commentsRawData = $data;
+        $sanitizedCommentsRawData = $this->retrieveAllComments($context['post'], $commentsRawData);
 
         $comments = [];
         foreach ($sanitizedCommentsRawData as $commentRawData) {
