@@ -60,7 +60,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('Star Citizen passes half billion dollars funding milestone, still no game launches in sight', $post->getTitle());
         $this->assertEquals('gaming', $post->getSubreddit());
         $this->assertEquals('https://i.redd.it/d0s8oagaj0p91.png', $post->getUrl());
-        $this->assertEquals('https://reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $post->getRedditPostUrl());
+        $this->assertEquals('https://www.reddit.com/r/gaming/comments/xj8f7g/star_citizen_passes_half_billion_dollars_funding/', $post->getRedditPostUrl());
         $this->assertEquals('2022-09-20 13:10:22', $post->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEmpty($post->getPostAuthorTexts());
         $this->assertEmpty($post->getPostAuthorTexts());
@@ -175,7 +175,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('microscopic', $post->getTitle());
         $this->assertEquals('ProgrammerHumor', $post->getSubreddit());
         $this->assertEquals('https://i.redd.it/4kp1p03jpzo91.png', $post->getUrl());
-        $this->assertEquals('https://reddit.com/r/ProgrammerHumor/comments/xj50gl/microscopic/', $post->getRedditPostUrl());
+        $this->assertEquals('https://www.reddit.com/r/ProgrammerHumor/comments/xj50gl/microscopic/', $post->getRedditPostUrl());
         $this->assertEquals('2022-09-20 10:22:59', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $kind = $content->getKind();
@@ -223,7 +223,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('Joke lovers of Reddit, what’s a great joke?', $post->getTitle());
         $this->assertEquals('AskReddit', $post->getSubreddit());
         $this->assertEquals('https://www.reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getUrl());
-        $this->assertEquals('https://reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getRedditPostUrl());
+        $this->assertEquals('https://www.reddit.com/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/', $post->getRedditPostUrl());
         $this->assertEquals('2019-11-20 00:57:10', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $kind = $firstComment->getContent()->getKind();

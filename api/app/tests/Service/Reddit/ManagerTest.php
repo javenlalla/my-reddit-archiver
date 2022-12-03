@@ -89,7 +89,7 @@ class ManagerTest extends KernelTestCase
         $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
         $this->assertEquals('science', $fetchedPost->getSubreddit());
         $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
-        $this->assertEquals('https://reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/', $fetchedPost->getRedditPostUrl());
+        $this->assertEquals('https://www.reddit.com/r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/', $fetchedPost->getRedditPostUrl());
 
         $kind = $fetchedPost->getContent()->getKind();
         $this->assertInstanceOf(Kind::class, $kind);

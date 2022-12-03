@@ -302,7 +302,7 @@ class ApiSyncTest extends KernelTestCase
                 'authorText' => null,
                 'authorTextRawHtml' => null,
                 'authorTextHtml' => null,
-                'redditPostUrl' => 'https://reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
+                'redditPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
                 'gifUrl' => 'https://i.redd.it/aha06x6skah31.gif',
             ],
             'Text Post With Image' => [
@@ -330,7 +330,7 @@ class ApiSyncTest extends KernelTestCase
                 'authorText' => null,
                 'authorTextRawHtml' => null,
                 'authorTextHtml' => null,
-                'redditPostUrl' => 'https://reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
+                'redditPostUrl' => 'https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
             ],
             'Comment Post (Several Levels Deep)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
@@ -350,7 +350,7 @@ class ApiSyncTest extends KernelTestCase
 // &lt;/div&gt;",
 //                 'authorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
 // </div>",
-                'redditPostUrl' => 'https://reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
+                'redditPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
                 'gifUrl' => null,
                 'commentRedditId' => 'ip914eh',
             ],
