@@ -115,7 +115,7 @@ class SyncSavedContentsCommand extends Command
             $cacheKey = $cacheKey . $maxContents;
         }
 
-        $output->writeln('<comment>Retrieving `Saved` Posts from Reddit profile.</comment>');
+        $output->writeln('<comment>Retrieving `Saved` Contents from Reddit profile.</comment>');
 
         return $this->cachePoolRedis->get($cacheKey, function () use ($maxContents, $output) {
             $limit = self::BATCH_SIZE;
@@ -127,11 +127,11 @@ class SyncSavedContentsCommand extends Command
             $contentsAvailable = true;
             $after = '';
             while ($contentsAvailable) {
-                $savedPosts = $this->redditApi->getSavedContents(limit: $limit, after: $after);
+                $savedContents = $this->redditApi->getSavedContents(limit: $limit, after: $after);
 
-                $contents = [...$contents, ...$savedPosts['children']];
-                if (!empty($savedPosts['after'])) {
-                    $after = $savedPosts['after'];
+                $contents = [...$contents, ...$savedContents['children']];
+                if (!empty($savedContents['after'])) {
+                    $after = $savedContents['after'];
                 } else {
                     $contentsAvailable = false;
                 }
