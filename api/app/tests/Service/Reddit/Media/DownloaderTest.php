@@ -2,10 +2,12 @@
 
 namespace App\Tests\Service\Reddit\Media;
 
+use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Service\Reddit\Manager;
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -30,78 +32,63 @@ class DownloaderTest extends KernelTestCase
     }
 
     /**
+     * Verify saving assets from Contents retrieved via the Reddit API.
+     *
      * @dataProvider saveAssetsFromPostsDataProvider
      *
+     * @param  string  $contentUrl
+     * @param  string  $redditId
+     * @param  array  $assets
+     * @param  array  $thumbAsset
+     *
      * @return void
+     * @throws InvalidArgumentException
      */
-    public function testSaveAssetsFromPosts(
+    public function testSaveAssetsFromContentsSyncedFromApi(
+        string $contentUrl,
         string $redditId,
         array $assets,
-        string $thumbSourceUrl,
-        string $thumbFilename,
-        string $thumbDirOne,
-        string $thumbDirTwo,
+        array $thumbAsset,
     ) {
-        $expectedThumbPath= sprintf(self::BASE_PATH_FORMAT, $thumbDirOne, $thumbDirTwo) . $thumbFilename;
-        $this->assertFileDoesNotExist($expectedThumbPath);
-
-        foreach ($assets as $asset) {
-            $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
-            $this->assertFileDoesNotExist($assetPath);
-        }
+        $this->verifyPreDownloadAssertions($assets, $thumbAsset);
 
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
-        $post = $content->getPost();
-
-        // Assert assets were saved locally.
-        foreach ($assets as $asset) {
-            $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
-            $this->assertFileExists($assetPath);
-        }
-        $this->assertFileExists($expectedThumbPath);
-
-        // Assert assets were persisted to the database and associated to the
-        // intended Post.
-        $mediaAssets = $post->getMediaAssets();
-        $this->assertCount(count($assets), $mediaAssets);
-
-        // Assert assets can be retrieved from the database and are
-        // associated to the intended Post.
-        foreach ($assets as $asset) {
-            /** @var MediaAsset $mediaAsset */
-            $mediaAsset = $this->entityManager
-                ->getRepository(MediaAsset::class)
-                ->findOneBy(['filename' => $asset['filename']])
-            ;
-
-            $this->assertEquals($asset['sourceUrl'], $mediaAsset->getSourceUrl());
-            $this->assertEquals($asset['dirOne'], $mediaAsset->getDirOne());
-            $this->assertEquals($asset['dirTwo'], $mediaAsset->getDirTwo());
-            $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
-
-            if (!empty($asset['audioSourceUrl'])) {
-                $this->assertEquals($asset['audioSourceUrl'], $mediaAsset->getAudioSourceUrl());
-            } else {
-                $this->assertEmpty($mediaAsset->getAudioSourceUrl());
-            }
-
-            if (!empty($asset['audioFilename'])) {
-                $this->assertEquals($asset['audioFilename'], $mediaAsset->getAudioFilename());
-            } else {
-                $this->assertEmpty($mediaAsset->getAudioFilename());
-            }
-        }
-
-        $thumbnail = $post->getThumbnail();
-        $this->assertEquals($thumbSourceUrl, $thumbnail->getSourceUrl());
-        $this->assertEquals($thumbFilename, $thumbnail->getFilename());
+        $this->verifyContentsDownloads($content, $assets, $thumbAsset);
     }
 
-    public function saveAssetsFromPostsDataProvider()
+    /**
+     * Verify saving assets from Contents retrieved via their Reddit URLs.
+     *
+     * @dataProvider saveAssetsFromPostsDataProvider
+     *
+     * @param  string  $contentUrl
+     * @param  string  $redditId
+     * @param  array  $assets
+     * @param  array  $thumbAsset
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function testSaveAssetsFromContentUrls(
+        string $contentUrl,
+        string $redditId,
+        array $assets,
+        array $thumbAsset,
+    ) {
+        $this->verifyPreDownloadAssertions($assets, $thumbAsset);
+
+        $content = $this->manager->syncContentByUrl($contentUrl);
+        $this->verifyContentsDownloads($content, $assets, $thumbAsset);
+    }
+
+    /**
+     * @return array
+     */
+    public function saveAssetsFromPostsDataProvider(): array
     {
         return [
-            [
-                // https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
+            'Image' => [
+                'contentUrl' => 'https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/',
                 'redditId' => 'vepbt0',
                 'assets' => [
                     [
@@ -111,13 +98,15 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => 'aa',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/eVhpmEiR3ItbKk6R0SDI6C1XM5ONek_xcQIIhtCA5YQ.jpg',
-                'thumbFilename' => 'cd79c58c96cbc4684f4aef775c47f5a5_thumb.jpg',
-                'thumbDirOne' => 'c',
-                'thumbDirTwo' => 'd7',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/eVhpmEiR3ItbKk6R0SDI6C1XM5ONek_xcQIIhtCA5YQ.jpg',
+                    'filename' => 'cd79c58c96cbc4684f4aef775c47f5a5_thumb.jpg',
+                    'dirOne' => 'c',
+                    'dirTwo' => 'd7',
+                ],
             ],
-            [
-                // https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/
+            'Image | Reddit-hosted' => [
+                'contentUrl' => 'https://www.reddit.com/r/coolguides/comments/won0ky/i_learned_how_to_whistle_from_this_in_less_than_5/',
                 'redditId' => 'won0ky',
                 'assets' => [
                     [
@@ -127,13 +116,15 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => '4c',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/_9QxeKKVgR-o6E9JE-vydP1i5OpkyEziomCERjBlSOU.jpg',
-                'thumbFilename' => '5f1ff800d8d3dbdec298e3969b5fcbd2_thumb.jpg',
-                'thumbDirOne' => '5',
-                'thumbDirTwo' => 'f1',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/_9QxeKKVgR-o6E9JE-vydP1i5OpkyEziomCERjBlSOU.jpg',
+                    'filename' => '5f1ff800d8d3dbdec298e3969b5fcbd2_thumb.jpg',
+                    'dirOne' => '5',
+                    'dirTwo' => 'f1',
+                ],
             ],
-            [
-                // https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988
+            'Image | Text Post' => [
+                'contentUrl' => 'https://www.reddit.com/r/Tremors/comments/utsmkw/tremors_poster_for_gallery1988',
                 'redditId' => 'utsmkw',
                 'assets' => [
                     [
@@ -143,13 +134,15 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => 'a6',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/q06gPIAKixPJS38j1dkiwiEqiA6k4kqie84T5yLgt4o.jpg',
-                'thumbFilename' => '5a5859e3f92e5fb89c5971666c37a682_thumb.jpg',
-                'thumbDirOne' => '5',
-                'thumbDirTwo' => 'a5',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/q06gPIAKixPJS38j1dkiwiEqiA6k4kqie84T5yLgt4o.jpg',
+                    'filename' => '5a5859e3f92e5fb89c5971666c37a682_thumb.jpg',
+                    'dirOne' => '5',
+                    'dirTwo' => 'a5',
+                ],
             ],
-            [
-                // https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/
+            'GIF' => [
+                'contentUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
                 'redditId' => 'wgb8wj',
                 'assets' => [
                     [
@@ -159,14 +152,16 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => 'ae',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://a.thumbs.redditmedia.com/DI9yoWanjzCXyy5kF8-JFfP-SPg2__nhBo0HNSxU8W4.jpg',
-                'thumbFilename' => 'fe2b035aaeed849079008231923cf160_thumb.jpg',
-                'thumbDirOne' => 'f',
-                'thumbDirTwo' => 'e2',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://a.thumbs.redditmedia.com/DI9yoWanjzCXyy5kF8-JFfP-SPg2__nhBo0HNSxU8W4.jpg',
+                    'filename' => 'fe2b035aaeed849079008231923cf160_thumb.jpg',
+                    'dirOne' => 'f',
+                    'dirTwo' => 'e2',
+                ],
             ],
-            [
+            'Video' => [
                 // @TODO: Add initial assertion to ensure ffmpeg is installed.
-                // https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/
+                'contentUrl' => 'https://www.reddit.com/r/Unexpected/comments/tl8qic/i_think_i_married_a_psychopath/',
                 'redditId' => 'tl8qic',
                 'assets' => [
                     [
@@ -178,12 +173,14 @@ class DownloaderTest extends KernelTestCase
                         'audioFilename' => '8u3caw3zm6p81_audio.mp4',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/CPQpNEdyLw1Q2bK0jIpY8dLUtLzmegTqKJQMp5ONxto.jpg',
-                'thumbFilename' => 'e70ab5ad74e5a52e6d1f14d92b7f2187_thumb.jpg',
-                'thumbDirOne' => 'e',
-                'thumbDirTwo' => '70',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/CPQpNEdyLw1Q2bK0jIpY8dLUtLzmegTqKJQMp5ONxto.jpg',
+                    'filename' => 'e70ab5ad74e5a52e6d1f14d92b7f2187_thumb.jpg',
+                    'dirOne' => 'e',
+                    'dirTwo' => '70',
+                ],
             ],
-            [
+            'Video | No Audio' => [
                 /**
                  * Validate persisting a Reddit-hosted Video that does not contain audio.
                  *
@@ -192,6 +189,7 @@ class DownloaderTest extends KernelTestCase
                  *
                  * https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/
                  */
+                'contentUrl' => 'https://www.reddit.com/r/ProgrammerHumor/comments/wfylnl/when_you_use_a_new_library_without_reading_the/',
                 'redditId' => 'wfylnl',
                 'assets' => [
                     [
@@ -201,13 +199,15 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => '7d',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/EP5Wgd7mgrsKVgPOFgiAvDblLmm5qNSBnSAvqzAZFcE.jpg',
-                'thumbFilename' => '7151e2d464c3e108fc921134cd003d25_thumb.jpg',
-                'thumbDirOne' => '7',
-                'thumbDirTwo' => '15',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/EP5Wgd7mgrsKVgPOFgiAvDblLmm5qNSBnSAvqzAZFcE.jpg',
+                    'filename' => '7151e2d464c3e108fc921134cd003d25_thumb.jpg',
+                    'dirOne' => '7',
+                    'dirTwo' => '15',
+                ],
             ],
-            [
-                // https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/
+            'Image Gallery' => [
+                'contentUrl' => 'https://www.reddit.com/r/Tremors/comments/v27nr7/all_my_recreations_of_magazine_covers_from/',
                 'redditId' => 'v27nr7',
                 'assets' => [
                     [
@@ -247,13 +247,15 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => 'd0',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://a.thumbs.redditmedia.com/oicSvcPsUxSfSzil8Hh7b1QD1T_GJq_vIo7iFtrkDd0.jpg',
-                'thumbFilename' => 'b1b23689fb7fc4e8e27202f40b5f0cdb_thumb.jpg',
-                'thumbDirOne' => 'b',
-                'thumbDirTwo' => '1b',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://a.thumbs.redditmedia.com/oicSvcPsUxSfSzil8Hh7b1QD1T_GJq_vIo7iFtrkDd0.jpg',
+                    'filename' => 'b1b23689fb7fc4e8e27202f40b5f0cdb_thumb.jpg',
+                    'dirOne' => 'b',
+                    'dirTwo' => '1b',
+                ],
             ],
-            [
-                // https://www.reddit.com/r/Terminator/comments/wvg39c/terminator_2_teaser_trailer/
+            'GIF Gallery' => [
+                'contentUrl' => 'https://www.reddit.com/r/Terminator/comments/wvg39c/terminator_2_teaser_trailer/',
                 'redditId' => 'wvg39c',
                 'assets' => [
                     [
@@ -311,10 +313,12 @@ class DownloaderTest extends KernelTestCase
                         'dirTwo' => '17',
                     ],
                 ],
-                'thumbSourceUrl' => 'https://b.thumbs.redditmedia.com/J-7WpMcyHF7C8e75BZiVEgJyK6jSJLpuTJ4srJI1ojM.jpg',
-                'thumbFilename' => '5b7e653f25f3e1ac3233e510d295b7ba_thumb.jpg',
-                'thumbDirOne' => '5',
-                'thumbDirTwo' => 'b7',
+                'thumbAsset' => [
+                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/J-7WpMcyHF7C8e75BZiVEgJyK6jSJLpuTJ4srJI1ojM.jpg',
+                    'filename' => '5b7e653f25f3e1ac3233e510d295b7ba_thumb.jpg',
+                    'dirOne' => '5',
+                    'dirTwo' => 'b7',
+                ],
             ],
         ];
     }
@@ -326,7 +330,111 @@ class DownloaderTest extends KernelTestCase
         parent::tearDown();
     }
 
-    private function cleanupAssets()
+    /**
+     * Execute the assertions required before attempting to download assets for
+     * testing.
+     *
+     * @param  array  $assets
+     * @param  array  $thumbAsset
+     *
+     * @return void
+     */
+    private function verifyPreDownloadAssertions(array $assets, array $thumbAsset): void
+    {
+        $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
+        $this->assertFileDoesNotExist($expectedThumbPath);
+
+        foreach ($assets as $asset) {
+            $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
+            $this->assertFileDoesNotExist($assetPath);
+        }
+    }
+
+    /**
+     * After downloading the targeted assets, run through the assertions for the
+     * files downloaded and expected persisted data.
+     *
+     * @param  Content  $content
+     * @param  array  $assets
+     * @param  array  $thumbAsset
+     *
+     * @return void
+     */
+    private function verifyContentsDownloads(
+        Content $content,
+        array $assets,
+        array $thumbAsset,
+    ): void {
+        $post = $content->getPost();
+
+        // Assert assets were saved locally.
+        foreach ($assets as $asset) {
+            $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
+            $this->assertFileExists($assetPath);
+        }
+
+        $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
+        $this->assertFileExists($expectedThumbPath);
+
+        // Assert assets were persisted to the database and associated to the
+        // intended Post.
+        $mediaAssets = $post->getMediaAssets();
+        $this->assertCount(count($assets), $mediaAssets);
+
+        // Assert assets can be retrieved from the database and are
+        // associated to the intended Post.
+        foreach ($assets as $asset) {
+            /** @var MediaAsset $mediaAsset */
+            $mediaAsset = $this->entityManager
+                ->getRepository(MediaAsset::class)
+                ->findOneBy(['filename' => $asset['filename']])
+            ;
+
+            $this->assertEquals($asset['sourceUrl'], $mediaAsset->getSourceUrl());
+            $this->assertEquals($asset['dirOne'], $mediaAsset->getDirOne());
+            $this->assertEquals($asset['dirTwo'], $mediaAsset->getDirTwo());
+            $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+
+            if (!empty($asset['audioSourceUrl'])) {
+                $this->assertEquals($asset['audioSourceUrl'], $mediaAsset->getAudioSourceUrl());
+            } else {
+                $this->assertEmpty($mediaAsset->getAudioSourceUrl());
+            }
+
+            if (!empty($asset['audioFilename'])) {
+                $this->assertEquals($asset['audioFilename'], $mediaAsset->getAudioFilename());
+            } else {
+                $this->assertEmpty($mediaAsset->getAudioFilename());
+            }
+        }
+
+        $thumbnail = $post->getThumbnail();
+        $this->assertEquals($thumbAsset['sourceUrl'], $thumbnail->getSourceUrl());
+        $this->assertEquals($thumbAsset['filename'], $thumbnail->getFilename());
+    }
+
+    /**
+     * Generate and return the expected path based on the provided Thumb asset
+     * parameters.
+     *
+     * @param  array  $thumbAsset
+     *
+     * @return string
+     */
+    private function getExpectedThumbPath(array $thumbAsset): string
+    {
+        $thumbBasePath = sprintf(self::BASE_PATH_FORMAT, $thumbAsset['dirOne'], $thumbAsset['dirTwo']);
+
+        return $thumbBasePath . $thumbAsset['filename'];
+    }
+
+    /**
+     * Ensure any expected asset files are purged from the system before and
+     * after testing.
+     *
+     * @return void
+     */
+    private function cleanupAssets(): void
     {
         $filesystem = new Filesystem();
 
@@ -338,7 +446,7 @@ class DownloaderTest extends KernelTestCase
                 $filesystem->remove($assetPath);
             }
 
-            $thumbAssetPath= sprintf(self::BASE_PATH_FORMAT, $targetData['thumbDirOne'], $targetData['thumbDirTwo']) . $targetData['thumbFilename'];
+            $thumbAssetPath= sprintf(self::BASE_PATH_FORMAT, $targetData['thumbAsset']['dirOne'], $targetData['thumbAsset']['dirTwo']) . $targetData['thumbAsset']['filename'];
             $filesystem->remove($thumbAssetPath);
         }
     }

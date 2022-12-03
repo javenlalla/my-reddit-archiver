@@ -98,6 +98,8 @@ class Manager
     {
         $response = $this->api->getPostByRedditId($kind, $redditId);
 
+        // @TODO: Investigate if this can be routed to the Json URL logic after retrieving the URL from the response.
+
         $context = [
             'parentPostData' => [],
             'commentData' => [],
@@ -116,15 +118,7 @@ class Manager
         }
 
         $content = $this->contentDenormalizer->denormalize($response, Content::class, null, $context);
-
-        $post = $content->getPost();
-        foreach ($post->getMediaAssets() as $mediaAsset) {
-            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
-        }
-
-        if (!empty($post->getThumbnail())) {
-            $this->mediaDownloader->downloadThumbnail($post->getThumbnail());
-        }
+        $content = $this->executePreAddContentHooks($content);
 
         $this->contentRepository->add($content, true);
 
@@ -412,6 +406,8 @@ class Manager
     private function persistLinkContentJsonUrlData(array $postData, array $commentsData): Content
     {
         $content = $this->hydrateContentFromResponseData($postData['kind'], $postData);
+        $content = $this->executePreAddContentHooks($content);
+
         $this->contentRepository->add($content, true);
 
         $this->processJsonCommentsData($content, $commentsData);
@@ -434,6 +430,7 @@ class Manager
     {
         $targetComment = $commentsData[0]['data'];
         $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
+        $content = $this->executePreAddContentHooks($content);
 
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
         if ($existingContent instanceof Content) {
@@ -538,5 +535,28 @@ class Manager
         }
 
         return $comment;
+    }
+
+    /**
+     * Execute any necessary logic before persisting a Content to the database
+     * such as downloading related Media Assets.
+     *
+     * @param  Content  $content
+     *
+     * @return Content
+     * @throws Exception
+     */
+    private function executePreAddContentHooks(Content $content): Content
+    {
+        $post = $content->getPost();
+        foreach ($post->getMediaAssets() as $mediaAsset) {
+            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
+        }
+
+        if (!empty($post->getThumbnail())) {
+            $this->mediaDownloader->downloadThumbnail($post->getThumbnail());
+        }
+
+        return $content;
     }
 }
