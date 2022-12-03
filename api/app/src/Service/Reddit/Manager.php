@@ -23,14 +23,15 @@ use Psr\Cache\InvalidArgumentException;
 class Manager
 {
     /**
-     * Regex pattern to detect if a given URL is a direct Reddit Comment link
-     * such as:
-     * https://www.reddit.com/r/golang/comments/z2ngmf/comment/ixhzp48/
+     * Regex pattern to detect if a given URL or URI is a direct Reddit Comment
+     * link such as:
+     *  - https://www.reddit.com/r/golang/comments/z2ngmf/comment/ixhzp48/
+     *  - /r/science/comments/wf1e8p/exercising_almost_daily_for_up_to_an_hour_at_a/iirwrq4/
      *
-     * It is meant to NOT match a Post URL such as:
+     * It is meant to NOT match a Link Post URL such as:
      * https://www.reddit.com/r/golang/comments/z2ngmf/
      */
-    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/comment\/[a-zA-Z0-9]{4,10}/i';
+    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/.*\/[a-zA-Z0-9]{4,10}/i';
 
     public function __construct(
         private readonly Api $api,
@@ -97,32 +98,9 @@ class Manager
     public function syncContentFromApiByRedditId(string $kind, string $redditId): Content
     {
         $response = $this->api->getPostByRedditId($kind, $redditId);
+        $contentUrl = $response['data']['children'][0]['data']['permalink'];
 
-        // @TODO: Investigate if this can be routed to the Json URL logic after retrieving the URL from the response.
-
-        $context = [
-            'parentPostData' => [],
-            'commentData' => [],
-        ];
-
-        if ($kind === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
-            $commentData = $response['data']['children'][0]['data'];
-
-            $context['commentData'] = $commentData;
-            $context['parentPostData'] = $this->api->getPostByFullRedditId($commentData['link_id']);
-        } else if ($kind === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
-            $commentData = $response['data'];
-
-            $context['commentData'] = $commentData;
-            $context['parentPostData'] = $this->api->getPostByFullRedditId($commentData['link_id']);
-        }
-
-        $content = $this->contentDenormalizer->denormalize($response, Content::class, null, $context);
-        $content = $this->executePreAddContentHooks($content);
-
-        $this->contentRepository->add($content, true);
-
-        return $content;
+        return $this->syncContentByUrl($contentUrl);
     }
 
     /**
