@@ -16,6 +16,7 @@ class ThumbnailDenormalizer implements DenormalizerInterface
     public const THUMBNAIL_DEFAULT_IMAGE_NAMES = [
         'image',
         'default',
+        'nsfw',
     ];
 
     private const THUMBNAIL_FILENAME_FORMAT = '%s_thumb.jpg';
