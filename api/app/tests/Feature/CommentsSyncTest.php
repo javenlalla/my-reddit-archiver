@@ -192,7 +192,7 @@ class CommentsSyncTest extends KernelTestCase
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(525, $comments);
+        $this->assertCount(524, $comments);
     }
 
     /**
