@@ -3,28 +3,94 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
+use App\Entity\Content;
+use App\Service\Reddit\Manager\Comments as CommentsManager;
 use DateInterval;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Psr\Cache\InvalidArgumentException;
 
 class SyncScheduler
 {
+    private const ONE_MINUTE_TIME_INTERVAL = 'PT1M';
+
+    public function __construct(private readonly EntityManagerInterface $em, private readonly CommentsManager $commentsManager)
+    {
+    }
+
     /**
-     * @param  DateTimeImmutable  $lastUpdatedDate
+     * Calculate the next Sync date based on the provided Content and if not
+     * disabled, set the date on the Entity and persist it.
+     *
+     * @param  Content  $content
+     *
+     * @return void
+     */
+    public function calculateAndSetNextSyncByContent(Content $content): void
+    {
+        $syncDate = $this->calculateNextSyncByContent($content);
+        if ($syncDate instanceof DateTimeImmutable) {
+            $content->setNextSyncDate($syncDate);
+
+            $this->em->persist($content);
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * Calculate the next Sync date based on the provided Content. If it is
+     * detected that syncing should be disabled, return null.
+     *
+     * @param  Content  $content
+     *
+     * @return DateTimeImmutable|null
+     * @throws InvalidArgumentException
+     */
+    public function calculateNextSyncByContent(Content $content): ?DateTimeImmutable
+    {
+        $post = $content->getPost();
+        if ($post->isIsArchived() === true) {
+            return null;
+        }
+
+        $currentDate = DateTimeImmutable::createFromFormat('U', (string) time())->format('Y-m-d');
+        $contentPostCreatedDateTime = $content->getPost()->getCreatedAt();
+        $contentPostCreatedDate = $content->getPost()->getCreatedAt()->format('Y-m-d');
+
+        if ($currentDate === $contentPostCreatedDate) {
+            return $contentPostCreatedDateTime->add(new DateInterval(self::ONE_MINUTE_TIME_INTERVAL));
+        }
+
+        $lastUpdatedDateTime = $contentPostCreatedDateTime;
+        $latestComment = $this->commentsManager->getLatestCommentByContent($content);
+        if ($latestComment instanceof \App\Entity\Comment) {
+            $lastUpdatedDateTime = $latestComment->getLatestCommentAuthorText()->getCreatedAt();
+        }
+
+        return $this->calculateNextSyncByLastDate($lastUpdatedDateTime);
+    }
+
+    /**
+     * Using the provided last updated DateTime, calculate the next Sync date,
+     * if not disabled.
+     *
+     * @param  DateTimeImmutable  $lastUpdatedDateTime
      *
      * @return DateTimeImmutable|null
      * @throws Exception
      */
-    public function calculateNextSyncByLastDate(DateTimeImmutable $lastUpdatedDate): ?DateTimeImmutable
+    public function calculateNextSyncByLastDate(DateTimeImmutable $lastUpdatedDateTime): ?DateTimeImmutable
     {
-        // @TODO: Check if archived or Content created same day.
-        $nextSyncDateSeconds = $this->calculateSecondsToNextSync((int) $lastUpdatedDate->format('U'));
+        $nextSyncDateSeconds = $this->calculateSecondsToNextSync((int) $lastUpdatedDateTime->format('U'));
         if ($nextSyncDateSeconds === 0) {
             // Disable the next sync.
             return null;
         }
 
-        return $lastUpdatedDate->add(new DateInterval(sprintf('PT%dS', $nextSyncDateSeconds)));
+        $currentDateTime = DateTimeImmutable::createFromFormat('U', (string) time());
+
+        return $currentDateTime->add(new DateInterval(sprintf('PT%dS', $nextSyncDateSeconds)));
     }
 
     /**

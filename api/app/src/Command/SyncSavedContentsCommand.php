@@ -7,6 +7,7 @@ use App\Entity\Post;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Manager;
+use App\Service\Reddit\SyncScheduler;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -35,6 +36,7 @@ class SyncSavedContentsCommand extends Command
         private readonly Manager $manager,
         private readonly Api $redditApi,
         private readonly PostRepository $postRepository,
+        private readonly SyncScheduler $syncScheduler,
         private readonly CacheInterface $cachePoolRedis
     ) {
         parent::__construct();
@@ -167,7 +169,11 @@ class SyncSavedContentsCommand extends Command
                 if (empty($syncedPost) && empty($savedContent['data']['removed_by_category'])) {
                     $messagesOutputSection->writeln(sprintf('%s: %s', $savedContent['kind'], $savedContent['data']['permalink']), OutputInterface::VERBOSITY_VERBOSE);
 
-                    $post = $this->manager->syncContentFromJsonUrl($savedContent['kind'], $savedContent['data']['permalink']);
+                    $content = $this->manager->syncContentFromJsonUrl($savedContent['kind'], $savedContent['data']['permalink']);
+
+                    if ($content->getPost()->isIsArchived() === false) {
+                        $this->syncScheduler->calculateAndSetNextSyncByContent($content);
+                    }
                 }
 
                 $progressBar->advance();

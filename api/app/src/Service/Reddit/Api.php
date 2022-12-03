@@ -40,6 +40,8 @@ class Api
 
     const MORE_CHILDREN_BATCH_SIZE = 750;
 
+    const COMMENTS_SORT_NEW = 'new';
+
     private string $accessToken;
 
     private string $userAgent;
@@ -123,16 +125,27 @@ class Api
      * Retrieve Comments under a Post by the Post's Reddit ID.
      *
      * @param  string  $redditId
+     * @param  string  $sort
+     * @param  int  $limit
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostCommentsByRedditId(string $redditId): array
+    public function getPostCommentsByRedditId(string $redditId, string $sort = '', int $limit = -1): array
     {
-        $cacheKey = md5('comments-'.$redditId);
+        $cacheKey = md5('comments-'.$redditId.'-'.$sort.'-'.$limit);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
+        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId, $sort, $limit) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
+
+            if (!empty($sort)) {
+                $commentsUrl .= '&sort=' . $sort;
+            }
+
+            if ($limit > 0) {
+                $commentsUrl .= '&limit=' . $limit;
+            }
+
             $response = $this->executeSimpleCall(self::METHOD_GET, $commentsUrl);
 
             return $response->toArray();
