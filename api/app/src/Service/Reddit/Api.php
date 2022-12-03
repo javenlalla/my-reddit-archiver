@@ -180,7 +180,7 @@ class Api
                 return $response->toArray();
             });
 
-            $allRetrievedChildren = [...$allRetrievedChildren, ...$retrievedChildren];
+            $allRetrievedChildren = [...$allRetrievedChildren, ...$retrievedChildren['json']['data']['things']];
         }
 
         return $allRetrievedChildren;

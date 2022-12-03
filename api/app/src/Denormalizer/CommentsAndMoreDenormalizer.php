@@ -154,7 +154,7 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
         $moreData = $this->api->getMoreChildren($postRedditId, $originalMoreRawData);
 
         $comments = [];
-        foreach ( $moreData['json']['data']['things'] as $moreComment) {
+        foreach ( $moreData as $moreComment) {
             if ($moreComment['kind'] === 'more' && !empty($moreComment['data']['children'])) {
                 $extractedMoreComments = $this->extractMoreCommentChildren($postRedditId, $moreComment['data']);
 
