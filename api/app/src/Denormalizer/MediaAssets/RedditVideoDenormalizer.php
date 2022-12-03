@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer\MediaAssets;
 
 use App\Entity\MediaAsset;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RedditVideoDenormalizer implements DenormalizerInterface
 {
@@ -12,8 +15,10 @@ class RedditVideoDenormalizer implements DenormalizerInterface
 
     const REDDIT_VIDEO_AUDIO_URL_FORMAT = 'https://v.redd.it/%s/DASH_audio.mp4';
 
-    public function __construct(private readonly BaseDenormalizer $baseDenormalizer)
-    {
+    public function __construct(
+        private readonly BaseDenormalizer $baseDenormalizer,
+        private readonly HttpClientInterface $httpClient
+    ) {
     }
 
     /**
@@ -43,7 +48,9 @@ class RedditVideoDenormalizer implements DenormalizerInterface
             $mediaAsset->setAudioFilename(sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId));
 
             $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
-            $mediaAsset->setAudioSourceUrl($audioUrl);
+            if ($this->audioUrlReturnsSuccessful($audioUrl) === true) {
+                $mediaAsset->setAudioSourceUrl($audioUrl);
+            }
         }
 
         return $mediaAsset;
@@ -55,5 +62,24 @@ class RedditVideoDenormalizer implements DenormalizerInterface
     public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
         return $data instanceof Post;
+    }
+
+    /**
+     * Execute a GET call to the provided URL and ensure a 200 is returned which
+     * would indicate the Audio asset exists and is reachable.
+     *
+     * @param  string  $audioUrl
+     *
+     * @return bool
+     * @throws TransportExceptionInterface
+     */
+    private function audioUrlReturnsSuccessful(string $audioUrl): bool
+    {
+        $responseStatusCode = $this->httpClient->request('GET', $audioUrl)->getStatusCode();
+        if ($responseStatusCode === 200) {
+            return true;
+        }
+
+        return false;
     }
 }
