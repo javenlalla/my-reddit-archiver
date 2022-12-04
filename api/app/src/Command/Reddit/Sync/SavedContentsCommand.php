@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reddit\Sync;
 
 use App\Entity\Post;
 use App\Repository\PostRepository;
@@ -19,8 +19,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
 #[AsCommand(
-    name: 'app:sync-saved-contents',
-    description: 'Loop through your Reddit profile\'s Saved Contents and persist them locally',
+    name: 'reddit:sync:saved:full',
+    description: 'Loop through your Reddit profile\'s Saved Contents and persist them locally. Note: this does not update already synced Contents; it only pulls down Contents not already saved locally.',
     aliases: ['app:sync'],
     hidden: false
 )]
