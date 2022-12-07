@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Reddit\Sync;
 
 use App\Entity\Kind;
 use App\Service\Reddit\Manager;
@@ -12,11 +12,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'app:sync-single-content',
-    description: 'Sync a single Content to local by Reddit URL.',
+    name: 'reddit:sync:single',
+    description: 'Sync a single Content to local by its Reddit URL.',
     aliases: ['app:sync-single'],
 )]
-class SyncSingleContentCommand extends Command
+class SingleContentCommand extends Command
 {
     public function __construct(private readonly Manager $manager)
     {
@@ -36,10 +36,12 @@ class SyncSingleContentCommand extends Command
     {
         $targetUrl = $input->getOption('url');
 
-        $output->writeln('<info>-------------Sync Manager | Sync Single Content-------------</info>');
-        $output->writeln('<info>Sync a single Reddit Content URL to local</info>');
-        $output->writeln('');
-        $output->writeln('<info>Beginning Sync.</info>');
+        $output->writeln([
+            '<info>-------------Sync Manager | Sync Single Content-------------</info>',
+            '<info>Sync a single Reddit Content URL to local</info>',
+            '',
+            '<info>Beginning Sync.</info>',
+        ]);
 
         $content = $this->manager->syncContentByUrl($targetUrl);
 
