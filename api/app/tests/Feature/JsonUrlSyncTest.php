@@ -282,4 +282,28 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
         $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
     }
+
+    /**
+     * Ensure that if Manager::syncContentFromJsonUrl() is called more than once
+     * for the same Kind and Post Link, the same Content record is retrieved
+     * instead of inserting a new Content record for each execution.
+     *
+     * @return void
+     */
+    public function testUniqueContentPost()
+    {
+        $this->markTestSkipped('Skipping for now to be addressed later.');
+    }
+
+    /**
+     * Ensure that if Manager::syncContentFromJsonUrl() is called more than once
+     * for the same Kind and Comment Link, the same Content record is retrieved
+     * instead of inserting a new Content record for each execution.
+     *
+     * @return void
+     */
+    public function testUniqueContentComment()
+    {
+        $this->markTestSkipped('Skipping for now to be addressed later.');
+    }
 }
