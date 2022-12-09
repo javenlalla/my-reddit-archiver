@@ -314,14 +314,20 @@ class Post
      * Retrieve the latest/current revision of this Post's Post Author
      * Text entity.
      *
-     * @return PostAuthorText
+     * @return PostAuthorText|null
      */
-    public function getLatestPostAuthorText(): PostAuthorText
+    public function getLatestPostAuthorText(): ?PostAuthorText
     {
-        return $this->getPostAuthorTexts()
+        $latestPostAuthorText = $this->getPostAuthorTexts()
             ->matching(PostRepository::createLatestPostAuthorTextCriteria())
             ->first()
-            ;
+        ;
+
+        if ($latestPostAuthorText instanceof PostAuthorText) {
+            return $latestPostAuthorText;
+        }
+
+        return null;
     }
 
     /**

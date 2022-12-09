@@ -3,6 +3,7 @@
 namespace App\Serializer;
 
 use App\Entity\Post;
+use App\Entity\PostAuthorText;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
@@ -20,28 +21,41 @@ class PostNormalizer implements NormalizerInterface
      */
     public function normalize(mixed $object, string $format = null, array $context = []): array
     {
+        $post = $object;
+
         $normalizedData = [
-            'id' => $object->getId(),
-            'reddit_id' => $object->getRedditId(),
-            'type' => $object->getType()->getRedditTypeId(),
-            'content_type' => $object->getContentType()->getName(),
-            'title' => $object->getTitle(),
-            'score' => $object->getScore(),
-            'url' => $object->getUrl(),
-            'author' => $object->getAuthor(),
-            'subreddit' => $object->getSubreddit(),
-            'reddit_post_id' => $object->getRedditPostId(),
-            'reddit_post_url' => $object->getRedditPostUrl(),
-            'author_text' => $object->getAuthorText(),
-            'author_text_html' => $object->getAuthorTextHtml(),
-            'author_text_raw_html' => $object->getAuthorTextRawHtml(),
-            'created_at' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
+            'id' => $post->getId(),
+            'reddit_id' => $post->getRedditId(),
+            'kind' => $post->getContent()->getKind()->getName(),
+            'type' => $post->getType()->getName(),
+            'title' => $post->getTitle(),
+            'score' => $post->getScore(),
+            'url' => $post->getUrl(),
+            'subreddit' => $post->getSubreddit(),
+            'reddit_post_id' => $post->getRedditId(),
+            'reddit_post_url' => $post->getUrl(),
+            'author' => $post->getAuthor(),
+            'author_text' => [],
+            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
             'comments' => [],
         ];
 
-        foreach ($object->getTopLevelComments() as $comment) {
-            $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
+        // @TODO: Move this logic and empty array logic to an Author Text Normalizer.
+        $postAuthorText = $post->getLatestPostAuthorText();
+        if ($postAuthorText instanceof PostAuthorText) {
+            $createdAt = $postAuthorText->getCreatedAt();
+            $authorText = $postAuthorText->getAuthorText();
+
+            $normalizedData['author_text'] = [
+                'text' => $authorText->getText(),
+                'textHtml' => $authorText->getTextHtml(),
+                'textRawHtml' => $authorText->getTextRawHtml(),
+            ];
         }
+
+        // foreach ($post->getTopLevelComments() as $comment) {
+        //     $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
+        // }
 
         return $normalizedData;
     }
