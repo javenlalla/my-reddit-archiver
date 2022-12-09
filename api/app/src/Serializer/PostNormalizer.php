@@ -8,7 +8,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly CommentNormalizer $commentNormalizer)
+    public function __construct(private readonly CommentWithRepliesNormalizer $commentNormalizer)
     {
     }
 
