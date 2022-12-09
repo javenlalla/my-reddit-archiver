@@ -1,0 +1,1 @@
+* * * * * /cron-testing/cron_test.sh >> /var/log/sync-processing.log

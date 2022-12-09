@@ -7,6 +7,7 @@ Archive Saved posts under your Reddit account.
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
       - [Limitations](#limitations)
         - [2FA](#2fa)
+  - [Docker Build And Run](#docker-build-and-run)
     - [Configure Application](#configure-application)
     - [Start Application](#start-application)
   - [Execute Sync](#execute-sync)
@@ -33,6 +34,44 @@ Firstly, a Reddit Client ID and Client Secret must be generated in order to conf
 ##### 2FA
 
 The application requires your Reddit `Password` to be provided in the configuration. This is used to make authenticated OAuth calls in order to use Reddit's API. As a result, this flow does not work if 2FA is enabled on the target Reddit account. This may be addressed in the future with a redirect to Reddit for login, but at this time, the only workaround is to disable 2FA.
+
+## Docker Build And Run
+
+```bash
+docker build --tag=mra .
+
+# If creating a new database, first create a joint network.
+docker network create mra_net
+
+
+# Start Database
+docker run -d --net mra_net  \
+-e MYSQL_ROOT_PASSWORD=my_archiver_secure_root_pw \
+-e MYSQL_DATABASE=archive_db \
+-e MYSQL_USER=my_archiver \
+-e MYSQL_PASSWORD=my_archiver_password \
+# Windows
+# --volume /$(pwd)/data/db:/var/lib/mysql \
+--volume data/db:/var/lib/mysql \
+--name="mra-db" \
+mariadb:10.8.6
+
+docker run --rm --net mra_net \
+-e REDDIT_USERNAME="MyRedditUserName" \
+-e REDDIT_PASSWORD="MyRedditPassword" \
+-e REDDIT_CLIENT_ID="ClientId" \
+-e REDDIT_CLIENT_SECRET="ClientSecret" \
+-e DB_HOST=mra-db \
+-e DB_DATABASE=archive_db \
+-e DB_USERNAME=my_archiver \
+-e DB_PASSWORD=my_archiver_password \
+-p 8080:80 \
+--name mra \
+mra
+
+# Monitor Cron logs.
+docker exec -it mra sh -c "tail -f /var/log/sync-processing.log"
+```
 
 ### Configure Application
 

@@ -5,3 +5,4 @@ api/app/.env.test
 docker-compose.yml
 database-data
 temp
+data
