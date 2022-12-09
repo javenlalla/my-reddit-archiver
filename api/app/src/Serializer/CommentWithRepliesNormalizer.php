@@ -5,7 +5,7 @@ namespace App\Serializer;
 use App\Entity\Comment;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class CommentNormalizer implements NormalizerInterface
+class CommentWithRepliesNormalizer implements NormalizerInterface
 {
 
     /**
