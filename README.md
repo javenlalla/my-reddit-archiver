@@ -3,21 +3,24 @@
 Archive Saved posts under your Reddit account.
 
 - [My Reddit Archiver](#my-reddit-archiver)
-  - [Setup](#setup)
+  - [Prerequisites](#prerequisites)
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
       - [Limitations](#limitations)
         - [2FA](#2fa)
-  - [Docker Build And Run](#docker-build-and-run)
-    - [Configure Application](#configure-application)
+  - [Setup](#setup)
+    - [Dockerfile](#dockerfile)
+    - [docker-compose](#docker-compose)
     - [Start Application](#start-application)
   - [Execute Sync](#execute-sync)
+  - [Logging](#logging)
+    - [Cron Logs](#cron-logs)
   - [Development](#development)
 
-## Setup
+## Prerequisites
 
 ### Create Reddit Client ID And Secret
 
-Firstly, a Reddit Client ID and Client Secret must be generated in order to configure the application.
+In order to configure the application, a Reddit Client ID and Client Secret must be generated. This is accomplished by creating a Reddit app under your account. The app and its credentials are needed to make authorized APIs calls to the Reddit API to retrieve user account data such as the profile's `Saved` Link Posts and Comments.
 
 1. While logged into Reddit, navigate to [Authorized Applications](https://www.reddit.com/prefs/apps).
 2. Scroll to the bottom of the page and click **create another app**.
@@ -35,45 +38,55 @@ Firstly, a Reddit Client ID and Client Secret must be generated in order to conf
 
 The application requires your Reddit `Password` to be provided in the configuration. This is used to make authenticated OAuth calls in order to use Reddit's API. As a result, this flow does not work if 2FA is enabled on the target Reddit account. This may be addressed in the future with a redirect to Reddit for login, but at this time, the only workaround is to disable 2FA.
 
-## Docker Build And Run
+## Setup
 
-```bash
-docker build --tag=mra .
+The application can be configured to run via `docker-compose` or using the `Dockerfile` directly with `docker run`. See the following sections on how to set up the application with either of these methods.
 
-# If creating a new database, first create a joint network.
-docker network create mra_net
+### Dockerfile
 
+1. Build the image:
 
-# Start Database
-docker run -d --net mra_net  \
--e MYSQL_ROOT_PASSWORD=my_archiver_secure_root_pw \
--e MYSQL_DATABASE=archive_db \
--e MYSQL_USER=my_archiver \
--e MYSQL_PASSWORD=my_archiver_password \
-# Windows
-# --volume /$(pwd)/data/db:/var/lib/mysql \
---volume data/db:/var/lib/mysql \
---name="mra-db" \
-mariadb:10.8.6
+    ```bash
+    docker build --tag=mra .
+    ```
 
-docker run --rm --net mra_net \
--e REDDIT_USERNAME="MyRedditUserName" \
--e REDDIT_PASSWORD="MyRedditPassword" \
--e REDDIT_CLIENT_ID="ClientId" \
--e REDDIT_CLIENT_SECRET="ClientSecret" \
--e DB_HOST=mra-db \
--e DB_DATABASE=archive_db \
--e DB_USERNAME=my_archiver \
--e DB_PASSWORD=my_archiver_password \
--p 8080:80 \
---name mra \
-mra
+2. Initialize database (skip this step if using an existing database):
 
-# Monitor Cron logs.
-docker exec -it mra sh -c "tail -f /var/log/sync-processing.log"
-```
+    ```bash
+    # Create a network first to allow communication
+    # between the application and the database.
+    docker network create mra_net
 
-### Configure Application
+    # Initialize Database
+    docker run -d --net mra_net  \
+    -e MYSQL_ROOT_PASSWORD=my_archiver_secure_root_pw \
+    -e MYSQL_DATABASE=archive_db \
+    -e MYSQL_USER=my_archiver \
+    -e MYSQL_PASSWORD=my_archiver_password \
+    --volume data/db:/var/lib/mysql \
+    --name="mra-db" \
+    mariadb:10.8.6
+    ```
+
+3. Configure environment variables and start the application:
+
+    ```bash
+    docker run --rm \
+    --name mra \
+    --net mra_net \ # Exclude if using an existing database and/or different network.
+    -e REDDIT_USERNAME="MyRedditUserName" \
+    -e REDDIT_PASSWORD="MyRedditPassword" \
+    -e REDDIT_CLIENT_ID="ClientId" \
+    -e REDDIT_CLIENT_SECRET="ClientSecret" \
+    -e DB_HOST=mra-db \
+    -e DB_DATABASE=archive_db \
+    -e DB_USERNAME=my_archiver \
+    -e DB_PASSWORD=my_archiver_password \
+    -p 8080:80 \
+    mra
+    ```
+
+### docker-compose
 
 Create docker-compose.yml file:
 
@@ -117,6 +130,16 @@ Once the application is configured and running, use the following command to exe
 
 ```bash
 docker exec -it mra-api ./sync-api
+```
+
+## Logging
+
+### Cron Logs
+
+The cron logs can be viewed using the following command:
+
+```bash
+docker exec -it mra sh -c "tail -f /var/log/sync-processing.log"
 ```
 
 ## Development
