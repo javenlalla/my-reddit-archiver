@@ -21,6 +21,7 @@
         "symfony/rate-limiter": "6.1.*",
         "symfony/runtime": "6.1.*",
         "symfony/serializer": "6.1.*",
+        "symfony/twig-bundle": "6.1.*",
         "symfony/yaml": "6.1.*"
     },
     "config": {
