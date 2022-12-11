@@ -13,7 +13,10 @@ Archive Saved posts under your Reddit account.
     - [Start Application](#start-application)
   - [Execute Sync](#execute-sync)
   - [Logging](#logging)
+    - [Container Logs](#container-logs)
     - [Cron Logs](#cron-logs)
+  - [Upgrading](#upgrading)
+    - [Upgrading | Dockerfile](#upgrading--dockerfile)
   - [Development](#development)
 
 ## Prerequisites
@@ -134,12 +137,38 @@ docker exec -it mra-api ./sync-api
 
 ## Logging
 
+### Container Logs
+
+View the container logs using the following Docker command:
+
+```bash
+docker logs mra
+```
+
 ### Cron Logs
 
 The cron logs can be viewed using the following command:
 
 ```bash
-docker exec -it mra sh -c "tail -f /var/log/sync-processing.log"
+docker exec -it mra sh -c "tail -f /var/log/cron-execution.log"
+```
+
+## Upgrading
+
+### Upgrading | Dockerfile
+
+```bash
+# Stop and remove current container.
+docker stop mra
+docker rm mra
+
+# Pull latest release of code.
+git pull
+
+# Rebuild local Dockerfile image.
+docker build --tag=mra .
+
+# Execute `run` command.
 ```
 
 ## Development
