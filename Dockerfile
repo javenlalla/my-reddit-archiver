@@ -58,10 +58,10 @@ WORKDIR /var/www/mra
 RUN rm -rf var
 
 # Cron setup.
-RUN mkdir /cron-testing
-RUN touch /var/log/sync-processing.log
-COPY build/cron/cron_test_2.sh /cron-testing/cron_test.sh
-RUN chmod 755 /cron-testing/cron_test.sh
+RUN mkdir /cron-execution
+RUN touch /var/log/cron-execution.log
+COPY build/cron/full_sync_cron.sh /cron-execution/full_sync_cron.sh
+RUN chmod 755 /cron-execution/full_sync_cron.sh
 ADD build/cron/crontab.txt /crontab.txt
 RUN /usr/bin/crontab /crontab.txt
 

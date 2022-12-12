@@ -16,10 +16,10 @@ do
   fi
 done
 
-DB_HOST=${DB_HOST:-localhost}
-DB_DATABASE=${DB_DATABASE:-bookstack}
-DB_USERNAME=${DB_USERNAME:-bookstack}
-DB_PASSWORD=${DB_PASSWORD:-password}
+DB_HOST=${DB_HOST:-mra-db}
+DB_DATABASE=${DB_DATABASE:-archive_db}
+DB_USERNAME=${DB_USERNAME:-my_archiver}
+DB_PASSWORD=${DB_PASSWORD:-my_archiver_password}
 DB_PORT=${DB_PORT:-3306}
 
 export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"

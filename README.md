@@ -8,12 +8,15 @@ Archive Saved posts under your Reddit account.
       - [Limitations](#limitations)
         - [2FA](#2fa)
   - [Setup](#setup)
+    - [Environment Variables](#environment-variables)
     - [Dockerfile](#dockerfile)
     - [docker-compose](#docker-compose)
-    - [Start Application](#start-application)
   - [Execute Sync](#execute-sync)
   - [Logging](#logging)
+    - [Container Logs](#container-logs)
     - [Cron Logs](#cron-logs)
+  - [Upgrading](#upgrading)
+    - [Upgrading | Dockerfile](#upgrading--dockerfile)
   - [Development](#development)
 
 ## Prerequisites
@@ -42,6 +45,23 @@ The application requires your Reddit `Password` to be provided in the configurat
 
 The application can be configured to run via `docker-compose` or using the `Dockerfile` directly with `docker run`. See the following sections on how to set up the application with either of these methods.
 
+### Environment Variables
+
+Before working with the Docker image or `docker-compose`, the required `Environment` variables file must be set.
+
+| Environment Variable  | Default              | Description                                      |
+| --------------------- | -------------------- | ------------------------------------------------ |
+| REDDIT_USERNAME       |                      | Your Reddit username.                            |
+| REDDIT_PASSWORD       |                      | Your Reddit password.                            |
+| REDDIT_CLIENT_ID      |                      | The Client ID of the Reddit App you created.     |
+| REDDIT_CLIENT_SECRET  |                      | The Client Secret of the Reddit App you created. |
+| DB_HOST               | mra-db               | Database host.                                   |
+| DB_DATABASE           | archive_db           | Database name to house your local Reddit.        |
+| DB_USERNAME           | my_archiver          | Database username.                               |
+| DB_PASSWORD           | my_archiver_password | Database password.                               |
+
+The `Environment` variables can be provided in-line if using the `docker run` command, configured in the `docker-compose.yml` file once created, or placed within an `.env` file (a sample `.env.sample` is included in the repo) to be referrenced in either method.
+
 ### Dockerfile
 
 1. Build the image:
@@ -63,7 +83,7 @@ The application can be configured to run via `docker-compose` or using the `Dock
     -e MYSQL_DATABASE=archive_db \
     -e MYSQL_USER=my_archiver \
     -e MYSQL_PASSWORD=my_archiver_password \
-    --volume data/db:/var/lib/mysql \
+    --volume ./data/db:/var/lib/mysql \
     --name="mra-db" \
     mariadb:10.8.6
     ```
@@ -82,47 +102,26 @@ The application can be configured to run via `docker-compose` or using the `Dock
     -e DB_DATABASE=archive_db \
     -e DB_USERNAME=my_archiver \
     -e DB_PASSWORD=my_archiver_password \
+    --volume ./data/assets:/var/www/mra/public/assets # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
     -p 8080:80 \
     mra
     ```
 
 ### docker-compose
 
-Create docker-compose.yml file:
+1. Create a `docker-compose.yml` file:
 
-```bash
-cp docker-compose.sample.yml docker-compose.yml
-```
+    ```bash
+    cp docker-compose.sample.yml docker-compose.yml
+    ```
 
-Update the following values in the created `docker-compose.yml` file:
+2. Modify as needed.
+    - If using an `.env` file based on the provided `.env.sample` file, no other changes should be needed.
+3. Start application:
 
-- REDDIT_USERNAME
-- REDDIT_PASSWORD
-- REDDIT_CLIENT_ID
-  - The `Client ID` generated in the previous section.
-- REDDIT_CLIENT_SECRET
-  - The `Client Secret` generated in the previous section.
-- DATABASE_URL
-  - The DSN used to connect to the database. Must be formatted as follows:
-    - mysql://DB_USER:DB_USER_PASSWORD@DB_HOST:3306/DB_DATABASE_NAME?serverVersion=mariadb-10.8.3&charset=utf8mb4
-
-If using the database included in the `docker-compose.yml` file, the following parameters also need to be updated:
-
-- MARIADB_ROOT_PASSWORD
-- MARIADB_USER
-  - This value will be used in the `DATABASE_URL` above.
-- MARIADB_PASSWORD
-  - This value will be used in the `DATABASE_URL` above.
-- MARIADB_DATABASE
-  - This value will be used in the `DATABASE_URL` above.
-
-### Start Application
-
-Once the `docker-compose.yml` is configured, the application can be started using the following command:
-
-```bash
-docker-compose up -d
-```
+    ```bash
+    docker-compose up -d
+    ```
 
 ## Execute Sync
 
@@ -134,12 +133,38 @@ docker exec -it mra-api ./sync-api
 
 ## Logging
 
+### Container Logs
+
+View the container logs using the following Docker command:
+
+```bash
+docker logs mra
+```
+
 ### Cron Logs
 
 The cron logs can be viewed using the following command:
 
 ```bash
-docker exec -it mra sh -c "tail -f /var/log/sync-processing.log"
+docker exec -it mra sh -c "tail -f /var/log/cron-execution.log"
+```
+
+## Upgrading
+
+### Upgrading | Dockerfile
+
+```bash
+# Stop and remove current container.
+docker stop mra
+docker rm mra
+
+# Pull latest release of code.
+git pull
+
+# Rebuild local Dockerfile image.
+docker build --tag=mra .
+
+# Execute `run` command.
 ```
 
 ## Development
