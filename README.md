@@ -66,7 +66,7 @@ The application can be configured to run via `docker-compose` or using the `Dock
     -e MYSQL_DATABASE=archive_db \
     -e MYSQL_USER=my_archiver \
     -e MYSQL_PASSWORD=my_archiver_password \
-    --volume data/db:/var/lib/mysql \
+    --volume ./data/db:/var/lib/mysql \
     --name="mra-db" \
     mariadb:10.8.6
     ```
@@ -85,6 +85,7 @@ The application can be configured to run via `docker-compose` or using the `Dock
     -e DB_DATABASE=archive_db \
     -e DB_USERNAME=my_archiver \
     -e DB_PASSWORD=my_archiver_password \
+    --volume ./data/assets:/var/www/mra/public/assets # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
     -p 8080:80 \
     mra
     ```
