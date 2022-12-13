@@ -4,4 +4,7 @@ api/app/.env.test
 docker-compose.yml
 database-data
 temp
-data
+data/assets/*
+!data/assets/.gitkeep
+data/db/*
+!data/db/.gitkeep

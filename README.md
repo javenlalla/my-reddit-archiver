@@ -109,15 +109,17 @@ The `Environment` variables can be provided in-line if using the `docker run` co
 
 ### docker-compose
 
-1. Create a `docker-compose.yml` file:
+1. If using an `.env` file as described above, ensure it is created and configured first.
+2. Create a `docker-compose.yml` file:
 
     ```bash
     cp docker-compose.sample.yml docker-compose.yml
     ```
 
-2. Modify as needed.
+3. Modify as needed.
     - If using an `.env` file based on the provided `.env.sample` file, no other changes should be needed.
-3. Start application:
+    - If using the database provided in the `docker-compose.yml` file, be sure the `DB_ROOT_PASSWORD` Environment Variable is uncommented and set.
+4. Start application:
 
     ```bash
     docker-compose up -d
@@ -128,7 +130,7 @@ The `Environment` variables can be provided in-line if using the `docker run` co
 Once the application is configured and running, use the following command to execute the syncing of the Reddit profile's `Saved` Posts down to the local system:
 
 ```bash
-docker exec -it mra-api ./sync-api
+docker exec -it mra ./sync-api
 ```
 
 ## Logging

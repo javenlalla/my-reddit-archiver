@@ -72,7 +72,7 @@ COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
 # Install Redis.
 RUN apk --no-cache add redis
 
-COPY entrypoint.sh /etc/entrypoint.sh
-RUN chmod +x /etc/entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
 
-ENTRYPOINT ["/etc/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
