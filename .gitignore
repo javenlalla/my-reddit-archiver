@@ -1,7 +1,10 @@
+.vscode
 api/app/.idea
 api/app/.env.test
 .env
+.env.dev
 docker-compose.yml
+docker-compose.development.yml
 database-data
 temp
 data/assets/*

@@ -1,0 +1,33 @@
+version: '3.9'
+
+services:
+  mra-dev:
+    container_name: mra-dev
+    build:
+      context: .
+      dockerfile: ./development/Dockerfile.dev
+    volumes:
+      - ./data/assets:/var/www/mra/public/assets
+      - ./api/app:/var/www/mra
+      - /var/www/mra/node_modules/
+      - /var/www/mra/var/
+    working_dir: /var/www/mra
+    env_file: .env
+    # If using Jetbrains/PHPStorm, define this value according to your IDE setup for debugging.
+    # See the following page for information: https://www.jetbrains.com/help/phpstorm/debugging-a-php-cli-script.htmlQ
+    # environment:
+      # PHP_IDE_CONFIG: "serverName=mra.local.com"
+    ports:
+      - "2180:80" # Adjust port as needed.
+
+  mra-db-dev:
+    container_name: mra-db-dev
+    image: mariadb:10.8.6
+    env_file: .env
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_DATABASE}
+    volumes:
+      - ./data/db:/var/lib/mysql

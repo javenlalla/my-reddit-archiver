@@ -1,6 +1,8 @@
 FROM php:8.1.7-fpm-alpine
 
-ENV APP_PUBLIC_PATH=/var/www/mra-api/public
+ENV APP_ENV=dev
+ENV APP_PUBLIC_PATH=/var/www/mra/public
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN apk --no-cache add \
     libxml2-dev \
@@ -26,7 +28,11 @@ RUN apk --no-cache add \
     # icu-dev is a dependency required by the `intl` extension.
     icu-dev \
     # ffmpeg is needed for combining Reddit video and audio asset files.
-    ffmpeg
+    ffmpeg \
+    # linux-headers is needed to avoid Xdebug installation error:
+    # configure: error: rtnetlink.h is required, install the linux-headers package: apk add --update linux-headers
+    # ERROR: `/tmp/pear/temp/xdebug/configure --with-php-config=/usr/local/bin/php-config' failed
+    linux-headers
 
 RUN docker-php-ext-install \
     pdo \
@@ -34,24 +40,6 @@ RUN docker-php-ext-install \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
-#     # mysqli \
-#     xmlrpc \
-#     simplexml \
-#     curl \
-#     xml \
-#     soap \
-#     bcmath \
-#     gmp \
-#     opcache \
-#     ctype \
-#     json \
-#     tokenizer
-
-# Removed `mbstring` from above RUN command due to incompabilities with 7.4 image.
-# https://stackoverflow.com/a/59253249
-
-# RUN docker-php-ext-configure zip \
-#     && docker-php-ext-install zip
 
 RUN docker-php-source extract \
     && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
@@ -69,19 +57,15 @@ RUN docker-php-source extract \
 
 # COPY ./scripts/* /usr/bin/
 
-COPY php.ini /usr/local/etc/php/php.ini
+COPY ./development/php.ini /usr/local/etc/php/php.ini
 
 # Install Composer.
 # https://stackoverflow.com/a/58694421
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 
-ENV TERM=cygwin \
-    COLUMNS=175
-
-RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile && \
-    echo "export TERM=cygwin" >> $HOME/.profile && \
-    echo "stty cols 175" >> $HOME/.profile && \
-    echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
+# Opinionated terminal styling choice.
+RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
 
 # Install Symfony installer.    
 RUN wget https://get.symfony.com/cli/installer -O - | bash && \
@@ -89,3 +73,15 @@ RUN wget https://get.symfony.com/cli/installer -O - | bash && \
 
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
+
+# Install Nginx.
+RUN apk --no-cache add nginx
+COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
+
+# Install Redis.
+RUN apk --no-cache add redis
+
+COPY ./development/entrypoint.dev.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
