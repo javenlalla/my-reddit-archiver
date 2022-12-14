@@ -7,7 +7,6 @@ docker-compose.yml
 docker-compose.development.yml
 database-data
 temp
-data/assets/*
-!data/assets/.gitkeep
-data/db/*
-!data/db/.gitkeep
+data/assets
+data/db
+development/db

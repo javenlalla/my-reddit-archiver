@@ -7,7 +7,6 @@ services:
       context: .
       dockerfile: ./development/Dockerfile.dev
     volumes:
-      - ./data/assets:/var/www/mra/public/assets
       - ./api/app:/var/www/mra
       - /var/www/mra/node_modules/
       - /var/www/mra/var/
@@ -30,4 +29,4 @@ services:
       MARIADB_PASSWORD: ${DB_PASSWORD}
       MARIADB_DATABASE: ${DB_DATABASE}
     volumes:
-      - ./data/db:/var/lib/mysql
+      - ./development/db:/var/lib/mysql
