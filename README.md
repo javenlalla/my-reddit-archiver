@@ -171,4 +171,4 @@ docker build --tag=mra .
 
 ## Development
 
-For developing in this application, see [Development](docs/development/README.md).
+For developing in this application, see [Development](development/README.md).
