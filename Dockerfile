@@ -53,7 +53,7 @@ RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 
 # Copy application to image.
 RUN mkdir /var/www/mra/
-COPY api/app /var/www/mra
+COPY src /var/www/mra
 WORKDIR /var/www/mra
 RUN rm -rf var
 

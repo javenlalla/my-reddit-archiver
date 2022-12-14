@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: ./development/Dockerfile.dev
     volumes:
-      - ./api/app:/var/www/mra
+      - ./src:/var/www/mra
       - /var/www/mra/node_modules/
       - /var/www/mra/var/
     working_dir: /var/www/mra

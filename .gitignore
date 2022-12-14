@@ -1,6 +1,6 @@
 .vscode
-api/app/.idea
-api/app/.env.test
+src/.idea
+src/.env.test
 .env
 .env.dev
 docker-compose.yml
