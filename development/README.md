@@ -18,6 +18,7 @@
     ```
 
     - **Note**: Be sure to also uncomment and configure the `DB_ROOT_PASSWORD` variable.
+    - **Note**: Ensure the `DB_HOST` is configured to `mra-db-dev`.
 2. Create a `docker-compose.yml` file:
 
     ```bash
@@ -28,7 +29,7 @@
 4. Start application:
 
     ```bash
-    docker-compose -f docker-compose.development.yml up
+    docker-compose -f docker-compose.development.yml up -d
     ```
 
 ### Hook Into Containers
