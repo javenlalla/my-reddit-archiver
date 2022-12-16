@@ -1,0 +1,61 @@
+FROM php:8.1.7-fpm-buster
+
+ENV APP_PUBLIC_PATH=/var/www/mra/public
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+RUN apt update && apt install -y \
+    curl \
+    git \
+    nginx \
+    redis \
+    rsync \
+    mariadb-client \
+    supervisor \
+    # libicu-dev is a dependency required by the `intl` extension.
+    libicu-dev \
+    # ffmpeg is needed for combining Reddit video and audio asset files.
+    ffmpeg
+
+RUN docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    intl \
+    # sysvsem is required for the RateLimiter Semaphore store.
+    sysvsem
+
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+RUN pecl install -o -f redis \
+    && docker-php-ext-enable redis
+
+# Clean up apt cache.
+RUN rm -rf /var/lib/apt/lists/*
+
+# Configure php.
+COPY ./development/php.ini /usr/local/etc/php/php.ini
+
+# Install Composer.
+# https://stackoverflow.com/a/58694421
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
+
+# Install Symfony installer.
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash && \
+    apt install -y symfony-cli
+
+# Configure Nginx.
+COPY build/nginx-site.conf /etc/nginx/sites-enabled/default
+
+# Configure Entrypoint.
+COPY ./development/entrypoint.dev.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
+
+# Configure Supervisor.
+RUN mkdir -p /var/log/supervisor
+COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Opinionated terminal styling choice.
+RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
+
+ENTRYPOINT ["/entrypoint.sh"]
