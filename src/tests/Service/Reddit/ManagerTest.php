@@ -77,7 +77,7 @@ class ManagerTest extends KernelTestCase
         $redditId = 'wf1e8p';
         $commentRedditId = 'iirwrq4';
 
-        $savedHistoryRawResponse = file_get_contents('/var/www/mra-api/tests/resources/sample-json/iirwrq4-from-saved-listing.json');
+        $savedHistoryRawResponse = file_get_contents('/var/www/mra/tests/resources/sample-json/iirwrq4-from-saved-listing.json');
         $savedHistoryResponse = json_decode($savedHistoryRawResponse, true);
 
         $syncedPost = $this->manager->syncPost($savedHistoryResponse);

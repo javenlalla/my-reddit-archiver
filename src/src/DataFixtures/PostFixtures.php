@@ -35,7 +35,7 @@ class PostFixtures extends Fixture
 
         // Create Contents.
         $contentsListing = [];
-        $contentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/contents.csv', 'r');
+        $contentsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/contents.csv', 'r');
         while (($contentRow = fgetcsv($contentsDataFile)) !== FALSE) {
             // Skip header row (first row).
             if ($contentRow[0] !== 'redditKindId') {
@@ -48,7 +48,7 @@ class PostFixtures extends Fixture
         fclose($contentsDataFile);
 
         // Create Posts.
-        $postsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/posts.csv', 'r');
+        $postsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/posts.csv', 'r');
         while (($postRow = fgetcsv($postsDataFile)) !== FALSE) {
             // Skip header row (first row).
             if ($postRow[0] !== 'redditKindId') {
@@ -64,7 +64,7 @@ class PostFixtures extends Fixture
         $manager->flush();
 
         // Create Comments.
-        $commentsDataFile = fopen('/var/www/mra-api/resources/data-fixtures-source-files/comments.csv', 'r');
+        $commentsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/comments.csv', 'r');
         while (($commentRow = fgetcsv($commentsDataFile)) !== FALSE) {
             // Skip header row (first row).
             if ($commentRow[0] !== 'redditPostId') {
