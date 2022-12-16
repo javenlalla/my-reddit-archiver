@@ -30,3 +30,5 @@ services:
       MARIADB_DATABASE: ${DB_DATABASE}
     volumes:
       - ./development/db:/var/lib/mysql
+    ports:
+      - "3306:3306" # Adjust port as needed.

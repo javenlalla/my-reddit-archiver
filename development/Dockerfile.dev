@@ -1,38 +1,20 @@
-FROM php:8.1.7-fpm-alpine
+FROM php:8.1.7-fpm-buster
 
-ENV APP_ENV=dev
 ENV APP_PUBLIC_PATH=/var/www/mra/public
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-RUN apk --no-cache add \
-    libxml2-dev \
-    libmemcached-dev \
-    cyrus-sasl-dev \
+RUN apt update && apt install -y \
     curl \
-    curl-dev \
-    libmcrypt-dev \
-    gmp-dev \
-    bash \
     git \
-    openssh \
+    nginx \
+    redis \
     rsync \
-    mysql-client \
-    patch \
-    pcre-dev \
-    ncurses \
-    findutils \
-    zlib-dev \
-    libzip-dev \
-    # mariadb-connector-c needed for caching_sha2_password plugin if connecting to a MySQL 8.0 database.
-    mariadb-connector-c \
-    # icu-dev is a dependency required by the `intl` extension.
-    icu-dev \
+    mariadb-client \
+    supervisor \
+    # libicu-dev is a dependency required by the `intl` extension.
+    libicu-dev \
     # ffmpeg is needed for combining Reddit video and audio asset files.
-    ffmpeg \
-    # linux-headers is needed to avoid Xdebug installation error:
-    # configure: error: rtnetlink.h is required, install the linux-headers package: apk add --update linux-headers
-    # ERROR: `/tmp/pear/temp/xdebug/configure --with-php-config=/usr/local/bin/php-config' failed
-    linux-headers
+    ffmpeg
 
 RUN docker-php-ext-install \
     pdo \
@@ -41,22 +23,16 @@ RUN docker-php-ext-install \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
 
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
 
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install -o -f redis \
-    && docker-php-ext-enable redis \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+RUN pecl install -o -f redis \
+    && docker-php-ext-enable redis
 
-# COPY ./scripts/* /usr/bin/
+# Clean up apt cache.
+RUN rm -rf /var/lib/apt/lists/*
 
+# Configure php.
 COPY ./development/php.ini /usr/local/etc/php/php.ini
 
 # Install Composer.
@@ -64,24 +40,22 @@ COPY ./development/php.ini /usr/local/etc/php/php.ini
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 
-# Opinionated terminal styling choice.
-RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
+# Install Symfony installer.
+RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash && \
+    apt install -y symfony-cli
 
-# Install Symfony installer.    
-RUN wget https://get.symfony.com/cli/installer -O - | bash && \
-    mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# Configure Nginx.
+COPY build/nginx-site.conf /etc/nginx/sites-enabled/default
 
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
-RUN apk add symfony-cli
-
-# Install Nginx.
-RUN apk --no-cache add nginx
-COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
-
-# Install Redis.
-RUN apk --no-cache add redis
-
+# Configure Entrypoint.
 COPY ./development/entrypoint.dev.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
+
+# Configure Supervisor.
+RUN mkdir -p /var/log/supervisor
+COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Opinionated terminal styling choice.
+RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
 
 ENTRYPOINT ["/entrypoint.sh"]
