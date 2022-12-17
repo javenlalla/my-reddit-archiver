@@ -53,7 +53,7 @@ RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | b
 COPY build/nginx-site.conf /etc/nginx/sites-enabled/default
 
 # Configure Entrypoint.
-COPY ./development/entrypoint.dev.sh /entrypoint.sh
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 
 # Configure Supervisor.
