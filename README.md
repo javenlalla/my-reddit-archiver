@@ -2,6 +2,8 @@
 
 Archive Saved posts under your Reddit account.
 
+> Note: This project is currently under active development. There will be data structure and/or bc-breaking changes until the first official release is pushed.
+
 - [My Reddit Archiver](#my-reddit-archiver)
   - [Prerequisites](#prerequisites)
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
