@@ -25,7 +25,18 @@ DB_PORT=${DB_PORT:-3306}
 
 # Configure the DATABASE_URL Environment Variabled needed by the application.
 export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
+> .env
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
+
+# Configure Typesense.
+TYPESENSE_API_KEY=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
+> /etc/typesense/typesense-config.ini
+echo "TYPESENSE_API_KEY=${TYPESENSE_API_KEY}" >> .env
+echo "[server]" >> /etc/typesense/typesense-config.ini
+echo "" >> /etc/typesense/typesense-config.ini
+echo "api-key = ${TYPESENSE_API_KEY}" >> /etc/typesense/typesense-config.ini
+echo "data-dir = /etc/typesense/typesense-data" >> /etc/typesense/typesense-config.ini
+echo "enable-cors = true" >> /etc/typesense/typesense-config.ini
 
 # Install and configure composer dependencies.
 echo "Installing composer dependencies."

@@ -31,10 +31,20 @@ DB_PORT=${DB_PORT:-3306}
 # So to address this and have the command line switch environments correctly during tests, the APP_ENV variable is written to the .env file.
 # See the following page for more info: https://symfony.com/doc/current/configuration.html#overriding-environment-values-via-env-local
 # "Real environment variables always win over env vars created by any of the .env files."
-echo "" > .env
+> .env
 echo "APP_ENV=dev" >> .env
 export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
+
+# Configure Typesense.
+TYPESENSE_API_KEY=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
+> /etc/typesense/typesense-config.ini
+echo "TYPESENSE_API_KEY=${TYPESENSE_API_KEY}" >> .env
+echo "[server]" >> /etc/typesense/typesense-config.ini
+echo "" >> /etc/typesense/typesense-config.ini
+echo "api-key = ${TYPESENSE_API_KEY}" >> /etc/typesense/typesense-config.ini
+echo "data-dir = /etc/typesense/typesense-data" >> /etc/typesense/typesense-config.ini
+echo "enable-cors = true" >> /etc/typesense/typesense-config.ini
 
 # Install and configure composer dependencies.
 echo "Installing composer dependencies. This will take a few minutes since xdebug is installed."

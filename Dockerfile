@@ -27,6 +27,11 @@ RUN docker-php-ext-install \
 RUN pecl install -o -f redis \
     && docker-php-ext-enable redis
 
+# Install Typesense.
+RUN mkdir -p /etc/typesense/typesense-data && \
+    curl -o /etc/typesense/typesense.tar.gz https://dl.typesense.org/releases/0.23.1/typesense-server-0.23.1-linux-amd64.tar.gz && \
+    tar -xzf /etc/typesense/typesense.tar.gz -C /etc/typesense
+
 # Clean up apt cache.
 RUN rm -rf /var/lib/apt/lists/*
 
