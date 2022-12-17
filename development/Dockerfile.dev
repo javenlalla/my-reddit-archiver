@@ -8,7 +8,6 @@ RUN apt update && apt install -y \
     git \
     nginx \
     redis \
-    rsync \
     mariadb-client \
     supervisor \
     # libicu-dev is a dependency required by the `intl` extension.

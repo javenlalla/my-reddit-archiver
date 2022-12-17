@@ -28,6 +28,7 @@ export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
 
 # Install and configure composer dependencies.
+echo "Installing composer dependencies."
 composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 composer clear-cache
 composer dump-autoload --classmap-authoritative --no-dev
@@ -35,6 +36,7 @@ composer dump-env prod
 composer run-script --no-dev post-install-cmd
 
 # Wait for the database to be accessible before proceeding.
+echo "Attempting to reach database ${DB_HOST}:${DB_PORT} with user ${DB_USERNAME}."
 timeout 15 bash <<EOT
 while ! (mysql -h${DB_HOST} -P${DB_PORT} -u${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}) >/dev/null;
   do sleep 1;
@@ -53,7 +55,4 @@ php bin/console app:persist-reddit-account
 
 # Container is set up. Start services.
 echo "Starting services."
-/usr/sbin/crond -b -l 8
-redis-server --daemonize yes
-nginx
-php-fpm
+/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
