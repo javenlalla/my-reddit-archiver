@@ -17,8 +17,9 @@
     cp .env.sample .env
     ```
 
-    - **Note**: Be sure to also uncomment and configure the `DB_ROOT_PASSWORD` variable.
-    - **Note**: Ensure the `DB_HOST` is configured to `mra-db-dev`.
+    - `DB_USERNAME` should be configured to `root` to allow `test` database creation and manipulation when running tests.
+    - Uncomment and configure the `DB_ROOT_PASSWORD` variable.
+    - Ensure the `DB_HOST` is configured to `mra-db-dev`.
 2. Create a `docker-compose.yml` file:
 
     ```bash
