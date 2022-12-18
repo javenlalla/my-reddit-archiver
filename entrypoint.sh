@@ -28,7 +28,7 @@ export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}
 > .env
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
 
-if [ $APP_ENV != "prod" ]; then
+if [[ $APP_ENV != "prod" ]]; then
     # Note: it is intentional that the APP_ENV is written to the .env file instead of declared in the Dockerfile.dev because the container Environment Variables take precedence over the .env file(s).
     # As a result, running tests in the development environment fail due to not switching to the test environment programmatically when running. The following error is thrown:
     # Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException: You have requested a non-existent service "test.service_container". Did you mean this: "service_container"?
@@ -49,7 +49,7 @@ echo "data-dir = /etc/typesense/typesense-data" >> /etc/typesense/typesense-conf
 echo "enable-cors = true" >> /etc/typesense/typesense-config.ini
 
 # Install and configure composer dependencies.
-if [ $APP_ENV = "prod" ]; then
+if [[ $APP_ENV = "prod" ]]; then
     echo "Installing composer dependencies."
     composer install --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
     composer clear-cache
