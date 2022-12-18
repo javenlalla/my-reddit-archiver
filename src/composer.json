@@ -11,6 +11,7 @@
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.12",
+        "php-http/curl-client": "^2.2",
         "predis/predis": "^2.0",
         "symfony/asset": "6.1.*",
         "symfony/console": "6.1.*",
@@ -23,7 +24,8 @@
         "symfony/runtime": "6.1.*",
         "symfony/serializer": "6.1.*",
         "symfony/twig-bundle": "6.1.*",
-        "symfony/yaml": "6.1.*"
+        "symfony/yaml": "6.1.*",
+        "typesense/typesense-php": "^4.8"
     },
     "config": {
         "allow-plugins": {

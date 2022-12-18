@@ -10,6 +10,7 @@ parameters:
     app.reddit.client_id: '%env(REDDIT_CLIENT_ID)%'
     app.reddit.client_secret: '%env(REDDIT_CLIENT_SECRET)%'
     app.redis.host: 'localhost'
+    app.typesense.api_key: '%env(TYPESENSE_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -39,6 +40,12 @@ services:
     App\Service\Reddit\Media\Downloader:
         arguments:
             $publicPath: '%app.path.public%'
+
+    App\Service\Typesense\Api:
+        arguments:
+            $apiKey: '%app.typesense.api_key%'
+        calls:
+            - initialize: []
 
     App\Service\Reddit\Manager:
         public: true
