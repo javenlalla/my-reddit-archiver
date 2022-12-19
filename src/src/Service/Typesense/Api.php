@@ -22,8 +22,13 @@ class Api
     /**
      * Initialize the Typesense Client to communicate with its API.
      *
+     * A side effect of this operation is ensuring the expected Collections
+     * exist and create as necessary.
+     *
      * @return void
      * @throws ConfigError
+     * @throws Exception
+     * @throws TypesenseClientError
      */
     public function initialize(): void
     {
@@ -41,13 +46,7 @@ class Api
             ]
         );
 
-        // @TODO: Move this to a start-up Command.
         $this->initializeContentsCollection();
-    }
-
-    public function getKeys()
-    {
-        return $this->client->keys->retrieve();
     }
 
     /**
@@ -65,11 +64,11 @@ class Api
     /**
      * Create the Contents Collection if it does not already exist.
      *
-     * @return void
+     * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    private function initializeContentsCollection()
+    private function initializeContentsCollection(): array
     {
         try {
             $contentsCollection = $this->client->collections['contents']->retrieve();
@@ -90,7 +89,24 @@ class Api
                 ],
             ];
 
-            $this->client->collections->create($schema);
+            return $this->createCollectBySchema($schema);
         }
+
+        return $contentsCollection;
+    }
+
+    /**
+     * Create a Collection defined by the provided Schema by calling the
+     * Collection Create endpoint on the Typesense API.
+     *
+     * @param  array  $schema
+     *
+     * @return array
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    private function createCollectBySchema(array $schema): array
+    {
+        return $this->client->collections->create($schema);
     }
 }

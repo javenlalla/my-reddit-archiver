@@ -15,6 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Typesense\Client;
+use Typesense\Exceptions\ConfigError;
+use Typesense\Exceptions\TypesenseClientError;
 
 class HealthcheckController extends AbstractController
 {
@@ -128,6 +130,9 @@ class HealthcheckController extends AbstractController
      * @param  TypesenseApi  $typesenseApi
      *
      * @return bool
+     * @throws \Http\Client\Exception
+     * @throws ConfigError
+     * @throws TypesenseClientError
      */
     private function verifyTypesenseConnection(TypesenseApi $typesenseApi): bool
     {
