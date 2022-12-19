@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service\Typesense;
 
+use App\Entity\Content;
 use Http\Client\Exception;
 use Symfony\Component\HttpClient\HttplugClient;
 use Typesense\Client;
@@ -59,6 +60,25 @@ class Api
     public function getContentsCollection()
     {
         return $this->client->collections['contents']->retrieve();
+    }
+
+    /**
+     * Add the following Content to the Search Index for Contents Collection.
+     *
+     * @param  Content  $content
+     *
+     * @return void
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function indexContent(Content $content)
+    {
+        $document = [
+            'id'            => (string) $content->getId(),
+            'title'  => $content->getPost()->getTitle(),
+        ];
+
+        $response = $this->client->collections['contents']->documents->upsert($document);
     }
 
     /**
