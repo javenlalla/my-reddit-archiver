@@ -58,6 +58,43 @@ class SearchTest extends KernelTestCase
         $this->assertCount(1, $searchResults['hits']);
     }
 
+    /**
+     * Verify Search results can be filtered by Subreddit.
+     *
+     * @return void
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function testSearchWithSubredditFilter()
+    {
+        $firstPostRedditId = 'x00002';
+        $secondPostRedditId = 'x00003';
+        $searchQuery = 'disclosure';
+
+        foreach ([$firstPostRedditId, $secondPostRedditId] as $postRedditId) {
+            $post = $this->postRepository->findOneBy(['redditId' => $postRedditId]);
+            $content = $post->getContent();
+            $this->searchService->indexContent($content);
+        }
+
+        $searchResults = $this->searchService->search($searchQuery);
+        $this->assertCount(2, $searchResults['hits']);
+
+        // Verify filtering by one Subreddit.
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            subreddits: ['jokesALT'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(1, $searchResults['hits']);
+
+        // Verify filtering by multiple Subreddits.
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            subreddits: ['jokesALT, JOKES'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(2, $searchResults['hits']);
+    }
+
     public function tearDown(): void
     {
         parent::tearDown();
@@ -76,6 +113,7 @@ class SearchTest extends KernelTestCase
         $targetPostRedditIds = [
             'x00001',
             'x00002',
+            'x00003',
         ];
 
         foreach ($targetPostRedditIds as $targetPostRedditId) {

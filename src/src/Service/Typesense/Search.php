@@ -18,12 +18,20 @@ class Search
      * Execute a Search using the provided query and filter parameters.
      *
      * @param  string  $searchQuery
+     * @param  array  $subreddits Array of Subreddits to filter results by.
      *
      * @return array
+     * @throws Exception
+     * @throws TypesenseClientError
      */
-    public function search(string $searchQuery): array
+    public function search(string $searchQuery, array $subreddits = []): array
     {
-        return $this->typesenseApi->search($searchQuery);
+        $filters = [];
+        if (!empty($subreddits)) {
+            $filters[] = sprintf('subreddit:[%s]', implode(',', $subreddits));
+        }
+
+        return $this->typesenseApi->search($searchQuery, $filters);
     }
 
     /**
@@ -44,6 +52,7 @@ class Search
             'title'  => $post->getTitle(),
             'postRedditId' => $post->getRedditId(),
             'postText' => '',
+            'subreddit' => $post->getSubreddit(),
         ];
 
         $latestPostAuthorText = $post->getLatestPostAuthorText();

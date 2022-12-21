@@ -54,16 +54,23 @@ class Api
      * and filter parameters.
      *
      * @param  string  $searchQuery
+     * @param  array  $filters
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(string $searchQuery)
+    public function search(string $searchQuery, array $filters = [])
     {
+        $filterParam = '';
+        if (!empty($filters)) {
+            $filterParam = implode('&&', $filters);
+        }
+
         return $this->client->collections['contents']->documents->search([
             'q' => $searchQuery,
             'query_by' => 'title,postText',
+            'filter_by' => $filterParam,
         ]);
     }
 
@@ -135,16 +142,21 @@ class Api
                 'name'      => 'contents',
                 'fields'    => [
                     [
+                        'name'  => 'subreddit',
+                        'type'  => 'string',
+                        'facet' => true,
+                    ],
+                    [
                         'name'  => 'title',
-                        'type'  => 'string'
+                        'type'  => 'string',
                     ],
                     [
                         'name'  => 'postRedditId',
-                        'type'  => 'string'
+                        'type'  => 'string',
                     ],
                     [
                         'name'  => 'postText',
-                        'type'  => 'string'
+                        'type'  => 'string',
                     ],
                 ],
             ];
