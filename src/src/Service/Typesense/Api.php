@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Service\Typesense;
 
-use App\Entity\Content;
 use Http\Client\Exception;
 use Symfony\Component\HttpClient\HttplugClient;
 use Typesense\Client;
@@ -51,6 +50,24 @@ class Api
     }
 
     /**
+     * Execute a Search against the Contents Collection using the provided query
+     * and filter parameters.
+     *
+     * @param  string  $searchQuery
+     *
+     * @return array
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function search(string $searchQuery)
+    {
+        return $this->client->collections['contents']->documents->search([
+            'q' => $searchQuery,
+            'query_by' => 'title,postText',
+        ]);
+    }
+
+    /**
      * Retrieve the Contents Collection from the Typesense API.
      *
      * @return array
@@ -63,22 +80,37 @@ class Api
     }
 
     /**
-     * Add the following Content to the Search Index for Contents Collection.
+     * Add the following Document to the Search Index for Contents Collection.
      *
-     * @param  Content  $content
+     * @param  array  $document
+     *
+     * @return array
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function indexDocument(array $document): array
+    {
+        return $this->client->collections['contents']->documents->upsert($document);
+    }
+
+    /**
+     * Delete indexed Documents by Post Reddit ID.
+     *
+     * A batch operation is used to capture all Contents Documents associated to
+     * the provided Post Reddit ID, such as in cases where multiple Comment
+     * Contents under the same Post have been indexed.
+     *
+     * @param  string  $postRedditId
      *
      * @return void
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function indexContent(Content $content)
+    public function deleteContentByPostRedditId(string $postRedditId): void
     {
-        $document = [
-            'id'            => (string) $content->getId(),
-            'title'  => $content->getPost()->getTitle(),
-        ];
+        $deleteFilter = sprintf('postRedditId:=%s', $postRedditId);
 
-        $response = $this->client->collections['contents']->documents->upsert($document);
+        $this->client->collections['contents']->documents->delete(['filter_by' => $deleteFilter]);
     }
 
     /**
@@ -106,10 +138,18 @@ class Api
                         'name'  => 'title',
                         'type'  => 'string'
                     ],
+                    [
+                        'name'  => 'postRedditId',
+                        'type'  => 'string'
+                    ],
+                    [
+                        'name'  => 'postText',
+                        'type'  => 'string'
+                    ],
                 ],
             ];
 
-            return $this->createCollectBySchema($schema);
+            return $this->createCollectionBySchema($schema);
         }
 
         return $contentsCollection;
@@ -125,7 +165,7 @@ class Api
      * @throws Exception
      * @throws TypesenseClientError
      */
-    private function createCollectBySchema(array $schema): array
+    private function createCollectionBySchema(array $schema): array
     {
         return $this->client->collections->create($schema);
     }
