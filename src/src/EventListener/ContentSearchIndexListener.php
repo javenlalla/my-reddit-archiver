@@ -4,14 +4,14 @@ declare(strict_types=1);
 namespace App\EventListener;
 
 use App\Entity\Content;
-use App\Service\Typesense\Api;
+use App\Service\Typesense\Search;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Http\Client\Exception;
 use Typesense\Exceptions\TypesenseClientError;
 
 class ContentSearchIndexListener
 {
-    public function __construct(private readonly Api $typesenseApi)
+    public function __construct(private readonly Search $searchService)
     {
     }
 
@@ -27,7 +27,7 @@ class ContentSearchIndexListener
      */
     public function postPersist(Content $content, LifecycleEventArgs $event): void
     {
-        $this->typesenseApi->indexContent($content);
+        $this->searchService->indexContent($content);
     }
 
     /**
@@ -43,6 +43,6 @@ class ContentSearchIndexListener
     public function postUpdate(Content $content, LifecycleEventArgs $event): void
     {
         // @TODO: Ensure (using tests) updates are covered with persistence logic.
-        $this->typesenseApi->indexContent($content);
+        $this->searchService->indexContent($content);
     }
 }
