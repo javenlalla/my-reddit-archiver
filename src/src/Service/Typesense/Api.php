@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service\Typesense;
 
+use App\Service\Typesense\Collection\Contents;
 use Http\Client\Exception;
 use Symfony\Component\HttpClient\HttplugClient;
 use Typesense\Client;
@@ -138,30 +139,7 @@ class Api
         }
 
         if (empty($contentsCollection)) {
-            $schema = [
-                'name'      => 'contents',
-                'fields'    => [
-                    [
-                        'name'  => 'subreddit',
-                        'type'  => 'string',
-                        'facet' => true,
-                    ],
-                    [
-                        'name'  => 'title',
-                        'type'  => 'string',
-                    ],
-                    [
-                        'name'  => 'postRedditId',
-                        'type'  => 'string',
-                    ],
-                    [
-                        'name'  => 'postText',
-                        'type'  => 'string',
-                    ],
-                ],
-            ];
-
-            return $this->createCollectionBySchema($schema);
+            return $this->createCollectionBySchema(Contents::SCHEMA);
         }
 
         return $contentsCollection;

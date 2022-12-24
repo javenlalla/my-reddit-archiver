@@ -5,9 +5,12 @@ namespace App\Tests\Service\Typesense;
 
 use App\Repository\PostRepository;
 use App\Service\Typesense\Api;
+use App\Service\Typesense\Collection\Contents;
 use App\Service\Typesense\Search;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpClient\HttplugClient;
+use Typesense\Client;
 use Typesense\Exceptions\TypesenseClientError;
 
 class SearchTest extends KernelTestCase
@@ -110,15 +113,25 @@ class SearchTest extends KernelTestCase
      */
     private function cleanupDocuments(): void
     {
-        $targetPostRedditIds = [
-            'x00001',
-            'x00002',
-            'x00003',
-        ];
+        $container = static::getContainer();
+        $apiKey = $container->getParameter('app.typesense.api_key');
 
-        foreach ($targetPostRedditIds as $targetPostRedditId) {
-            $this->typesenseApi->deleteContentByPostRedditId($targetPostRedditId);
-        }
+        $client = new Client(
+            [
+                'api_key' => $apiKey,
+                'nodes' => [
+                    [
+                        'host' => 'localhost',
+                        'port' => '8108',
+                        'protocol' => 'http',
+                    ],
+                ],
+                'client' => new HttplugClient(),
+            ]
+        );
+
+        $client->collections['contents']->delete();
+        $client->collections->create(Contents::SCHEMA);
     }
 
     public function basicSearchQueriesDataProvider()
