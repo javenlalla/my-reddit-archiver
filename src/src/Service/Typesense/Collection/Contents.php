@@ -29,6 +29,10 @@ class Contents
                 'name'  => 'postText',
                 'type'  => 'string',
             ],
+            [
+                'name' => 'flairText',
+                'type' => 'string',
+            ]
         ],
     ];
 }

@@ -101,6 +101,7 @@ class PostFixtures extends Fixture
         $post->setSubreddit($postRow[7]);
         $post->setRedditPostUrl($postRow[8]);
         $post->setCreatedAt(new \DateTimeImmutable());
+        $post->setFlairText($postRow[11] ?? null);
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);

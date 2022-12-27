@@ -98,9 +98,62 @@ class SearchTest extends KernelTestCase
         $this->assertCount(2, $searchResults['hits']);
     }
 
+    /**
+     * Verify Search results can be filtered by Flair (Link Posts only, not
+     * Comments).
+     *
+     * @return void
+     */
+    public function testSearchWithFlairFilter()
+    {
+        $searchQuery = 'disclosure';
+        $this->indexContents([
+            ['kind' => 'post', 'redditId' => 'x00002'],
+            ['kind' => 'post', 'redditId' => 'x00003'],
+            ['kind' => 'post', 'redditId' => 'x00004'],
+        ]);
+
+        $searchResults = $this->searchService->search($searchQuery);
+        $this->assertCount(3, $searchResults['hits']);
+
+        // Verify filtering by one Flair Text.
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            flairTexts: ['GrEAT Dad joke'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(1, $searchResults['hits']);
+
+        // Verify no results filtering by non-existent Flair Texts.
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(0, $searchResults['hits']);
+    }
+
     public function tearDown(): void
     {
         parent::tearDown();
+    }
+
+    /**
+     * Index the provided Contents.
+     *
+     * @param  array  $contentsData
+     *
+     * @return void
+     */
+    private function indexContents(array $contentsData): void
+    {
+        foreach ($contentsData as $contentData) {
+            if ($contentData['kind'] === 'post') {
+                $post = $this->postRepository->findOneBy(['redditId' => $contentData['redditId']]);
+                $content = $post->getContent();
+                $this->searchService->indexContent($content);
+            } else {
+                // @TODO: Add logic for Comments.
+            }
+        }
     }
 
     /**

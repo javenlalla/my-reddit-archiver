@@ -18,17 +18,22 @@ class Search
      * Execute a Search using the provided query and filter parameters.
      *
      * @param  string  $searchQuery
-     * @param  array  $subreddits Array of Subreddits to filter results by.
+     * @param  array  $subreddits  Array of Subreddits to filter results by.
+     * @param  array  $flairTexts  Array of Flair Texts to filter results by.
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(string $searchQuery, array $subreddits = []): array
+    public function search(string $searchQuery, array $subreddits = [], array $flairTexts = []): array
     {
         $filters = [];
         if (!empty($subreddits)) {
             $filters[] = sprintf('subreddit:[%s]', implode(',', $subreddits));
+        }
+
+        if (!empty($flairTexts)) {
+            $filters[] = sprintf('flairText:[%s]', implode(',', $flairTexts));
         }
 
         return $this->typesenseApi->search($searchQuery, $filters);
@@ -51,13 +56,19 @@ class Search
             'id'            => (string) $content->getId(),
             'title'  => $post->getTitle(),
             'postRedditId' => $post->getRedditId(),
-            'postText' => '',
             'subreddit' => $post->getSubreddit(),
+            'postText' => '',
+            'flairText' => '',
         ];
 
         $latestPostAuthorText = $post->getLatestPostAuthorText();
         if ($latestPostAuthorText instanceof PostAuthorText) {
             $document['postText'] = $latestPostAuthorText->getAuthorText()->getText();
+        }
+
+        $flairText = $post->getFlairText();
+        if (!empty($flairText)) {
+            $document['flairText'] = $flairText;
         }
 
         $response = $this->typesenseApi->indexDocument($document);
