@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Service\Typesense;
 
+use App\Entity\Comment;
+use App\Entity\CommentAuthorText;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
 use Http\Client\Exception;
@@ -51,6 +53,7 @@ class Search
     public function indexContent(Content $content)
     {
         $post = $content->getPost();
+        $comment = $content->getComment();
 
         $document = [
             'id'            => (string) $content->getId(),
@@ -59,6 +62,7 @@ class Search
             'subreddit' => $post->getSubreddit(),
             'postText' => '',
             'flairText' => '',
+            'commentText' => '',
         ];
 
         $latestPostAuthorText = $post->getLatestPostAuthorText();
@@ -69,6 +73,11 @@ class Search
         $flairText = $post->getFlairText();
         if (!empty($flairText)) {
             $document['flairText'] = $flairText;
+        }
+
+        if ($comment instanceof Comment) {
+            $latestCommentAuthorText = $comment->getLatestCommentAuthorText();
+            $document['commentText'] = $latestCommentAuthorText->getAuthorText()->getText();
         }
 
         $response = $this->typesenseApi->indexDocument($document);

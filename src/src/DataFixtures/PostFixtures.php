@@ -35,6 +35,7 @@ class PostFixtures extends Fixture
 
         // Create Contents.
         $contentsListing = [];
+        $contentsCommentsListing = [];
         $contentsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/contents.csv', 'r');
         while (($contentRow = fgetcsv($contentsDataFile)) !== FALSE) {
             // Skip header row (first row).
@@ -43,6 +44,9 @@ class PostFixtures extends Fixture
                 $manager->persist($content);
 
                 $contentsListing[$contentRow[1]] = $content;
+                if ($contentRow[0] === 't1') {
+                    $contentsCommentsListing[$contentRow[2]] = $content;
+                }
             }
         }
         fclose($contentsDataFile);
@@ -69,11 +73,18 @@ class PostFixtures extends Fixture
             // Skip header row (first row).
             if ($commentRow[0] !== 'redditPostId') {
                 $comment = $this->hydrateCommentFromCsvRow($commentRow);
+
+                // If Comment is directly associated to the Content, persist
+                // the relationship.
+                if (!empty($contentsCommentsListing[$comment->getRedditId()])) {
+                    $contentsCommentsListing[$comment->getRedditId()]->setComment($comment);
+                    $manager->persist($contentsCommentsListing[$comment->getRedditId()]);
+                }
+
                 $manager->persist($comment);
 
                 // Persist Comments immediately in order for fetching Parent Comments during hydration.
                 $manager->flush();
-
             }
         }
         fclose($commentsDataFile);

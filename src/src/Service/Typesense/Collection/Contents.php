@@ -30,6 +30,10 @@ class Contents
                 'type'  => 'string',
             ],
             [
+                'name'  => 'commentText',
+                'type'  => 'string',
+            ],
+            [
                 'name' => 'flairText',
                 'type' => 'string',
             ]

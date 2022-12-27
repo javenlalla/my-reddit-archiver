@@ -13,6 +13,15 @@ use Typesense\Exceptions\TypesenseClientError;
 
 class Api
 {
+    /**
+     * Target Document fields to search by.
+     */
+    const SEARCH_FIELDS = [
+        'title',
+        'postText',
+        'commentText',
+    ];
+
     /** @var Client */
     private Client $client;
 
@@ -70,7 +79,7 @@ class Api
 
         return $this->client->collections['contents']->documents->search([
             'q' => $searchQuery,
-            'query_by' => 'title,postText',
+            'query_by' => implode(',', self::SEARCH_FIELDS),
             'filter_by' => $filterParam,
         ]);
     }

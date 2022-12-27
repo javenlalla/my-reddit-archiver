@@ -17,8 +17,6 @@ class SearchTest extends KernelTestCase
 {
     private Search $searchService;
 
-    private Api $typesenseApi;
-
     private PostRepository $postRepository;
 
     public function setUp(): void
@@ -28,7 +26,6 @@ class SearchTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->searchService = $container->get(Search::class);
-        $this->typesenseApi = $container->get(Api::class);
         $this->postRepository = $container->get(PostRepository::class);
 
         $this->cleanupDocuments();
@@ -187,6 +184,11 @@ class SearchTest extends KernelTestCase
         $client->collections->create(Contents::SCHEMA);
     }
 
+    /**
+     * Provide Contents data for Search queries testing.
+     *
+     * @return array[]
+     */
     public function basicSearchQueriesDataProvider()
     {
         return [
@@ -197,6 +199,10 @@ class SearchTest extends KernelTestCase
             'Post Author Text' => [
                 'postRedditId' => 'x00002',
                 'searchQuery' => 'disclosure',
+            ],
+            'Comment Author Text' => [
+                'postRedditId' => 'x00005',
+                'searchQuery' => 'washing',
             ],
         ];
     }
