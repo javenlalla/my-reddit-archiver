@@ -47,6 +47,9 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $commentAwards;
 
+    #[ORM\Column(type: 'string', length: 150, nullable: true)]
+    private $flairText;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
@@ -271,5 +274,17 @@ class Comment
         }
 
         return $count;
+    }
+
+    public function getFlairText(): ?string
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?string $flairText): self
+    {
+        $this->flairText = $flairText;
+
+        return $this;
     }
 }

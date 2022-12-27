@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
@@ -58,8 +59,9 @@ class PostDenormalizer implements DenormalizerInterface
         $post->setScore((int)$postData['score']);
         $post->setAuthor($postData['author']);
         $post->setSubreddit($postData['subreddit']);
-        $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', $postData['created_utc']));
+        $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', (string) $postData['created_utc']));
         $post->setIsArchived($postData['archived']);
+        $post->setFlairText($postData['link_flair_text'] ?? null);
 
         if ($kindRedditId === Kind::KIND_LINK) {
             $type = $this->typeHelper->getContentTypeFromPostData($postData);

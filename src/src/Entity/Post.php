@@ -66,6 +66,9 @@ class Post
     #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     private $isArchived = false;
 
+    #[ORM\Column(type: 'string', length: 150, nullable: true)]
+    private $flairText;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -396,6 +399,18 @@ class Post
     public function setIsArchived(bool $isArchived): self
     {
         $this->isArchived = $isArchived;
+
+        return $this;
+    }
+
+    public function getFlairText(): ?string
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?string $flairText): self
+    {
+        $this->flairText = $flairText;
 
         return $this;
     }

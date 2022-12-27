@@ -41,6 +41,7 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setRedditId($commentData['id']);
         $comment->setScore((int) $commentData['score']);
         $comment->setAuthor($commentData['author']);
+        $comment->setFlairText($commentData['author_flair_text'] ?? null);
         $comment->setParentPost($post);
 
         $depth = $commentData['depth'] ?? 0;
