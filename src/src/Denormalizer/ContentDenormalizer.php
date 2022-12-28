@@ -7,6 +7,7 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
 use App\Repository\CommentRepository;
+use App\Repository\ContentRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
 use Exception;
@@ -20,6 +21,7 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
+        private readonly ContentRepository $contentRepository,
     ) {
     }
 
@@ -86,10 +88,36 @@ class ContentDenormalizer implements DenormalizerInterface
             }
         }
 
-        $content = new Content();
+        return $this->getNewOrExistingContent($kind, $post, $comment);
+    }
+
+    /**
+     * Based on the provided Post and Comment Entities, initialize a new Content
+     * Entity or retrieve an existing Content Entity and return.
+     *
+     * The look-up is performed against the Comment Entity first, then against
+     * the Post Entity.
+     *
+     * @param  Kind  $kind
+     * @param  Post  $post
+     * @param  Comment|null  $comment
+     *
+     * @return Content
+     */
+    private function getNewOrExistingContent(Kind $kind, Post $post, ?Comment $comment): Content
+    {
+        if ($comment instanceof Comment) {
+            $content = $this->contentRepository->findOneBy(['comment' => $comment]);
+        } else {
+            $content = $this->contentRepository->findOneBy(['post' => $post]);
+        }
+
+        if (empty($content)) {
+            $content = new Content();
+        }
+
         $content->setKind($kind);
         $content->setPost($post);
-
         if ($comment instanceof Comment) {
             $content->setComment($comment);
         }

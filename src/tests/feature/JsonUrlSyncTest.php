@@ -292,7 +292,15 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testUniqueContentPost()
     {
-        $this->markTestSkipped('Skipping for now to be addressed later.');
+        $redditId = 't3_vepbt0';
+        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+
+        // Sync again.
+        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+
+        // Verify the second Content return is the same as the first Content.
+        // I.E: a second Content record was not created.
+        $this->assertEquals($firstContent->getId(), $secondContent->getId());
     }
 
     /**
@@ -304,6 +312,14 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testUniqueContentComment()
     {
-        $this->markTestSkipped('Skipping for now to be addressed later.');
+        $redditId = 't1_ia1smh6';
+        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+
+        // Sync again.
+        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+
+        // Verify the second Content return is the same as the first Content.
+        // I.E: a second Content record was not created.
+        $this->assertEquals($firstContent->getId(), $secondContent->getId());
     }
 }
