@@ -40,13 +40,15 @@ class PostDenormalizer implements DenormalizerInterface
      * @param  string|null  $format
      * @param  array{
      *          content: Content,
+     *          kind: Kind,
+     *          parentPostData: array,
      *     }  $context
      *
      * @return Post
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Post
     {
-        $kindRedditId = $context['content']->getKind()->getRedditKindId();
+        $kindRedditId = $context['kind']->getRedditKindId();
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
@@ -85,7 +87,7 @@ class PostDenormalizer implements DenormalizerInterface
         }
 
         $post->setUrl($postData['url']);
-        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData, 'content' => $context['content']]);
+        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData]);
         foreach ($mediaAssets as $mediaAsset) {
             $post->addMediaAsset($mediaAsset);
         }

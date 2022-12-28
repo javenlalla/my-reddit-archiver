@@ -7,7 +7,6 @@ use App\Entity\Award;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
 use App\Entity\CommentAward;
-use App\Entity\Content;
 use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
 use DateTimeImmutable;
@@ -22,7 +21,7 @@ class CommentDenormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param  Content  $data
+     * @param  Post  $data
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
@@ -33,8 +32,7 @@ class CommentDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Comment
     {
-        $content = $data;
-        $post = $content->getPost();
+        $post = $data;
         $commentData = $context['commentData'];
 
         $comment = new Comment();

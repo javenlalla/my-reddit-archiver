@@ -308,14 +308,13 @@ class Manager
 
     private function syncCommentWithParents(Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
     {
-        $comment = $this->commentNoRepliesDenormalizer->denormalize($content, Post::class, null, ['commentData' => $commentData]);
+        $post = $content->getPost();
+        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
 
         $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
         if (!empty($existingComment)) {
             $comment = $existingComment;
         }
-
-        $post = $content->getPost();
 
         // Do not re-persist the original Comment.
         if ($originalComment->getRedditId() !== $comment->getRedditId()) {
@@ -446,7 +445,7 @@ class Manager
         $post = $content->getPost();
         foreach ($commentsData as $commentData) {
             if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, ['commentData' => $commentData['data']]);
+                $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData['data']]);
 
                 $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
                 if (!empty($existingComment)) {

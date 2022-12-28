@@ -47,6 +47,6 @@ class Comments
             return null;
         }
 
-        return $this->commentDenormalizer->denormalize($content, Comment::class, null, ['commentData' => $commentData]);
+        return $this->commentDenormalizer->denormalize($content->getPost(), Comment::class, null, ['commentData' => $commentData]);
     }
 }

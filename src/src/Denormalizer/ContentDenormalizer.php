@@ -54,16 +54,13 @@ class ContentDenormalizer implements DenormalizerInterface
             $data = $data['data']['children'][0];
         }
 
-        $content = new Content();
-
         if ($data['kind'] === Kind::KIND_COMMENT) {
             $kind = $this->kindRepository->getCommentType();
         } else {
             $kind = $this->kindRepository->getLinkType();
         }
-        $content->setKind($kind);
+        $context['kind'] = $kind;
 
-        $context['content'] = $content;
         if ($data['kind'] === Kind::KIND_LINK) {
             $post = $this->linkPostDenormalizer->denormalize($data['data'], Post::class, null, $context);
         } elseif ($data['kind'] === Kind::KIND_COMMENT) {
@@ -72,25 +69,29 @@ class ContentDenormalizer implements DenormalizerInterface
             throw new Exception(sprintf('Unexpected Post type %s: %s', $data['kind'], var_export($data, true)));
         }
 
-            $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
+        $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
         if (!empty($existingPost)) {
-            $content->setPost($existingPost);
-        } else {
-            $content->setPost($post);
+            $post = $existingPost;
         }
 
+        $comment = null;
         if (!empty($context['commentData'])) {
+            // @TODO: Is this additional Kind check needed here?
             $kind = $this->kindRepository->getCommentType();
-            $content->setKind($kind);;
-
-            $comment = $this->commentDenormalizer->denormalize($content, Comment::class, null, $context);
+            $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, $context);
 
             $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
             if (!empty($existingComment)) {
-                $content->setComment($existingComment);
-            } else {
-                $content->setComment($comment);
+                $comment = $existingComment;
             }
+        }
+
+        $content = new Content();
+        $content->setKind($kind);
+        $content->setPost($post);
+
+        if ($comment instanceof Comment) {
+            $content->setComment($comment);
         }
 
         return $content;

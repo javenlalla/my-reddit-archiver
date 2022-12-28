@@ -34,7 +34,6 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
      * @param  string|null  $format
      * @param  array{
      *              postResponseData: array,
-     *              content: Content,
      *          } $context  'postResponseData' contains the original API Response Data for this Post.
      *
      * @return MediaAsset[]
