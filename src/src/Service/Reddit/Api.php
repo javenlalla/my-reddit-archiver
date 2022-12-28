@@ -42,6 +42,8 @@ class Api
 
     const COMMENTS_SORT_NEW = 'new';
 
+    const HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json';
+
     private string $accessToken;
 
     private string $userAgent;
@@ -205,6 +207,23 @@ class Api
                 $this->executeSimpleCall(self::METHOD_GET, $jsonUrl)
                 ->toArray();
         });
+    }
+
+    /**
+     * Retrieve the JSON response for the currently trending Hot Posts.
+     *
+     * @return array
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
+    public function getHotPosts(): array
+    {
+        return
+            $this->executeSimpleCall(self::METHOD_GET, self::HOT_CONTENTS_JSON_URL)
+                ->toArray();
     }
 
     /**
