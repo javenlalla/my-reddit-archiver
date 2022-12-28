@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
@@ -9,7 +10,6 @@ use App\Entity\Content;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\KindRepository;
-use App\Repository\PostRepository;
 use Exception;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -19,7 +19,6 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly PostDenormalizer $linkPostDenormalizer,
         private readonly KindRepository $kindRepository,
         private readonly CommentDenormalizer $commentDenormalizer,
-        private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
         private readonly ContentRepository $contentRepository,
     ) {
@@ -143,11 +142,6 @@ class ContentDenormalizer implements DenormalizerInterface
             $post = $this->linkPostDenormalizer->denormalize($context['parentPostData']['data']['children'][0]['data'], Post::class, null, $context);
         } else {
             throw new Exception(sprintf('Unexpected Post type %s: %s', $kindRedditId, var_export($responseData, true)));
-        }
-
-        $existingPost = $this->postRepository->findOneBy(['redditId' => $post->getRedditId()]);
-        if (!empty($existingPost)) {
-            $post = $existingPost;
         }
 
         return $post;

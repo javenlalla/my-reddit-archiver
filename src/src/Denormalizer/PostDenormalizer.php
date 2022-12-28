@@ -5,7 +5,6 @@ namespace App\Denormalizer;
 
 use App\Entity\AuthorText;
 use App\Entity\Award;
-use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
 use App\Entity\Post;
@@ -15,12 +14,15 @@ use App\Entity\Thumbnail;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
+use App\Repository\PostRepository;
 use DateTimeImmutable;
+use Exception;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class PostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
+        private readonly PostRepository $postRepository,
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
@@ -35,11 +37,10 @@ class PostDenormalizer implements DenormalizerInterface
     }
 
     /**
-     * @param  mixed  $data
+     * @param  array  $data
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
-     *          content: Content,
      *          kind: Kind,
      *          parentPostData: array,
      *     }  $context
@@ -52,18 +53,37 @@ class PostDenormalizer implements DenormalizerInterface
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
         $postData = $data;
+        $redditId = $postData['id'];
 
+        $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
+        if (empty($post)) {
+            $post = $this->initNewPost($kindRedditId, $postData, $context);
+        }
+
+        return $this->updatePost($post, $postData);
+    }
+
+    /**
+     * Initialize a new Post Entity and set associated properties that are not
+     * expected to change on subsequent syncs.
+     *
+     * @param  string  $kindRedditId
+     * @param  array  $postData
+     *
+     * @return Post
+     * @throws Exception
+     */
+    private function initNewPost(string $kindRedditId, array $postData, array $context): Post
+    {
         $post = new Post();
+
         $post->setRedditId($postData['id']);
-        // @TODO: Replace hard-coded URL here.
-        $post->setRedditPostUrl('https://www.reddit.com' . $postData['permalink']);
-        $post->setTitle($postData['title']);
-        $post->setScore((int)$postData['score']);
         $post->setAuthor($postData['author']);
         $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', (string) $postData['created_utc']));
-        $post->setIsArchived($postData['archived']);
-        $post->setFlairText($postData['link_flair_text'] ?? null);
+        $post->setUrl($postData['url']);
+        // @TODO: Replace hard-coded URL here.
+        $post->setRedditPostUrl('https://www.reddit.com' . $postData['permalink']);
 
         if ($kindRedditId === Kind::KIND_LINK) {
             $type = $this->typeHelper->getContentTypeFromPostData($postData);
@@ -71,7 +91,51 @@ class PostDenormalizer implements DenormalizerInterface
             $type = $this->typeHelper->getContentTypeFromPostData($context['parentPostData']['data']['children'][0]['data']);
         }
         $post->setType($type);
+
+        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData]);
+        foreach ($mediaAssets as $mediaAsset) {
+            $post->addMediaAsset($mediaAsset);
+        }
+
         $typeName = $type->getName();
+        if (($typeName === Type::CONTENT_TYPE_GIF || $typeName === Type::CONTENT_TYPE_VIDEO)
+            && !empty($mediaAssets)
+        ) {
+            $post->setUrl($mediaAssets[0]->getSourceUrl());
+        }
+
+        // Process the Post's Thumbnail, if any.
+        // The `height` check is included to avoid false positives such as when
+        // `thumbnail` = "self" in the case of a Text Post (for example).
+        if (!empty($postData['thumbnail'])
+            && !in_array($postData['thumbnail'], ThumbnailDenormalizer::THUMBNAIL_DEFAULT_IMAGE_NAMES)
+            && !empty($postData['thumbnail_height'])
+        ) {
+            $thumbnail = $this->thumbnailDenormalizer->denormalize($post, Thumbnail::class, null, ['sourceUrl' => $postData['thumbnail']]);
+            $post->setThumbnail($thumbnail);
+        }
+
+        return $post;
+    }
+
+    /**
+     * Update the properties of the provided Post that are expected to or have
+     * the potential to change on subsequent syncs.
+     *
+     * @param  Post  $post
+     * @param  array  $postData
+     *
+     * @return Post
+     */
+    private function updatePost(Post $post, array $postData): Post
+    {
+        $post->setTitle($postData['title']);
+        $post->setScore((int)$postData['score']);
+
+        $post->setIsArchived($postData['archived']);
+        $post->setFlairText($postData['link_flair_text'] ?? null);
+
+        $typeName = $post->getType()->getName();
 
         if ($typeName === Type::CONTENT_TYPE_TEXT && !empty($postData['selftext'])) {
             $authorText = new AuthorText();
@@ -86,18 +150,6 @@ class PostDenormalizer implements DenormalizerInterface
             $post->addPostAuthorText($postAuthorText);
         }
 
-        $post->setUrl($postData['url']);
-        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData]);
-        foreach ($mediaAssets as $mediaAsset) {
-            $post->addMediaAsset($mediaAsset);
-        }
-
-        if (($typeName === Type::CONTENT_TYPE_GIF || $typeName === Type::CONTENT_TYPE_VIDEO)
-            && !empty($mediaAssets)
-        ) {
-            $post->setUrl($mediaAssets[0]->getSourceUrl());
-        }
-
         if (!empty($postData['all_awardings'])) {
             foreach ($postData['all_awardings'] as $awarding) {
                 $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
@@ -108,17 +160,6 @@ class PostDenormalizer implements DenormalizerInterface
 
                 $post->addPostAward($postAward);
             }
-        }
-
-        // Process the Post's Thumbnail, if any.
-        // The `height` check is included to avoid false positives such as when
-        // `thumbnail` = "self" in the case of a Text Post (for example).
-        if (!empty($postData['thumbnail'])
-            && !in_array($postData['thumbnail'], ThumbnailDenormalizer::THUMBNAIL_DEFAULT_IMAGE_NAMES)
-            && !empty($postData['thumbnail_height'])
-        ) {
-            $thumbnail = $this->thumbnailDenormalizer->denormalize($post, Thumbnail::class, null, ['sourceUrl' => $postData['thumbnail']]);
-            $post->setThumbnail($thumbnail);
         }
 
         return $post;
