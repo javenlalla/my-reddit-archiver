@@ -7,7 +7,6 @@ use App\Entity\Comment;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
-use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\KindRepository;
 use Exception;
@@ -19,7 +18,6 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly PostDenormalizer $linkPostDenormalizer,
         private readonly KindRepository $kindRepository,
         private readonly CommentDenormalizer $commentDenormalizer,
-        private readonly CommentRepository $commentRepository,
         private readonly ContentRepository $contentRepository,
     ) {
     }
@@ -161,11 +159,6 @@ class ContentDenormalizer implements DenormalizerInterface
         $comment = null;
         if (!empty($context['commentData'])) {
             $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, $context);
-
-            $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
-            if (!empty($existingComment)) {
-                $comment = $existingComment;
-            }
         }
 
         return $comment;

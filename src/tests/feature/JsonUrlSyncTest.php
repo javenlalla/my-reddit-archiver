@@ -121,7 +121,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('ip73wew', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip73wew']);
-        $this->assertCount(1, $comment->getReplies());
+        $this->assertCount(2, $comment->getReplies());
         $this->assertEquals("&gt;At the same time, EA execs might be \"huh, so we don't actually have to develop any game to get a product in the first place.\"\n\nHow's that different from what they're doing now?",
             $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
@@ -135,7 +135,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals('ip721ih', $comment->getParentComment()->getRedditId());
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip721ih']);
-        $this->assertCount(1, $comment->getReplies());
+        $this->assertCount(3, $comment->getReplies());
         $this->assertEquals('EA execs point at this and go "See!? This is what you get when there is no set timetable and no crunch!"',
             $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
@@ -143,7 +143,7 @@ class JsonUrlSyncTest extends KernelTestCase
 
         // Top-level Comment.
         $comment = $this->commentRepository->findOneBy(['redditId' => 'ip6va91']);
-        $this->assertCount(1, $comment->getReplies());
+        $this->assertCount(2, $comment->getReplies());
         $this->assertEquals('I have to say it is a very interesting case study of open game development and crowdfunding.',
             $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText()
         );
