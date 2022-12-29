@@ -12,6 +12,8 @@ use Symfony\Component\Filesystem\Path;
 
 class Downloader
 {
+    const REDDIT_MEDIA_ASSETS_DIRECTORY_PATH = 'r-media';
+
     public function __construct(
         private readonly string $publicPath,
         private readonly Filesystem $filesystem
@@ -72,7 +74,7 @@ class Downloader
      */
     private function getAssetsPath(): string
     {
-        return $this->publicPath . '/assets';
+        return $this->publicPath . '/' . self::REDDIT_MEDIA_ASSETS_DIRECTORY_PATH;
     }
 
     /**

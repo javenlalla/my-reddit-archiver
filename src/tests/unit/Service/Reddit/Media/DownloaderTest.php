@@ -13,7 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DownloaderTest extends KernelTestCase
 {
-    const BASE_PATH_FORMAT = '/var/www/mra/public/assets/%s/%s/';
+    const BASE_PATH_FORMAT = '/var/www/mra/public/r-media/%s/%s/';
 
     private Manager $manager;
 

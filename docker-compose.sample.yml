@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./data/assets:/var/www/mra/public/assets
+      - ./data/r-media:/var/www/mra/public/r-media
     env_file: .env
     ports:
       - "2080:80" # Adjust port as needed.

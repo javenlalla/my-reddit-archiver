@@ -19,5 +19,5 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
-/public/assets/*
-!/public/assets/.gitkeep
+/public/r-media/*
+!/public/r-media/.gitkeep
