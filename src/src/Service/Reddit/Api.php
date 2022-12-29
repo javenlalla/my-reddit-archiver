@@ -42,7 +42,9 @@ class Api
 
     const COMMENTS_SORT_NEW = 'new';
 
-    const HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json';
+    const HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json?limit=%d';
+
+    const DEFAULT_HOT_LIMIT = 10;
 
     private string $accessToken;
 
@@ -219,10 +221,12 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getHotPosts(): array
+    public function getHotPosts(int $limit = self::DEFAULT_HOT_LIMIT): array
     {
+        $url = sprintf(self::HOT_CONTENTS_JSON_URL, $limit);
+
         return
-            $this->executeSimpleCall(self::METHOD_GET, self::HOT_CONTENTS_JSON_URL)
+            $this->executeSimpleCall(self::METHOD_GET, $url)
                 ->toArray();
     }
 
