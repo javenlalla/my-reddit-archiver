@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -413,5 +414,24 @@ class Post
         $this->flairText = $flairText;
 
         return $this;
+    }
+
+    /**
+     * Search for an existing Post Author Text that is associated to an Author
+     * Text containing the provided `text`.
+     *
+     * @param  string  $text
+     *
+     * @return PostAuthorText|null
+     */
+    public function getPostAuthorTextByText(string $text): ?PostAuthorText
+    {
+        foreach ($this->getPostAuthorTexts() as $postAuthorText) {
+            if ($postAuthorText->getAuthorText()->getText() === $text) {
+                return $postAuthorText;
+            }
+        }
+
+        return null;
     }
 }

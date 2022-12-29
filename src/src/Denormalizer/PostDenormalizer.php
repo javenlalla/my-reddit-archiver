@@ -138,16 +138,31 @@ class PostDenormalizer implements DenormalizerInterface
         $typeName = $post->getType()->getName();
 
         if ($typeName === Type::CONTENT_TYPE_TEXT && !empty($postData['selftext'])) {
-            $authorText = new AuthorText();
-            $authorText->setText($postData['selftext']);
-            $authorText->setTextRawHtml($postData['selftext_html']);
-            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
+            $text = $postData['selftext'];
 
-            $postAuthorText = new PostAuthorText();
-            $postAuthorText->setAuthorText($authorText);
-            $postAuthorText->setCreatedAt($post->getCreatedAt());
+            $postAuthorText = $post->getPostAuthorTextByText($text);
+            if (empty($postAuthorText)) {
+                // To prevent duplicate text records for the same Post, create
+                // a new Post Author Text only if one does not already exist with
+                // target text.
+                $authorText = new AuthorText();
+                $authorText->setText($text);
+                $authorText->setTextRawHtml($postData['selftext_html']);
+                $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postData['selftext_html']));
 
-            $post->addPostAuthorText($postAuthorText);
+                $postAuthorText = new PostAuthorText();
+                $postAuthorText->setAuthorText($authorText);
+
+                // Prioritize the updated date over the created date when the
+                // Post has been edited.
+                $createdDate = $post->getCreatedAt();
+                if ($postData['edited'] !== false && is_numeric($postData['edited'])) {
+                    $createdDate = DateTimeImmutable::createFromFormat('U', (string) $postData['edited']);
+                }
+                $postAuthorText->setCreatedAt($createdDate);
+
+                $post->addPostAuthorText($postAuthorText);
+            }
         }
 
         if (!empty($postData['all_awardings'])) {

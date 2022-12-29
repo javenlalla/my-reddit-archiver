@@ -97,16 +97,30 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setScore((int) $commentData['score']);
         $comment->setFlairText($commentData['author_flair_text'] ?? null);
 
-        $authorText = new AuthorText();
-        $authorText->setText($commentData['body']);
-        $authorText->setTextRawHtml($commentData['body_html']);
-        $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($commentData['body_html']));
+        $text = $commentData['body'];
+        $commentAuthorText = $comment->getCommentAuthorTextByText($text);
+        if (empty($commentAuthorText)) {
+            // To prevent duplicate text records for the same Comment, create
+            // a new Comment Author Text only if one does not already exist with
+            // target text.
+            $authorText = new AuthorText();
+            $authorText->setText($text);
+            $authorText->setTextRawHtml($commentData['body_html']);
+            $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($commentData['body_html']));
 
-        $commentAuthorText = new CommentAuthorText();
-        $commentAuthorText->setAuthorText($authorText);
-        $commentAuthorText->setCreatedAt(DateTimeImmutable::createFromFormat('U', $commentData['created_utc']));
+            $commentAuthorText = new CommentAuthorText();
+            $commentAuthorText->setAuthorText($authorText);
 
-        $comment->addCommentAuthorText($commentAuthorText);
+            // Prioritize the updated date over the created date when the
+            // Comment has been edited.
+            $createdDate = DateTimeImmutable::createFromFormat('U', $commentData['created_utc']);
+            if ($commentData['edited'] !== false && is_numeric($commentData['edited'])) {
+                $createdDate = DateTimeImmutable::createFromFormat('U', (string) $commentData['edited']);
+            }
+            $commentAuthorText->setCreatedAt($createdDate);
+
+            $comment->addCommentAuthorText($commentAuthorText);
+        }
 
         if (!empty($commentData['all_awardings'])) {
             foreach ($commentData['all_awardings'] as $awarding) {

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -286,5 +287,24 @@ class Comment
         $this->flairText = $flairText;
 
         return $this;
+    }
+
+    /**
+     * Search for an existing Comment Author Text that is associated to an Author
+     * Text containing the provided `text`.
+     *
+     * @param  string  $text
+     *
+     * @return CommentAuthorText|null
+     */
+    public function getCommentAuthorTextByText(string $text): ?CommentAuthorText
+    {
+        foreach ($this->getCommentAuthorTexts() as $postAuthorText) {
+            if ($postAuthorText->getAuthorText()->getText() === $text) {
+                return $postAuthorText;
+            }
+        }
+
+        return null;
     }
 }

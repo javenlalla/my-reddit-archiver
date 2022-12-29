@@ -282,44 +282,4 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
         $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
     }
-
-    /**
-     * Ensure that if Manager::syncContentFromJsonUrl() is called more than once
-     * for the same Kind and Post Link, the same Content record is retrieved
-     * instead of inserting a new Content record for each execution.
-     *
-     * @return void
-     */
-    public function testUniqueContentPost()
-    {
-        $redditId = 't3_vepbt0';
-        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
-
-        // Sync again.
-        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
-
-        // Verify the second Content return is the same as the first Content.
-        // I.E: a second Content record was not created.
-        $this->assertEquals($firstContent->getId(), $secondContent->getId());
-    }
-
-    /**
-     * Ensure that if Manager::syncContentFromJsonUrl() is called more than once
-     * for the same Kind and Comment Link, the same Content record is retrieved
-     * instead of inserting a new Content record for each execution.
-     *
-     * @return void
-     */
-    public function testUniqueContentComment()
-    {
-        $redditId = 't1_ia1smh6';
-        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
-
-        // Sync again.
-        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
-
-        // Verify the second Content return is the same as the first Content.
-        // I.E: a second Content record was not created.
-        $this->assertEquals($firstContent->getId(), $secondContent->getId());
-    }
 }
