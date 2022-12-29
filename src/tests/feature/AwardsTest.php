@@ -33,7 +33,13 @@ class AwardsTest extends KernelTestCase
 
         // Verify each type of expected Award has been persisted and associated.
         $this->assertCount(6, $post->getPostAwards());
+        $this->assertEquals(17, $post->getPostAwardsTrueCount());
 
+        // Verify if the same Post is synced, Awards are not duplicated.
+        $content = $this->manager->syncContentFromJsonUrl(Kind::KIND_LINK, $postUrl);
+        $post = $content->getPost();
+
+        $this->assertCount(6, $post->getPostAwards());
         $this->assertEquals(17, $post->getPostAwardsTrueCount());
     }
 
@@ -51,7 +57,13 @@ class AwardsTest extends KernelTestCase
 
         // Verify each type of expected Award has been persisted and associated.
         $this->assertCount(2, $comment->getCommentAwards());
+        $this->assertEquals(2, $comment->getCommentAwardsTrueCount());
 
+        // Verify if the same Comment is synced, Awards are not duplicated.
+        $content = $this->manager->syncContentFromJsonUrl(Kind::KIND_COMMENT, $commentUrl);
+        $comment = $content->getComment();
+
+        $this->assertCount(2, $comment->getCommentAwards());
         $this->assertEquals(2, $comment->getCommentAwardsTrueCount());
     }
 }

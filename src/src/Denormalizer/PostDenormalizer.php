@@ -14,6 +14,7 @@ use App\Entity\Thumbnail;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
+use App\Repository\PostAwardRepository;
 use App\Repository\PostRepository;
 use DateTimeImmutable;
 use Exception;
@@ -23,6 +24,7 @@ class PostDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly PostRepository $postRepository,
+        private readonly PostAwardRepository $postAwardRepository,
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
@@ -169,10 +171,13 @@ class PostDenormalizer implements DenormalizerInterface
             foreach ($postData['all_awardings'] as $awarding) {
                 $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
 
-                $postAward = new PostAward();
-                $postAward->setAward($award);
-                $postAward->setCount((int) $awarding['count']);
+                $postAward = $this->postAwardRepository->findOneBy(['post' => $post, 'award' => $award]);
+                if (empty($postAward)) {
+                    $postAward = new PostAward();
+                    $postAward->setAward($award);
+                }
 
+                $postAward->setCount((int) $awarding['count']);
                 $post->addPostAward($postAward);
             }
         }
