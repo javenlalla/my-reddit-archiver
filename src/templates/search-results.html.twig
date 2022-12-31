@@ -1,0 +1,22 @@
+{% for content in contents %}
+    {% if content.comment is defined and content.comment is not null %}
+        <div id="{{ content.id }}" class="search-result-content">
+            <div>{{ content.post.score }}</div>
+            <div>COMMENT: {{ content.post.title }}</div>
+        </div>
+    {% else %}
+        <div id="{{ content.id }}" class="search-result-content container">
+            <div class="row">
+                <div class="col-1">{{ content.post.score }}</div>
+                <div class="col-11">
+                    <div class="row">
+                        {{ content.post.title }}
+                    </div>
+                    <div class="row">
+                        <span><i class="fa-regular fa-comment"></i>400 Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}

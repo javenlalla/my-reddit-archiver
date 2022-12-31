@@ -1,0 +1,9 @@
+body {
+    background-color: lightgray;
+}
+
+.search-result-content {
+    border-bottom: thin gray solid;
+    height: 72px;
+    padding: 10px;
+}

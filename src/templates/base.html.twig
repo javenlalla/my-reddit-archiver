@@ -14,6 +14,17 @@
         {% endblock %}
     </head>
     <body>
+        <div {{ stimulus_controller('search-posts') }} data-search-posts-endpoint-value="/debug/search-results?q=">
+            <input type="text" {{ stimulus_target('search-posts', 'query') }} data-action="input->search-posts#execSearch">
+            <button {{ stimulus_action('search-posts', 'execSearch') }}>
+                Search
+            </button>
+
+            <div id="search-results">
+                <span>Loading</span>
+            </div>
+        </div>
+
         {% block body %}{% endblock %}
     </body>
 </html>

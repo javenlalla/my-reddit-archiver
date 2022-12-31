@@ -7,6 +7,8 @@
     - [Configure Test Database](#configure-test-database)
     - [Run Tests](#run-tests)
   - [Database Changes](#database-changes)
+  - [Frontend Development](#frontend-development)
+    - [yarn](#yarn)
   - [ffmpeg](#ffmpeg)
 
 ## Setup
@@ -87,6 +89,14 @@ php bin/console --env=test doctrine:database:drop --force
 php bin/console --env=test doctrine:database:create
 php bin/console --env=test doctrine:schema:create
 php bin/console --env=test doctrine:fixtures:load
+```
+
+## Frontend Development
+
+### yarn
+
+```bash
+docker exec -it mra-dev yarn watch
 ```
 
 ## ffmpeg

@@ -10,3 +10,10 @@ temp
 data/assets
 data/db
 development/db
+src/.yarn/*
+!src/.yarn/cache
+!src/.yarn/patches
+!src/.yarn/plugins
+!src/.yarn/releases
+!src/.yarn/sdks
+!src/.yarn/versions
