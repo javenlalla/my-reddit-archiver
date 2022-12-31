@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Repository\ContentRepository;
-use App\Service\Typesense\Search;
+use App\Service\Search;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class IndexContentsCommand extends Command
 {
-    public function __construct(private readonly ContentRepository $contentRepository, private readonly Search $tsSearch)
+    public function __construct(private readonly ContentRepository $contentRepository, private readonly Search $searchService)
     {
         parent::__construct();
     }
@@ -30,7 +30,7 @@ class IndexContentsCommand extends Command
         $output->writeln(sprintf('<info>Indexing %d Contents.</info>', count($contents)));
         $indexedCount = 0;
         foreach ($contents as $content) {
-            $this->tsSearch->indexContent($content);
+            $this->searchService->indexContent($content);
 
             $indexedCount++;
             if (($indexedCount % 5) === 0) {

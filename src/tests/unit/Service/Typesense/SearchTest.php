@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace App\Tests\Service\Typesense;
 
 use App\Repository\PostRepository;
-use App\Service\Typesense\Api;
+use App\Service\Search;
 use App\Service\Typesense\Collection\Contents;
-use App\Service\Typesense\Search;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\HttplugClient;
@@ -48,14 +47,14 @@ class SearchTest extends KernelTestCase
     {
         $searchResults = $this->searchService->search($searchQuery);
         $this->assertIsArray($searchResults);
-        $this->assertCount(0, $searchResults['hits']);
+        $this->assertCount(0, $searchResults);
 
         $post = $this->postRepository->findOneBy(['redditId' => $postRedditId]);
         $content = $post->getContent();
         $this->searchService->indexContent($content);
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(1, $searchResults['hits']);
+        $this->assertCount(1, $searchResults);
     }
 
     /**
@@ -78,21 +77,21 @@ class SearchTest extends KernelTestCase
         }
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(2, $searchResults['hits']);
+        $this->assertCount(2, $searchResults);
 
         // Verify filtering by one Subreddit.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             subreddits: ['jokesALT'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(1, $searchResults['hits']);
+        $this->assertCount(1, $searchResults);
 
         // Verify filtering by multiple Subreddits.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             subreddits: ['jokesALT, JOKES'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(2, $searchResults['hits']);
+        $this->assertCount(2, $searchResults);
     }
 
     /**
@@ -111,21 +110,21 @@ class SearchTest extends KernelTestCase
         ]);
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(3, $searchResults['hits']);
+        $this->assertCount(3, $searchResults);
 
         // Verify filtering by one Flair Text.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             flairTexts: ['GrEAT Dad joke'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(1, $searchResults['hits']);
+        $this->assertCount(1, $searchResults);
 
         // Verify no results filtering by non-existent Flair Texts.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(0, $searchResults['hits']);
+        $this->assertCount(0, $searchResults);
     }
 
     public function tearDown(): void

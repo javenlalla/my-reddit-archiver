@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\EventListener;
 
 use App\Entity\Content;
-use App\Service\Typesense\Search;
+use App\Service\Search;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Http\Client\Exception;
 use Typesense\Exceptions\TypesenseClientError;

@@ -3,13 +3,11 @@ declare(strict_types=1);
 
 namespace App\Controller\API;
 
-use App\Service\Typesense\Search;
-use Http\Client\Exception;
+use App\Service\Search;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Typesense\Exceptions\TypesenseClientError;
 
 #[Route('/api', name: 'api_')]
 class SearchController extends AbstractController
@@ -19,8 +17,6 @@ class SearchController extends AbstractController
      * @param  Search  $searchService
      *
      * @return JsonResponse
-     * @throws Exception
-     * @throws TypesenseClientError
      */
     #[Route('/search', name: 'search')]
     public function getContents(Request $request, Search $searchService): JsonResponse
