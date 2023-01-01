@@ -12,8 +12,3 @@ import './libraries/sb-admin/css/styles.css';
 // start the Stimulus application
 import './bootstrap';
 import './libraries/sb-admin/js/scripts';
-
-// @TODO: Remove demo references.
-import './libraries/sb-admin/js/datatables-simple-demo';
-import './libraries/sb-admin/assets/demo/chart-area-demo';
-import './libraries/sb-admin/assets/demo/chart-bar-demo';
