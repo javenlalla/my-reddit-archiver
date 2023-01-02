@@ -32,6 +32,7 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
     {
+        $contents = [];
         $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
         foreach ($searchResults['hits'] as $hit) {
             $contentId = (int) $hit['document']['id'];

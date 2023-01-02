@@ -148,6 +148,15 @@
                                     <div class="form-error">
                                         {{ form_errors(searchForm.subreddits) }}
                                     </div>
+
+                                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.flairTexts) }}
+                                    {{ form_widget(searchForm.flairTexts) }}
+
+                                    <small>{{ form_help(searchForm.flairTexts) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(searchForm.flairTexts) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

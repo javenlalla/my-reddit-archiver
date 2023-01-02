@@ -28,9 +28,17 @@ class SearchForm extends AbstractType
             ])
             ->add('subreddits', ChoiceType::class, [
                 'placeholder' => 'Sub-Reddit',
-                'choices' => $this->getSubredditsChoices(),
+                'choices' => $this->getSubredditChoices(),
                 'attr' => [
                     'data-search-posts-target' => 'subreddit',
+                    'data-action' => 'input->search-posts#execSearch',
+                ]
+            ])
+            ->add('flairTexts', ChoiceType::class, [
+                'placeholder' => 'Flair Text',
+                'choices' => $this->getFlairTextChoices(),
+                'attr' => [
+                    'data-search-posts-target' => 'flairText',
                     'data-action' => 'input->search-posts#execSearch',
                 ]
             ])
@@ -44,7 +52,7 @@ class SearchForm extends AbstractType
      *
      * @return array
      */
-    private function getSubredditsChoices(): array
+    private function getSubredditChoices(): array
     {
         $subredditsData = $this->postRepository->findAllSubreddits();
 
@@ -55,5 +63,24 @@ class SearchForm extends AbstractType
         }
 
         return $subreddits;
+    }
+
+    /**
+     * Retrieve the list of Flair Texts to be used as choices in the Flair Text
+     * Search field.
+     *
+     * @return array
+     */
+    private function getFlairTextChoices(): array
+    {
+        $flairTextsData = $this->postRepository->findAllFlairTexts();
+
+        $flairTexts = [];
+        foreach ($flairTextsData as $flairTextData) {
+            $flairText = $flairTextData['flairText'];
+            $flairTexts[$flairText] = $flairText;
+        }
+
+        return $flairTexts;
     }
 }

@@ -6,7 +6,7 @@ export default class extends Controller {
         endpoint: String
     }
 
-    static targets = ['query', 'subreddit']
+    static targets = ['query', 'subreddit', 'flairText']
 
     connect() {
         this.doSearch()
@@ -21,6 +21,10 @@ export default class extends Controller {
 
         if (this.subredditTarget.value !== '') {
             endpoint += '&subreddits=' + this.subredditTarget.value;
+        }
+
+        if (this.flairTextTarget.value !== '') {
+            endpoint += '&flairTexts=' + this.flairTextTarget.value;
         }
 
         fetch(endpoint)

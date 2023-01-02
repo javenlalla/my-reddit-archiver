@@ -49,7 +49,23 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.subreddit')
             ->getQuery()
             ->getResult()
-            ;
+        ;
+    }
+
+    /**
+     * Execute a query to retrieve all unique Flair Texts associated to Posts.
+     *
+     * @return array
+     */
+    public function findAllFlairTexts(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.flairText')
+            ->distinct()
+            ->orderBy('p.flairText')
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     public function add(Post $entity, bool $flush = false): void
