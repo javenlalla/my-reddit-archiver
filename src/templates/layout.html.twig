@@ -123,19 +123,55 @@
                     <h1 class="mt-4">My Reddit Archive</h1>
 
                     <div class="row" {{ stimulus_controller('search-posts') }} data-search-posts-endpoint-value="/search?q=">
-                        <div class="card-body">
-                            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                                <div class="input-group">
-                                    <input class="form-control" type="text" placeholder="Search Posts" aria-label="Search Posts" aria-describedby="btnNavbarSearch" {{ stimulus_target('search-posts', 'query') }} data-action="input->search-posts#execSearch" />
-                                    <button {{ stimulus_action('search-posts', 'execSearch') }} class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                                </div>
-                            </form>
+                        {{ form_start(searchForm) }}
+                        <div class="my-custom-class-for-errors">
+                            {{ form_errors(searchForm) }}
+                        </div>
 
-                            <div id="search-results">
-                                <span>Loading</span>
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-control">
+                                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.query) }}
+                                    {{ form_widget(searchForm.query) }}
+
+                                    <small>{{ form_help(searchForm.query) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(searchForm.query) }}
+                                    </div>
+
+                                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.subreddits) }}
+                                    {{ form_widget(searchForm.subreddits) }}
+
+                                    <small>{{ form_help(searchForm.subreddits) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(searchForm.subreddits) }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        {{ form_end(searchForm) }}
+
+                        <div id="search-results">
+                            <span>Loading</span>
+                        </div>
                     </div>
+
+{#                    <div class="row" {{ stimulus_controller('search-posts') }} data-search-posts-endpoint-value="/search?q=">#}
+{#                        <div class="card-body">#}
+{#                            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">#}
+{#                                <div class="input-group">#}
+{#                                    <input class="form-control" type="text" placeholder="Search Posts" aria-label="Search Posts" aria-describedby="btnNavbarSearch" {{ stimulus_target('search-posts', 'query') }} data-action="input->search-posts#execSearch" />#}
+{#                                    <button {{ stimulus_action('search-posts', 'execSearch') }} class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>#}
+{#                                </div>#}
+{#                            </form>#}
+
+{#                            <div id="search-results">#}
+{#                                <span>Loading</span>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
                 </div>
             </main>
 

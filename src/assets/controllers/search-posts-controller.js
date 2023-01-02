@@ -6,22 +6,25 @@ export default class extends Controller {
         endpoint: String
     }
 
-    static targets = ['query']
+    static targets = ['query', 'subreddit']
+
+    connect() {
+        this.doSearch()
+    }
 
     execSearch() {
-        // console.log(this.queryTarget.value);
         this.doSearch()
     }
 
     doSearch() {
-        const endpoint = this.endpointValue + this.queryTarget.value;
+        let endpoint = this.endpointValue + this.queryTarget.value;
+
+        if (this.subredditTarget.value !== '') {
+            endpoint += '&subreddits=' + this.subredditTarget.value;
+        }
 
         fetch(endpoint)
             .then(response => response.text())
             .then(html => this.element.querySelector("#search-results").innerHTML = html)
-    }
-
-    connect() {
-        this.doSearch()
     }
 }

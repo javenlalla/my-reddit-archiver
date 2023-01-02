@@ -26,7 +26,7 @@ class CommentNormalizer implements NormalizerInterface
             'author' => $comment->getAuthor(),
             'score' => $comment->getScore(),
             'depth' => $comment->getDepth(),
-            'replyCount' => $comment->getReplies()->count(),
+            'reply_count' => $comment->getReplies()->count(),
         ];
 
         $latestCommentAuthorText = $comment->getLatestCommentAuthorText();
@@ -34,8 +34,8 @@ class CommentNormalizer implements NormalizerInterface
         $normalizedData['author_text'] = [
             'created_at' => $latestCommentAuthorText->getCreatedAt(),
             'text' => $latestAuthorText->getText(),
-            'textHtml' => $latestAuthorText->getTextHtml(),
-            'textRawHtml' => $latestAuthorText->getTextRawHtml(),
+            'text_html' => $latestAuthorText->getTextHtml(),
+            'text_raw_html' => $latestAuthorText->getTextRawHtml(),
         ];
 
         return $normalizedData;

@@ -36,6 +36,22 @@ class PostRepository extends ServiceEntityRepository
             ;
     }
 
+    /**
+     * Execute a query to retrieve all unique Subreddits associated to Posts.
+     *
+     * @return array
+     */
+    public function findAllSubreddits(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.subreddit')
+            ->distinct()
+            ->orderBy('p.subreddit')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     public function add(Post $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

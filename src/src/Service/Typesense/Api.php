@@ -63,25 +63,28 @@ class Api
      * Execute a Search against the Contents Collection using the provided query
      * and filter parameters.
      *
-     * @param  string  $searchQuery
+     * @param  string|null  $searchQuery
      * @param  array  $filters
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(string $searchQuery, array $filters = [])
+    public function search(?string $searchQuery, array $filters = [])
     {
         $filterParam = '';
         if (!empty($filters)) {
             $filterParam = implode('&&', $filters);
         }
 
-        return $this->client->collections['contents']->documents->search([
-            'q' => $searchQuery,
-            'query_by' => implode(',', self::SEARCH_FIELDS),
+        $searchParams = [
+            'q' => $searchQuery ?? '*',
             'filter_by' => $filterParam,
-        ]);
+            'query_by' =>implode(',', self::SEARCH_FIELDS),
+            'per_page' => 100,
+        ];
+
+        return $this->client->collections['contents']->documents->search($searchParams);
     }
 
     /**

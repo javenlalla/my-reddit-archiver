@@ -32,21 +32,13 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
     {
-        $contents = [];
-        if (empty($searchQuery)) {
-            $contents = $this->contentRepository->findAll();
-        } else {
-            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
+        $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
+        foreach ($searchResults['hits'] as $hit) {
+            $contentId = (int) $hit['document']['id'];
 
-            if ($searchResults['found'] > 0) {
-                foreach ($searchResults['hits'] as $hit) {
-                    $contentId = (int) $hit['document']['id'];
-
-                    $content = $this->contentRepository->find($contentId);
-                    if ($content instanceof Content) {
-                        $contents[] = $content;
-                    }
-                }
+            $content = $this->contentRepository->find($contentId);
+            if ($content instanceof Content) {
+                $contents[] = $content;
             }
         }
 

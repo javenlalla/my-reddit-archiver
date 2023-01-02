@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Debug;
 
+use App\Form\SearchForm;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,11 @@ class TemplateLayoutController extends AbstractController
     #[Route('/layout', name: 'layout')]
     public function getLayout(): Response
     {
-        return $this->render('layout.html.twig');
+        $searchForm = $this->createForm(SearchForm::class);
+
+        return $this->render('layout.html.twig', [
+            'searchForm' => $searchForm->createView(),
+        ]);
     }
 
     #[Route('/search-results', name: 'search-results')]
