@@ -40,14 +40,18 @@ class Downloader
         }
 
         $assetDownloadPath = $this->getFullPathFromMediaAsset($mediaAsset, $basePath);
-        $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
-        if ($downloadResult === false) {
-            throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
+        // Onl download the asset if it does not already exist locally.
+        if ($this->filesystem->exists($assetDownloadPath) === false) {
+            $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
+            if ($downloadResult === false) {
+                throw new Exception(sprintf('Unable to download media asset `%s` from Post `%s`.', $assetDownloadPath, $mediaAsset->getParentPost()->getTitle()));
+            }
+
+            if (!empty($mediaAsset->getAudioSourceUrl())) {
+                $this->downloadAndMergeVideoAudio($mediaAsset, $assetDownloadPath, $basePath);
+            }
         }
 
-        if (!empty($mediaAsset->getAudioSourceUrl())) {
-            $this->downloadAndMergeVideoAudio($mediaAsset, $assetDownloadPath, $basePath);
-        }
     }
 
     /**
@@ -176,12 +180,15 @@ class Downloader
             throw new Exception(sprintf('Unexpected command output combining Reddit Video and Audio files. Command: %s. Output: %s. Result Code: %d', $cmd, $cmdResult, $resultCode));
         }
 
+        // Rename the combined output to the original video filename.
         $this->filesystem->rename($combinedOutputPath, $videoDownloadPath, true);
     }
 
     /**
      * Core function to download an asset or file from the provided URL to the
      * targeted local download path.
+     *
+     * Note: the asset is only downloaded if it does not already exist locally.
      *
      * @param  string  $sourceUrl
      * @param  string  $targetDownloadPath
@@ -191,9 +198,12 @@ class Downloader
      */
     private function executeDownload(string $sourceUrl, string $targetDownloadPath): void
     {
-        $downloadResult = file_put_contents($targetDownloadPath, file_get_contents($sourceUrl));
-        if ($downloadResult === false) {
-            throw new Exception(sprintf('Unable to download asset `%s` to `%s`.', $sourceUrl, $targetDownloadPath));
+        if ($this->filesystem->exists($targetDownloadPath) === false) {
+            $downloadResult = file_put_contents($targetDownloadPath, file_get_contents($sourceUrl));
+
+            if ($downloadResult === false) {
+                throw new Exception(sprintf('Unable to download asset `%s` to `%s`.', $sourceUrl, $targetDownloadPath));
+            }
         }
     }
 }
