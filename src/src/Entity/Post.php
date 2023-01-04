@@ -27,7 +27,7 @@ class Post
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private $score = 0;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'text')]
     private $url;
 
     #[ORM\Column(type: 'datetime_immutable')]
