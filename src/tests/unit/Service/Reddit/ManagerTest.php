@@ -2,6 +2,7 @@
 
 namespace App\Tests\Service\Reddit;
 
+use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
@@ -105,5 +106,26 @@ class ManagerTest extends KernelTestCase
         // Verify all Comments and Replies count.
         $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
         $this->assertEquals(1344, $allCommentsCount);
+    }
+
+    /**
+     * Some Reddit Post URLs can exceed the 255 `varchar` limit for the current
+     * `url` column in the `post` table. Due to this, the column should be
+     * changed to a `text` column.
+     *
+     * Verify the target Post can be successfully synced after the table update.
+     *
+     * Use-case Post: /r/Futurology/comments/102oo0x/stanford_scientists_warn_that_civilization_as_we/
+     *
+     * @return void
+     */
+    public function testPostUrlLengthFix(): void
+    {
+        $fullRedditId = 't3_102oo0x';
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+
+        // If a Content Entity is returned, the process did not error out
+        // during the sync.
+        $this->assertInstanceOf(Content::class, $content);
     }
 }
