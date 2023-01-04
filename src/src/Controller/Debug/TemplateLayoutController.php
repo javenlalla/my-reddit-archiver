@@ -23,7 +23,7 @@ class TemplateLayoutController extends AbstractController
     {
         $searchForm = $this->createForm(SearchForm::class);
 
-        return $this->render('layout.html.twig', [
+        return $this->render('_sidenav.html.twig', [
             'searchForm' => $searchForm->createView(),
         ]);
     }

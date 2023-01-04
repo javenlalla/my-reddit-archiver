@@ -26,3 +26,8 @@ body {
 .search-result-content__subreddit {
     font-size: 14px;
 }
+
+.main-content {
+    padding-top: 15px;
+    padding-right: 15px;
+}

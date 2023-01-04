@@ -1,0 +1,49 @@
+{% extends 'layout.html.twig' %}
+
+{% block main_content %}
+
+    <div class="row" {{ stimulus_controller('search-posts') }} data-search-posts-endpoint-value="/search?q=">
+        {{ form_start(searchForm) }}
+        <div class="my-custom-class-for-errors">
+            {{ form_errors(searchForm) }}
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="form-control">
+                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.query) }}
+                    {{ form_widget(searchForm.query) }}
+
+                    <small>{{ form_help(searchForm.query) }}</small>
+
+                    <div class="form-error">
+                        {{ form_errors(searchForm.query) }}
+                    </div>
+
+                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.subreddits) }}
+                    {{ form_widget(searchForm.subreddits) }}
+
+                    <small>{{ form_help(searchForm.subreddits) }}</small>
+
+                    <div class="form-error">
+                        {{ form_errors(searchForm.subreddits) }}
+                    </div>
+
+                    <i class="fa fa-calendar"></i> {{ form_label(searchForm.flairTexts) }}
+                    {{ form_widget(searchForm.flairTexts) }}
+
+                    <small>{{ form_help(searchForm.flairTexts) }}</small>
+
+                    <div class="form-error">
+                        {{ form_errors(searchForm.flairTexts) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+
+        <div id="search-results">
+            <span>Loading</span>
+        </div>
+    </div>
+{% endblock %}
