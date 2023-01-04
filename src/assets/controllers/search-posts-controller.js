@@ -17,6 +17,9 @@ export default class extends Controller {
     }
 
     doSearch() {
+        // @TODO: Replace with loading icon.
+        this.element.querySelector("#search-results").innerHTML = "<h6>Loading</h6>";
+
         let endpoint = this.endpointValue + this.queryTarget.value;
 
         if (this.subredditTarget.value !== '') {

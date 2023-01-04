@@ -27,7 +27,7 @@ class SearchForm extends AbstractType
                 ],
             ])
             ->add('subreddits', ChoiceType::class, [
-                'placeholder' => 'Sub-Reddit',
+                'placeholder' => 'Filter By Sub-Reddit',
                 'choices' => $this->getSubredditChoices(),
                 'attr' => [
                     'data-search-posts-target' => 'subreddit',
@@ -35,14 +35,14 @@ class SearchForm extends AbstractType
                 ]
             ])
             ->add('flairTexts', ChoiceType::class, [
-                'placeholder' => 'Flair Text',
+                'placeholder' => 'Filter By Flair',
                 'choices' => $this->getFlairTextChoices(),
                 'attr' => [
                     'data-search-posts-target' => 'flairText',
                     'data-action' => 'input->search-posts#execSearch',
                 ]
             ])
-            ->add('search', SubmitType::class)
+            // ->add('search', SubmitType::class)
         ;
     }
 
@@ -78,7 +78,10 @@ class SearchForm extends AbstractType
         $flairTexts = [];
         foreach ($flairTextsData as $flairTextData) {
             $flairText = $flairTextData['flairText'];
-            $flairTexts[$flairText] = $flairText;
+
+            if (!empty($flairText)) {
+                $flairTexts[$flairText] = $flairText;
+            }
         }
 
         return $flairTexts;
