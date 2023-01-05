@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -6,7 +7,7 @@ use App\Repository\ThumbnailRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ThumbnailRepository::class)]
-class Thumbnail
+class Thumbnail implements AssetInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

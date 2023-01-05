@@ -6,7 +6,7 @@ use App\Repository\MediaAssetRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MediaAssetRepository::class)]
-class MediaAsset
+class MediaAsset implements AssetInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]

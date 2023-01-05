@@ -2,7 +2,7 @@
 
 namespace App\Controller\API;
 
-use App\Serializer\PostNormalizer;
+use App\Normalizer\PostNormalizer;
 use App\Service\Reddit\Manager\Posts;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -5,7 +5,6 @@ namespace App\Normalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
-use App\Serializer\PostNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class ContentNormalizer implements NormalizerInterface
@@ -27,17 +26,18 @@ class ContentNormalizer implements NormalizerInterface
     {
         $content = $object;
         $kind = $content->getKind();
+        $post = $content->getPost();
 
         $normalizedData = [
             'id' => $content->getId(),
             'kind' => [
-                'redditId' => $kind->getRedditKindId(),
+                'reddit_id' => $kind->getRedditKindId(),
                 'name' => $kind->getName(),
             ],
             'comment' => null,
         ];
 
-        $normalizedData['post'] = $this->postNormalizer->normalize($content->getPost());
+        $normalizedData['post'] = $this->postNormalizer->normalize($post);
 
         if ($kind->getRedditKindId() === Kind::KIND_COMMENT) {
             $normalizedData['comment'] = $this->commentNormalizer->normalize($content->getComment());

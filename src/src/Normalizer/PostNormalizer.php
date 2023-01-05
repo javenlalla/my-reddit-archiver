@@ -1,15 +1,19 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Serializer;
+namespace App\Normalizer;
 
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
+use App\Entity\Thumbnail;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly CommentWithRepliesNormalizer $commentNormalizer)
-    {
+    public function __construct(
+        private readonly CommentNormalizer $commentNormalizer,
+        private readonly AssetNormalizer $assetNormalizer,
+    ) {
     }
 
     /**
@@ -32,12 +36,14 @@ class PostNormalizer implements NormalizerInterface
             'score' => $post->getScore(),
             'url' => $post->getUrl(),
             'subreddit' => $post->getSubreddit(),
-            'reddit_post_id' => $post->getRedditId(),
-            'reddit_post_url' => $post->getUrl(),
+            'reddit_url' => $post->getRedditPostUrl(),
             'author' => $post->getAuthor(),
-            'author_text' => [],
-            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+            'author_text' => null,
+            'thumbnail' => null,
+            'media_assets' => [],
+            'comments_count' => $post->getComments()->count(),
             'comments' => [],
+            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
         ];
 
         // @TODO: Move this logic and empty array logic to an Author Text Normalizer.
@@ -50,12 +56,22 @@ class PostNormalizer implements NormalizerInterface
                 'text' => $authorText->getText(),
                 'textHtml' => $authorText->getTextHtml(),
                 'textRawHtml' => $authorText->getTextRawHtml(),
+                'created_at' => $createdAt->format('Y-m-d H:i:s'),
             ];
         }
 
-        // foreach ($post->getTopLevelComments() as $comment) {
-        //     $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
-        // }
+        foreach ($post->getTopLevelComments() as $comment) {
+            $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
+        }
+
+        $thumbnail = $post->getThumbnail();
+        if ($thumbnail instanceof Thumbnail) {
+            $normalizedData['thumbnail'] = $this->assetNormalizer->normalize($thumbnail);
+        }
+
+        foreach ($post->getMediaAssets() as $mediaAsset) {
+            $normalizedData['media_assets'][] = $this->assetNormalizer->normalize($mediaAsset);
+        }
 
         return $normalizedData;
     }
