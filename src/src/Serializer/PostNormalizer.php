@@ -4,11 +4,12 @@ namespace App\Serializer;
 
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
+use App\Normalizer\CommentNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly CommentWithRepliesNormalizer $commentNormalizer)
+    public function __construct(private readonly CommentNormalizer $commentNormalizer)
     {
     }
 
@@ -32,11 +33,11 @@ class PostNormalizer implements NormalizerInterface
             'score' => $post->getScore(),
             'url' => $post->getUrl(),
             'subreddit' => $post->getSubreddit(),
-            'reddit_post_id' => $post->getRedditId(),
-            'reddit_post_url' => $post->getUrl(),
+            'reddit_url' => $post->getRedditPostUrl(),
             'author' => $post->getAuthor(),
-            'author_text' => [],
+            'author_text' => null,
             'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+            'comments_count' => $post->getComments()->count(),
             'comments' => [],
         ];
 
@@ -50,12 +51,13 @@ class PostNormalizer implements NormalizerInterface
                 'text' => $authorText->getText(),
                 'textHtml' => $authorText->getTextHtml(),
                 'textRawHtml' => $authorText->getTextRawHtml(),
+                'created_at' => $createdAt->format('Y-m-d H:i:s'),
             ];
         }
 
-        // foreach ($post->getTopLevelComments() as $comment) {
-        //     $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
-        // }
+        foreach ($post->getTopLevelComments() as $comment) {
+            $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
+        }
 
         return $normalizedData;
     }

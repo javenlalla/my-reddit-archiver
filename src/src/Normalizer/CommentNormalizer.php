@@ -8,7 +8,6 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class CommentNormalizer implements NormalizerInterface
 {
-
     /**
      * @param  Comment  $object
      * @param  string|null  $format
@@ -26,7 +25,8 @@ class CommentNormalizer implements NormalizerInterface
             'author' => $comment->getAuthor(),
             'score' => $comment->getScore(),
             'depth' => $comment->getDepth(),
-            'replyCount' => $comment->getReplies()->count(),
+            'replies_count' => $comment->getReplies()->count(),
+            'replies' => [],
         ];
 
         $latestCommentAuthorText = $comment->getLatestCommentAuthorText();
@@ -37,6 +37,12 @@ class CommentNormalizer implements NormalizerInterface
             'textHtml' => $latestAuthorText->getTextHtml(),
             'textRawHtml' => $latestAuthorText->getTextRawHtml(),
         ];
+
+        foreach ($comment->getReplies() as $reply) {
+            if ($reply instanceof Comment) {
+                $normalizedData['replies'][] = $this->normalize($reply);
+            }
+        }
 
         return $normalizedData;
     }
