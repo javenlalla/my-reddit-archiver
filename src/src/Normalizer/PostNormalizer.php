@@ -1,13 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Serializer;
+namespace App\Normalizer;
 
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\Thumbnail;
-use App\Normalizer\AssetNormalizer;
-use App\Normalizer\CommentNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface

@@ -5,7 +5,6 @@ namespace App\Normalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
-use App\Serializer\PostNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class ContentNormalizer implements NormalizerInterface
