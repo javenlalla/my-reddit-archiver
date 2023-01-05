@@ -67,5 +67,9 @@ class ContentsControllerTest extends WebTestCase
         $comment = $comments[1];
         $this->assertCount(1, $comment['replies']);
         $this->assertCount(1, $comment['replies'][0]['replies']);
+
+        $this->assertNull($post['thumbnail']);
+        $this->assertIsArray($post['media_assets']);
+        $this->assertEmpty($post['media_assets']);
     }
 }

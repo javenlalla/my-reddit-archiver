@@ -1,16 +1,21 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Serializer;
 
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
+use App\Entity\Thumbnail;
+use App\Normalizer\AssetNormalizer;
 use App\Normalizer\CommentNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
 {
-    public function __construct(private readonly CommentNormalizer $commentNormalizer)
-    {
+    public function __construct(
+        private readonly CommentNormalizer $commentNormalizer,
+        private readonly AssetNormalizer $assetNormalizer,
+    ) {
     }
 
     /**
@@ -36,9 +41,11 @@ class PostNormalizer implements NormalizerInterface
             'reddit_url' => $post->getRedditPostUrl(),
             'author' => $post->getAuthor(),
             'author_text' => null,
-            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+            'thumbnail' => null,
+            'media_assets' => [],
             'comments_count' => $post->getComments()->count(),
             'comments' => [],
+            'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
         ];
 
         // @TODO: Move this logic and empty array logic to an Author Text Normalizer.
@@ -57,6 +64,15 @@ class PostNormalizer implements NormalizerInterface
 
         foreach ($post->getTopLevelComments() as $comment) {
             $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
+        }
+
+        $thumbnail = $post->getThumbnail();
+        if ($thumbnail instanceof Thumbnail) {
+            $normalizedData['thumbnail'] = $this->assetNormalizer->normalize($thumbnail);
+        }
+
+        foreach ($post->getMediaAssets() as $mediaAsset) {
+            $normalizedData['media_assets'][] = $this->assetNormalizer->normalize($mediaAsset);
         }
 
         return $normalizedData;
