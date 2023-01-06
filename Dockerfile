@@ -8,6 +8,10 @@ RUN apt update && apt install -y \
     curl \
     git \
     cron \
+    # zip/unzip packages required for Composer in order to install packages.
+    zlib1g-dev \
+    libzip-dev \
+    unzip \
     nginx \
     redis \
     mariadb-client \
@@ -26,6 +30,8 @@ RUN docker-php-ext-install \
 
 RUN pecl install -o -f redis \
     && docker-php-ext-enable redis
+
+RUN docker-php-ext-install zip
 
 # Install Typesense.
 RUN mkdir -p /etc/typesense/typesense-data && \

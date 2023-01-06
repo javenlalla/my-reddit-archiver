@@ -35,6 +35,18 @@
     docker-compose -f docker-compose.development.yml up -d
     ```
 
+5. Install the frontend dependencies:
+
+    ```bash
+    docker exec -it mra-dev yarn install
+    ```
+
+6. Build the frontend UI:
+
+    ```bash
+    docker exec -it mra-dev-fe yarn warn
+    ```
+
 ### Hook Into Containers
 
 Hook into the running container using the following command:

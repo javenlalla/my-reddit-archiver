@@ -8,7 +8,6 @@ services:
       dockerfile: ./development/Dockerfile.dev
     volumes:
       - ./src:/var/www/mra
-      - /var/www/mra/node_modules/
       - /var/www/mra/var/
     working_dir: /var/www/mra
     env_file: .env

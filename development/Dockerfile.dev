@@ -7,6 +7,10 @@ RUN apt update && apt install -y \
     curl \
     git \
     cron \
+    # zip/unzip packages required for Composer in order to install packages.
+    zlib1g-dev \
+    libzip-dev \
+    unzip \
     nginx \
     redis \
     mariadb-client \
@@ -28,6 +32,8 @@ RUN pecl install xdebug \
 
 RUN pecl install -o -f redis \
     && docker-php-ext-enable redis
+
+RUN docker-php-ext-install zip
 
 # Install Typesense.
 RUN mkdir -p /etc/typesense/typesense-data && \
@@ -62,5 +68,10 @@ COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Opinionated terminal styling choice.
 RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
+
+# Install Yarn.
+RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - && apt-get install -y nodejs \
+    && corepack enable \
+    && corepack prepare yarn@stable --activate
 
 ENTRYPOINT ["/entrypoint.sh"]
