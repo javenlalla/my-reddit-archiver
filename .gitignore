@@ -7,7 +7,7 @@ docker-compose.yml
 docker-compose.development.yml
 database-data
 temp
-data/assets
+data/r-media
 data/db
 development/db
 src/.yarn/*
