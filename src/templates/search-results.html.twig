@@ -26,9 +26,11 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-4 col-lg-1">
-                    <img class="img-fluid" src="" />
-                </div>
+                {% if content.post.thumbnail %}
+                    <div class="col-4 col-lg-1">
+                        <img class="img-fluid" src="{{ content.post.thumbnail.path }}" />
+                    </div>
+                {% endif %}
                 <div class="col-8 col-lg-11">
                     {{ content.post.title }}
                 </div>
