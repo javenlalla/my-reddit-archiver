@@ -35,6 +35,11 @@ RUN pecl install -o -f redis \
 
 RUN docker-php-ext-install zip
 
+# Install Yarn.
+RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - && apt-get install -y nodejs \
+    && corepack enable \
+    && corepack prepare yarn@stable --activate
+
 # Install Typesense.
 RUN mkdir -p /etc/typesense/typesense-data && \
     curl -o /etc/typesense/typesense.tar.gz https://dl.typesense.org/releases/0.23.1/typesense-server-0.23.1-linux-amd64.tar.gz && \
@@ -68,10 +73,5 @@ COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Opinionated terminal styling choice.
 RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
-
-# Install Yarn.
-RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - && apt-get install -y nodejs \
-    && corepack enable \
-    && corepack prepare yarn@stable --activate
 
 ENTRYPOINT ["/entrypoint.sh"]

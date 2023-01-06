@@ -33,6 +33,11 @@ RUN pecl install -o -f redis \
 
 RUN docker-php-ext-install zip
 
+# Install Yarn.
+RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - && apt-get install -y nodejs \
+    && corepack enable \
+    && corepack prepare yarn@stable --activate
+
 # Install Typesense.
 RUN mkdir -p /etc/typesense/typesense-data && \
     curl -o /etc/typesense/typesense.tar.gz https://dl.typesense.org/releases/0.23.1/typesense-server-0.23.1-linux-amd64.tar.gz && \
@@ -54,6 +59,9 @@ RUN mkdir /var/www/mra/
 COPY src /var/www/mra
 WORKDIR /var/www/mra
 RUN rm -rf var
+
+RUN yarn install && \
+    yarn encore prod
 
 # Cron setup.
 RUN mkdir /cron-execution
