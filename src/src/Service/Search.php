@@ -10,14 +10,18 @@ use App\Normalizer\ContentNormalizer;
 use App\Repository\ContentRepository;
 use App\Service\Typesense\Api;
 use Http\Client\Exception;
+use Symfony\Contracts\Cache\CacheInterface;
 use Typesense\Exceptions\TypesenseClientError;
 
 class Search
 {
+    const CACHE_KEY_PREFIX = 'search_';
+
     public function __construct(
         private readonly ContentRepository $contentRepository,
         private readonly ContentNormalizer $contentNormalizer,
         private readonly Api $searchApi,
+        private readonly CacheInterface $cache,
     ) {
     }
 
@@ -32,23 +36,27 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
     {
-        $contents = [];
-        $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
-        foreach ($searchResults['hits'] as $hit) {
-            $contentId = (int) $hit['document']['id'];
+        $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
 
-            $content = $this->contentRepository->find($contentId);
-            if ($content instanceof Content) {
-                $contents[] = $content;
+        return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
+            $contents = [];
+            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
+            foreach ($searchResults['hits'] as $hit) {
+                $contentId = (int) $hit['document']['id'];
+
+                $content = $this->contentRepository->find($contentId);
+                if ($content instanceof Content) {
+                    $contents[] = $content;
+                }
             }
-        }
 
-        $contentsNormalized = [];
-        foreach ($contents as $content) {
-            $contentsNormalized[] = $this->contentNormalizer->normalize($content);
-        }
+            $contentsNormalized = [];
+            foreach ($contents as $content) {
+                $contentsNormalized[] = $this->contentNormalizer->normalize($content);
+            }
 
-        return $contentsNormalized;
+            return $contentsNormalized;
+        });
     }
 
     /**
@@ -117,5 +125,36 @@ class Search
         }
 
         return $this->searchApi->search($searchQuery, $filters);
+    }
+
+    /**
+     * Generate a Cache key specific to the provided Search parameters and
+     * filters.
+     *
+     * @param  string|null  $searchQuery
+     * @param  array  $subreddits
+     * @param  array  $flairTexts
+     *
+     * @return string
+     */
+    private function generateSearchCacheKey(?string $searchQuery, array $subreddits = [], array $flairTexts = []): string
+    {
+        $key = self::CACHE_KEY_PREFIX;
+
+        if (!empty($searchQuery)) {
+            $key .= substr(md5($searchQuery), 0, 6);
+        }
+
+        if (!empty($subreddits)) {
+            $subredditsString = implode(',', $subreddits);
+            $key .= substr(md5($subredditsString), 0, 6);
+        }
+
+        if (!empty($flairTexts)) {
+            $flairTextsString = implode(',', $flairTexts);
+            $key .= substr(md5($flairTextsString), 0, 6);
+        }
+
+        return $key;
     }
 }
