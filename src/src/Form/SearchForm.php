@@ -7,13 +7,15 @@ use App\Repository\PostRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 class SearchForm extends AbstractType
 {
-    public function __construct(private readonly PostRepository $postRepository)
-    {
+    public function __construct(
+        private readonly PostRepository $postRepository,
+        private readonly RouterInterface $router,
+    ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -25,6 +27,7 @@ class SearchForm extends AbstractType
                     'data-search-posts-target' => 'query',
                     'data-action' => 'input->search-posts#execSearch',
                 ],
+                'required' => false,
             ])
             ->add('subreddits', ChoiceType::class, [
                 'placeholder' => 'Filter By Sub-Reddit',
@@ -32,7 +35,8 @@ class SearchForm extends AbstractType
                 'attr' => [
                     'data-search-posts-target' => 'subreddit',
                     'data-action' => 'input->search-posts#execSearch',
-                ]
+                ],
+                'required' => false,
             ])
             ->add('flairTexts', ChoiceType::class, [
                 'placeholder' => 'Filter By Flair',
@@ -40,8 +44,10 @@ class SearchForm extends AbstractType
                 'attr' => [
                     'data-search-posts-target' => 'flairText',
                     'data-action' => 'input->search-posts#execSearch',
-                ]
+                ],
+                'required' => false,
             ])
+            ->setAction($this->router->generate('search-form'))
             // ->add('search', SubmitType::class)
         ;
     }

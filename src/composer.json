@@ -25,6 +25,7 @@
         "symfony/runtime": "6.1.*",
         "symfony/serializer": "6.1.*",
         "symfony/twig-bundle": "6.1.*",
+        "symfony/ux-twig-component": "^2.6",
         "symfony/webpack-encore-bundle": "^1.16",
         "symfony/yaml": "6.1.*",
         "typesense/typesense-php": "^4.8"

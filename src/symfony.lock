@@ -190,6 +190,9 @@
             "templates/base.html.twig"
         ]
     },
+    "symfony/ux-twig-component": {
+        "version": "v2.6.1"
+    },
     "symfony/webpack-encore-bundle": {
         "version": "1.16",
         "recipe": {

@@ -1,0 +1,7 @@
+{% extends 'layout.html.twig' %}
+
+{% block main_content %}
+
+    {{ component('archive_listing', {contents: searchResults, searchForm: searchForm}) }}
+
+{% endblock %}

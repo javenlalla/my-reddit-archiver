@@ -8,10 +8,6 @@ export default class extends Controller {
 
     static targets = ['query', 'subreddit', 'flairText']
 
-    connect() {
-        this.doSearch()
-    }
-
     execSearch() {
         this.doSearch()
     }
