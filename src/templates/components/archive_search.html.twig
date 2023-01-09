@@ -50,13 +50,12 @@
             <div id="{{ content.id }}" class="search-result-content container">
                 <div class="row">
                     <div class="col-12 search-result-content__subreddit">
-                        r/{{ content.post.subreddit }}
+                        r/{{ content.post.subreddit }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-8 col-lg-11">
-                        {{ content.post.title }}
-                        Comment | {{ content.comment.latestCommentAuthorText.authorText.text }}
+                        {{ content.comment.latestCommentAuthorText.authorText.text }}
                     </div>
                 </div>
                 <div class="row">
