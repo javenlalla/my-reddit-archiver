@@ -1,5 +1,4 @@
 <div {{ attributes }}>
-{#    <input type="search" data-model="query"/>#}
 
     {{ form_start(computed.searchForm) }}
     <div class="my-custom-class-for-errors">
@@ -62,7 +61,7 @@
                 </div>
                 <div class="row">
                     <div class="col-8 offset-4 col-lg-11 offset-lg-1">
-                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> 400 Comments
+                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments_count }} Comments
                     </div>
                 </div>
             </div>
@@ -85,17 +84,11 @@
                 </div>
                 <div class="row">
                     <div class="col-8 offset-4 col-lg-11 offset-lg-1">
-                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> 400 Comments
+                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments_count }} Comments
                     </div>
                 </div>
             </div>
         {% endif %}
     {% endfor %}
-
-{#    <ul>#}
-{#        {% for post in this.posts %}#}
-{#            <li>{{ post.title }}</li>#}
-{#        {% endfor %}#}
-{#    </ul>#}
 
 </div>
