@@ -56,12 +56,12 @@
                 <div class="row">
                     <div class="col-8 col-lg-11">
                         {{ content.post.title }}
-                        Comment | {{ content.comment.author_text.text }}
+                        Comment | {{ content.comment.latestCommentAuthorText.authorText.text }}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-8 offset-4 col-lg-11 offset-lg-1">
-                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments_count }} Comments
+                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments.count }} Comments
                     </div>
                 </div>
             </div>
@@ -75,7 +75,9 @@
                 <div class="row">
                     {% if content.post.thumbnail %}
                         <div class="col-4 col-lg-1">
-                            <img class="img-fluid" src="{{ content.post.thumbnail.path }}" />
+                            {{ component('asset_render', {
+                                asset: content.post.thumbnail
+                            }) }}
                         </div>
                     {% endif %}
                     <div class="col-8 col-lg-11">
@@ -84,7 +86,7 @@
                 </div>
                 <div class="row">
                     <div class="col-8 offset-4 col-lg-11 offset-lg-1">
-                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments_count }} Comments
+                        {{ content.post.score }} <i class="fa-regular fa-comment"></i> {{ content.post.comments.count }} Comments
                     </div>
                 </div>
             </div>

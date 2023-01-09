@@ -36,9 +36,9 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
     {
-        $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
+        // $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
 
-        return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
+        // return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
             $contents = [];
             $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
             foreach ($searchResults['hits'] as $hit) {
@@ -50,13 +50,13 @@ class Search
                 }
             }
 
-            $contentsNormalized = [];
-            foreach ($contents as $content) {
-                $contentsNormalized[] = $this->contentNormalizer->normalize($content);
-            }
+            // $contentsNormalized = [];
+            // foreach ($contents as $content) {
+            //     $contentsNormalized[] = $this->contentNormalizer->normalize($content);
+            // }
 
-            return $contentsNormalized;
-        });
+            return $contents;
+        // });
     }
 
     /**
