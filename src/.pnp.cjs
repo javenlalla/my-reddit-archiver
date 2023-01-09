@@ -32,6 +32,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:7.20.2"],\
             ["@hotwired/stimulus", "npm:3.2.1"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.1"],\
+            ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.2.0"],\
             ["core-js", "npm:3.27.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\
@@ -2409,6 +2410,29 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["acorn", "npm:8.8.1"],\
             ["loader-utils", "npm:2.0.4"],\
             ["schema-utils", "npm:3.1.1"]\
+          ],\
+          "packagePeers": [\
+            "@hotwired/stimulus",\
+            "@types/hotwired__stimulus"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@symfony/ux-live-component", [\
+        ["file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/cache/@symfony-ux-live-component-file-334bb8d511-118e38d39c.zip/node_modules/@symfony/ux-live-component/",\
+          "packageDependencies": [\
+            ["@symfony/ux-live-component", "file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/__virtual__/@symfony-ux-live-component-virtual-9e7c6e8746/0/cache/@symfony-ux-live-component-file-334bb8d511-118e38d39c.zip/node_modules/@symfony/ux-live-component/",\
+          "packageDependencies": [\
+            ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@hotwired/stimulus", "npm:3.2.1"],\
+            ["@types/hotwired__stimulus", null],\
+            ["morphdom", "npm:2.6.1"]\
           ],\
           "packagePeers": [\
             "@hotwired/stimulus",\
@@ -6210,6 +6234,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["morphdom", [\
+        ["npm:2.6.1", {\
+          "packageLocation": "./.yarn/cache/morphdom-npm-2.6.1-c979a9ec32-8930281b27.zip/node_modules/morphdom/",\
+          "packageDependencies": [\
+            ["morphdom", "npm:2.6.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["ms", [\
         ["npm:2.0.0", {\
           "packageLocation": "./.yarn/cache/ms-npm-2.0.0-9e1101a471-0e6a22b8b7.zip/node_modules/ms/",\
@@ -7791,6 +7824,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:7.20.2"],\
             ["@hotwired/stimulus", "npm:3.2.1"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.1"],\
+            ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.2.0"],\
             ["core-js", "npm:3.27.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\

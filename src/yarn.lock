@@ -1432,6 +1432,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets::locator=root-workspace-0b6124%40workspace%3A.":
+  version: 1.0.0
+  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."
+  dependencies:
+    morphdom: ^2.6.1
+  peerDependencies:
+    "@hotwired/stimulus": ^3.0.0
+  checksum: 118e38d39cf021482d171d5aa538bec98c1138d058bff41885a3872ea7945a85c81416e3c37af5bad0956b95604a13964cefaa04968dbfb44d37d3d5eea1eabd
+  languageName: node
+  linkType: hard
+
 "@symfony/webpack-encore@npm:^4.0.0":
   version: 4.2.0
   resolution: "@symfony/webpack-encore@npm:4.2.0"
@@ -4517,6 +4528,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"morphdom@npm:^2.6.1":
+  version: 2.6.1
+  resolution: "morphdom@npm:2.6.1"
+  checksum: 8930281b27df2c918a168872a650931d92ac728b9177ed6d74779acf40a4bf6a1c62482a267496a1007f9658d0c6a4125e7080ec1194c6b937ff55f903235ad0
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -5626,6 +5644,7 @@ __metadata:
     "@babel/preset-env": ^7.16.0
     "@hotwired/stimulus": ^3.0.0
     "@symfony/stimulus-bridge": ^3.2.0
+    "@symfony/ux-live-component": "file:vendor/symfony/ux-live-component/assets"
     "@symfony/webpack-encore": ^4.0.0
     core-js: ^3.23.0
     regenerator-runtime: ^0.13.9

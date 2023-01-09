@@ -66,4 +66,10 @@ class TemplateLayoutController extends AbstractController
             'posts' => $filteredPosts,
         ]);
     }
+
+    #[Route('/live-component', name: 'live-component')]
+    public function getLiveComponent(): Response
+    {
+        return $this->render('live-component.html.twig');
+    }
 }

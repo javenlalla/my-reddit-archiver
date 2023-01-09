@@ -24,8 +24,9 @@ class SearchForm extends AbstractType
             ->add('query', SearchType::class, [
                 'attr' => [
                     'placeholder' => 'Search Archive',
-                    'data-search-posts-target' => 'query',
-                    'data-action' => 'input->search-posts#execSearch',
+                    'data-model' => 'query',
+                    // 'data-search-posts-target' => 'query',
+                    // 'data-action' => 'input->search-posts#execSearch',
                 ],
                 'required' => false,
             ])
@@ -33,8 +34,9 @@ class SearchForm extends AbstractType
                 'placeholder' => 'Filter By Sub-Reddit',
                 'choices' => $this->getSubredditChoices(),
                 'attr' => [
-                    'data-search-posts-target' => 'subreddit',
-                    'data-action' => 'input->search-posts#execSearch',
+                    'data-model' => 'subreddit',
+                    // 'data-search-posts-target' => 'subreddit',
+                    // 'data-action' => 'input->search-posts#execSearch',
                 ],
                 'required' => false,
             ])
@@ -42,8 +44,9 @@ class SearchForm extends AbstractType
                 'placeholder' => 'Filter By Flair',
                 'choices' => $this->getFlairTextChoices(),
                 'attr' => [
-                    'data-search-posts-target' => 'flairText',
-                    'data-action' => 'input->search-posts#execSearch',
+                    'data-model' => 'flairText',
+                    // 'data-search-posts-target' => 'flairText',
+                    // 'data-action' => 'input->search-posts#execSearch',
                 ],
                 'required' => false,
             ])
