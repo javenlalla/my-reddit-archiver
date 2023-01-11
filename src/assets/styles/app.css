@@ -1,6 +1,18 @@
 .search-result-content {
+    border: thin gray solid;
+    border-radius: 0.25em;
+    padding: 5px 15px;
+    background-color: white;
+    margin-bottom: 10px;
+}
+
+.search-result-content__header {
     border-bottom: thin gray solid;
-    padding: 10px;
+    font-size: 10px;
+}
+
+.font-size--14 {
+    font-size: 14px;
 }
 
 .font-size--12 {
@@ -19,13 +31,10 @@
     width: 100%;
 }
 
-.search-result-content__subreddit {
-    font-size: 10px;
-}
-
 .main-content {
     padding-top: 15px;
     padding-right: 15px;
+    background-color: #343a40;
 }
 
 .search-form {
