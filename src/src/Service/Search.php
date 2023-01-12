@@ -31,16 +31,19 @@ class Search
      * @param  string|null  $searchQuery
      * @param  array  $subreddits  Array of Subreddits to filter results by.
      * @param  array  $flairTexts  Array of Flair Texts to filter results by.
+     * @param  array  $tags
      *
      * @return array
+     * @throws Exception
+     * @throws TypesenseClientError
      */
-    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
+    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = []): array
     {
         // $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
 
         // return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
             $contents = [];
-            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts);
+            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts, $tags);
             foreach ($searchResults['hits'] as $hit) {
                 $contentId = (int) $hit['document']['id'];
 
@@ -80,6 +83,7 @@ class Search
             'subreddit' => $post->getSubreddit(),
             'postText' => '',
             'flairText' => '',
+            'tags' => [],
             'commentText' => '',
         ];
 
@@ -98,6 +102,13 @@ class Search
             $document['commentText'] = $latestCommentAuthorText->getAuthorText()->getText();
         }
 
+        $tags = $content->getTags();
+        if ($tags->count() > 0) {
+            foreach ($tags as $tag) {
+                $document['tags'][] = $tag->getName();
+            }
+        }
+
         $response = $this->searchApi->indexDocument($document);
     }
 
@@ -108,12 +119,13 @@ class Search
      * @param  string|null  $searchQuery
      * @param  array  $subreddits
      * @param  array  $flairTexts
+     * @param  array  $tags
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    private function executeSearch(?string $searchQuery, array $subreddits = [], array $flairTexts = []): array
+    private function executeSearch(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = []): array
     {
         $filters = [];
         if (!empty($subreddits)) {
@@ -122,6 +134,10 @@ class Search
 
         if (!empty($flairTexts)) {
             $filters[] = sprintf('flairText:[%s]', implode(',', $flairTexts));
+        }
+
+        if (!empty($tags)) {
+            $filters[] = sprintf('tags:[%s]', implode(',', $tags));
         }
 
         return $this->searchApi->search($searchQuery, $filters);

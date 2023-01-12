@@ -36,6 +36,10 @@ class Contents
             [
                 'name' => 'flairText',
                 'type' => 'string',
+            ],
+            [
+                'name' => 'tags',
+                'type' => 'string[]',
             ]
         ],
     ];

@@ -1,9 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Tests\Service\Typesense;
+namespace App\Tests\unit\Service\Typesense;
 
+use App\Entity\Tag;
+use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Repository\TagRepository;
 use App\Service\Search;
 use App\Service\Typesense\Collection\Contents;
 use Http\Client\Exception;
@@ -18,6 +21,10 @@ class SearchTest extends KernelTestCase
 
     private PostRepository $postRepository;
 
+    private TagRepository $tagRepository;
+
+    private ContentRepository $contentRepository;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -26,6 +33,8 @@ class SearchTest extends KernelTestCase
         $container = static::getContainer();
         $this->searchService = $container->get(Search::class);
         $this->postRepository = $container->get(PostRepository::class);
+        $this->tagRepository = $container->get(TagRepository::class);
+        $this->contentRepository = $container->get(ContentRepository::class);
 
         $this->cleanupDocuments();
     }
@@ -123,6 +132,79 @@ class SearchTest extends KernelTestCase
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(0, $searchResults);
+    }
+
+    /**
+     * Verify Search results can be filtered by Tags.
+     *
+     * @return void
+     */
+    public function testSearchWithTags()
+    {
+        $searchQuery = 'disclosure';
+        $this->indexContents([
+            ['kind' => 'post', 'redditId' => 'x00002'],
+            ['kind' => 'post', 'redditId' => 'x00003'],
+            ['kind' => 'post', 'redditId' => 'x00004'],
+        ]);
+
+        $funnyTag = new Tag();
+        $funnyTag->setName('funny');
+        $this->tagRepository->add($funnyTag, true);
+
+        $hilariousTag = new Tag();
+        $hilariousTag->setName('HilarioUS');
+        $this->tagRepository->add($hilariousTag, true);
+
+        $seriousTag = new Tag();
+        $seriousTag->setName('Really SERious');
+        $this->tagRepository->add($seriousTag, true);
+
+        $post = $this->postRepository->findOneBy(['redditId' => 'x00002']);
+        $content = $post->getContent();
+        $content->addTag($funnyTag);
+        $this->contentRepository->add($content, true);
+
+        $post = $this->postRepository->findOneBy(['redditId' => 'x00003']);
+        $content = $post->getContent();
+        $content->addTag($funnyTag);
+        $content->addTag($hilariousTag);
+        $this->contentRepository->add($content, true);
+
+        $post = $this->postRepository->findOneBy(['redditId' => 'x00004']);
+        $content = $post->getContent();
+        $content->addTag($funnyTag);
+        $content->addTag($hilariousTag);
+        $content->addTag($seriousTag);
+        $this->contentRepository->add($content, true);
+
+        $searchResults = $this->searchService->search($searchQuery);
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            tags: ['hilarious', 'SERIOUS'] // Intentionally use different cases to verify results still surface.
+        );
+        $this->assertCount(2, $searchResults);
+
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            tags: ['funny']
+        );
+        $this->assertCount(3, $searchResults);
+
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            tags: ['serIOUS']
+        );
+        $this->assertCount(1, $searchResults);
+
+        // Verify no results filtering by non-existent Tags.
+        $searchResults = $this->searchService->search(
+            searchQuery: $searchQuery,
+            tags: ['Not Funny']
         );
         $this->assertCount(0, $searchResults);
     }
