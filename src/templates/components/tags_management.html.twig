@@ -1,0 +1,60 @@
+<div {{ attributes }}>
+
+    <div class="row">
+        <div class="col-lg-6">
+            {{ form_start(form) }}
+            <div class="my-custom-class-for-errors">
+                {{ form_errors(form) }}
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="search-form form-control mb-3">
+                        <div class="row">
+                            <div>
+                                {{ form_widget(form.name) }}
+
+                                <small>{{ form_help(form.name) }}</small>
+
+                                <div class="form-error">
+                                    {{ form_errors(form.name) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="search-result-content">
+                {% if this.tags %}
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Tag</th>
+                            <th scope="col">Number of Contents</th>
+                            <th scope="col">Manage</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tag in this.tags %}
+                            <tr>
+                                <th scope="row">{{ tag.name }}</th>
+                                <td>{{ tag.contents.count }}</td>
+                                <td><i class="fa-solid fa-pen-to-square"></i></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <h4>No Tags exist.</h4>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -6,8 +6,11 @@ use App\Repository\TagRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TagRepository::class)]
+#[UniqueEntity(fields: ['name'], message: 'Tag Name must be unique.')]
 class Tag
 {
     #[ORM\Id]
@@ -16,6 +19,7 @@ class Tag
     private $id;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank]
     private $name;
 
     #[ORM\ManyToMany(targetEntity: Content::class, mappedBy: 'tags')]
