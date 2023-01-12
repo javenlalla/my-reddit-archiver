@@ -23,7 +23,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-sm-6 mt-3">
+                            <div class="col-sm-4 mt-3">
                                 {{ form_widget(computed.searchForm.subreddits) }}
 
                                 <small>{{ form_help(computed.searchForm.subreddits) }}</small>
@@ -32,13 +32,22 @@
                                     {{ form_errors(computed.searchForm.subreddits) }}
                                 </div>
                             </div>
-                            <div class="col-sm-6 mt-3">
+                            <div class="col-sm-4 mt-3">
                                 {{ form_widget(computed.searchForm.flairTexts) }}
 
                                 <small>{{ form_help(computed.searchForm.flairTexts) }}</small>
 
                                 <div class="form-error">
                                     {{ form_errors(computed.searchForm.flairTexts) }}
+                                </div>
+                            </div>
+                            <div class="col-sm-4 mt-3">
+                                {{ form_widget(computed.searchForm.tags) }}
+
+                                <small>{{ form_help(computed.searchForm.tags) }}</small>
+
+                                <div class="form-error">
+                                    {{ form_errors(computed.searchForm.tags) }}
                                 </div>
                             </div>
                         </div>

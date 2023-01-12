@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Entity\Tag;
 use App\Repository\PostRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
@@ -45,6 +47,18 @@ class SearchForm extends AbstractType
                 'choices' => $this->getFlairTextChoices(),
                 'attr' => [
                     'data-model' => 'flairText',
+                    // 'data-search-posts-target' => 'flairText',
+                    // 'data-action' => 'input->search-posts#execSearch',
+                ],
+                'required' => false,
+            ])
+            ->add('tags', EntityType::class, [
+                'placeholder' => 'Filter By Tag',
+                'class' => Tag::class,
+                'choice_label' => 'name',
+                // 'choices' => $this->getFlairTextChoices(),
+                'attr' => [
+                    'data-model' => 'tag',
                     // 'data-search-posts-target' => 'flairText',
                     // 'data-action' => 'input->search-posts#execSearch',
                 ],

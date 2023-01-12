@@ -25,6 +25,9 @@ class ArchiveSearchComponent extends AbstractController
     #[LiveProp(writable: true)]
     public string $flairText = '';
 
+    #[LiveProp(writable: true)]
+    public string $tag = '';
+
     public function __construct(private readonly Search $searchService)
     {
     }
@@ -46,6 +49,11 @@ class ArchiveSearchComponent extends AbstractController
             $flairText[] = $this->flairText;
         }
 
-        return $this->searchService->search($this->query, $subreddit, $flairText);
+        $tag = [];
+        if (!empty($this->tag)) {
+            $tag[] = $this->tag;
+        }
+
+        return $this->searchService->search($this->query, $subreddit, $flairText, $tag);
     }
 }
