@@ -18,7 +18,7 @@ class Tag
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, unique: true)]
     #[Assert\NotBlank]
     private $name;
 
