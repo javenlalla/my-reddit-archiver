@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Tests\Service\Reddit\Media;
+namespace App\Tests\unit\Service\Reddit\Media;
 
 use App\Entity\Content;
 use App\Entity\Kind;
@@ -128,10 +129,10 @@ class DownloaderTest extends KernelTestCase
                 'redditId' => 'utsmkw',
                 'assets' => [
                     [
-                        'sourceUrl' => 'https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&s=7cab4910712115bb273171653cc754b9077c1455',
-                        'filename' => '0a6f67fe20592b9c659e7deee5efe877.jpg',
-                        'dirOne' => '0',
-                        'dirTwo' => 'a6',
+                        'sourceUrl' => 'https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&v=enabled&s=8a5a16f886e24f206b0dbea9cc0e5a6cd25ef018',
+                        'filename' => '4c1777c271523e2b78cf5f4f6ebda336.jpg',
+                        'dirOne' => '4',
+                        'dirTwo' => 'c1',
                     ],
                 ],
                 'thumbAsset' => [
@@ -146,10 +147,10 @@ class DownloaderTest extends KernelTestCase
                 'redditId' => 'wgb8wj',
                 'assets' => [
                     [
-                        'sourceUrl' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69',
-                        'filename' => '1aeefb8b0eb681ac3aaa5ee8e4fd2bcb.mp4',
+                        'sourceUrl' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&v=enabled&s=a156b30a7caf0da0c73550b61b0e11e938d92c3b',
+                        'filename' => '1a20e9b5017645a72dedbf8e74b6851b.mp4',
                         'dirOne' => '1',
-                        'dirTwo' => 'ae',
+                        'dirTwo' => 'a2',
                     ],
                 ],
                 'thumbAsset' => [
@@ -211,40 +212,40 @@ class DownloaderTest extends KernelTestCase
                 'redditId' => 'v27nr7',
                 'assets' => [
                     [
-                        'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&s=2f4c3f05a428019b6754ca3c9ab8d3122df14664',
-                        'filename' => 'abe4e7c93ae266ca7d6043c4f8a82c5d.jpg',
+                        'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&v=enabled&s=b0cf2604fd569427de1dafb369f1339d59c4f319',
+                        'filename' => 'e9d5f407c7771dee3694290a14378f19.jpg',
+                        'dirOne' => 'e',
+                        'dirTwo' => '9d',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&v=enabled&s=939b5eb1e639801c2e64daf805da1f00f658b93a',
+                        'filename' => 'a1f009e2b2e71a7432437aa907bcabd8.jpg',
                         'dirOne' => 'a',
-                        'dirTwo' => 'be',
+                        'dirTwo' => '1f',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&s=1aadfb05549500b4a3e61f377a87b6739d7e92e7',
-                        'filename' => 'd3961edaeaef4913869b6d30e4472d1a.jpg',
-                        'dirOne' => 'd',
-                        'dirTwo' => '39',
+                        'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&v=enabled&s=8b73da617e1183de4589b87231d09676c8eeb1db',
+                        'filename' => '0c3f6c913219920f7b4f7b69c557aa1e.jpg',
+                        'dirOne' => '0',
+                        'dirTwo' => 'c3',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&s=d6d30ce00bf261edf76802fd79a455ad08bc0d62',
-                        'filename' => '9676a19295d2317fdd111c28324d438b.jpg',
-                        'dirOne' => '9',
-                        'dirTwo' => '67',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&s=b7442ac83a19780a34ababb9439ef857a672a13f',
-                        'filename' => '4b59d9f517130e6233d5e7982ee97376.jpg',
-                        'dirOne' => '4',
-                        'dirTwo' => 'b5',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&s=0ea1e60464a6905e72f06a70c4e781ec16ac0af6',
-                        'filename' => '901411feb2aaa0f697396cf1c0caadfe.jpg',
-                        'dirOne' => '9',
-                        'dirTwo' => '01',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&s=5914dc1cd03aa246d5a22810bf64098674092691',
-                        'filename' => '7d0f3d94afea696aeaf6b8b6d6e5ee15.jpg',
+                        'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&v=enabled&s=a01a35da6a1d30198e535bff5ee1011a9a905760',
+                        'filename' => '73bc5e0da29fab2d4a1190119eaaeb75.jpg',
                         'dirOne' => '7',
-                        'dirTwo' => 'd0',
+                        'dirTwo' => '3b',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&v=enabled&s=f1f2950bdbaaf9c0120349536da6dfedfd5c4a2f',
+                        'filename' => '4df1192cc7dd1f46c6b53bf6f4bfc45b.jpg',
+                        'dirOne' => '4',
+                        'dirTwo' => 'df',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&v=enabled&s=8c6a551a7cb35c5e42173bc22c6f255c4c07c13c',
+                        'filename' => '792e4e54b0582acce505c21217e638dc.jpg',
+                        'dirOne' => '7',
+                        'dirTwo' => '92',
                     ],
                 ],
                 'thumbAsset' => [
@@ -259,58 +260,58 @@ class DownloaderTest extends KernelTestCase
                 'redditId' => 'wvg39c',
                 'assets' => [
                     [
-                        'sourceUrl' => 'https://preview.redd.it/hzhtz9fydej91.gif?format=mp4&s=43a197453fe9eebf82404c643507ed622f9760e4',
-                        'filename' => '7aa0a5546105afba1c31947897880dba.mp4',
-                        'dirOne' => '7',
-                        'dirTwo' => 'aa',
+                        'sourceUrl' => 'https://preview.redd.it/hzhtz9fydej91.gif?format=mp4&v=enabled&s=47e39b0a722c44d3574d128da260a3c215812f35',
+                        'filename' => '992392223d007c8fe5ea19d23097039a.mp4',
+                        'dirOne' => '9',
+                        'dirTwo' => '92',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/pwhjkwyxdej91.gif?format=mp4&s=25ac9c9a6dc03ad3d7ef36f859c13f5edcde08fb',
-                        'filename' => '6c82276ca3b65eb70fdbe7c149d95023.mp4',
-                        'dirOne' => '6',
-                        'dirTwo' => 'c8',
+                        'sourceUrl' => 'https://preview.redd.it/pwhjkwyxdej91.gif?format=mp4&v=enabled&s=f4d165ed609dd65758ce49f958074d4206a784b5',
+                        'filename' => 'd4c3fb2adbc9b9b6496aff54a3ff4737.mp4',
+                        'dirOne' => 'd',
+                        'dirTwo' => '4c',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/59hsb44ydej91.gif?format=mp4&s=77fff215f5af86ce035b0d05de9ca66649458ebc',
-                        'filename' => 'e0d5057f173251a71ae3319b53c55c7c.mp4',
-                        'dirOne' => 'e',
-                        'dirTwo' => '0d',
+                        'sourceUrl' => 'https://preview.redd.it/59hsb44ydej91.gif?format=mp4&v=enabled&s=c470715029f618028026c0193a99d08ff308c1ec',
+                        'filename' => 'd8daa31157e20ea933a18ff1054f9dd8.mp4',
+                        'dirOne' => 'd',
+                        'dirTwo' => '8d',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/h7tin1jydej91.gif?format=mp4&s=4eb0e10b22e5e6962c2f58bf57e7f78ab8dab98d',
-                        'filename' => '532770974cf94176ab9fccca2c895a17.mp4',
-                        'dirOne' => '5',
-                        'dirTwo' => '32',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/lkve7ervdej91.gif?format=mp4&s=5a76bc4c82dcb15cb9d23dc6f62eb4c65e424598',
-                        'filename' => 'eb7508f732614348dcb4a64dea720824.mp4',
-                        'dirOne' => 'e',
-                        'dirTwo' => 'b7',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/9fy58fazdej91.gif?format=mp4&s=d7f53d9e580e2520acd7a02bd22db1d645249141',
-                        'filename' => 'c955af9f84d1906e8c3766fdd7bc889d.mp4',
-                        'dirOne' => 'c',
-                        'dirTwo' => '95',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/42cnannxdej91.gif?format=mp4&s=7376b9c6327d07dbfbc2b23e903f0a0b8e28e559',
-                        'filename' => 'a9d328a856f6a16f3047f1072ab369a0.mp4',
-                        'dirOne' => 'a',
-                        'dirTwo' => '9d',
-                    ],
-                    [
-                        'sourceUrl' => 'https://preview.redd.it/yvs1hq2zdej91.gif?format=mp4&s=91d6ca9b40ba839f9d16b5f187332646df4047a4',
-                        'filename' => 'ff96a712f2417f1b551bcb80e3093e78.mp4',
+                        'sourceUrl' => 'https://preview.redd.it/h7tin1jydej91.gif?format=mp4&v=enabled&s=bfd0493433e222daa3dd0b3b2636462cd26e9bae',
+                        'filename' => 'fbe9a2e4368c492f2fbf0416b813298a.mp4',
                         'dirOne' => 'f',
-                        'dirTwo' => 'f9',
+                        'dirTwo' => 'be',
                     ],
                     [
-                        'sourceUrl' => 'https://preview.redd.it/6b6pwxvydej91.gif?format=mp4&s=22b28c51afe45f9586f83a2d722522154704b62b',
-                        'filename' => 'e1700a5bc0cd6f102b67b8ad3ead6700.mp4',
-                        'dirOne' => 'e',
-                        'dirTwo' => '17',
+                        'sourceUrl' => 'https://preview.redd.it/6b6pwxvydej91.gif?format=mp4&v=enabled&s=193a375ae0bedbbabaabf4c06704c8f8eba99881',
+                        'filename' => '5f69f51086847029e25567afd0dbed44.mp4',
+                        'dirOne' => '5',
+                        'dirTwo' => 'f6',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/9fy58fazdej91.gif?format=mp4&v=enabled&s=99cdd935ad2a2261aaaefdaf569decfa0456d775',
+                        'filename' => '9eff207f342087373f5fff7679c0549b.mp4',
+                        'dirOne' => '9',
+                        'dirTwo' => 'ef',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/42cnannxdej91.gif?format=mp4&v=enabled&s=eba55f272ad80243afb6397d20cdadcf876214c9',
+                        'filename' => 'd1fe0c2b428e05200b21894f933f8546.mp4',
+                        'dirOne' => 'd',
+                        'dirTwo' => '1f',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/yvs1hq2zdej91.gif?format=mp4&v=enabled&s=8b9984580ee1a575c6aca1d2151a91ac61847afb',
+                        'filename' => '8ef163c1660ca3da2067cfbff8f8a4b2.mp4',
+                        'dirOne' => '8',
+                        'dirTwo' => 'ef',
+                    ],
+                    [
+                        'sourceUrl' => 'https://preview.redd.it/lkve7ervdej91.gif?format=mp4&v=enabled&s=e30ca459633d5724ac22f39eee3b95b8b00e0bce',
+                        'filename' => '2446a5bbd6b9b80358e82fe6d8a19d56.mp4',
+                        'dirOne' => '2',
+                        'dirTwo' => '44',
                     ],
                 ],
                 'thumbAsset' => [
