@@ -34,6 +34,8 @@ class Api
 
     const MORE_CHILDREN_ENDPOINT = 'https://www.reddit.com/api/morechildren/.json?api_type=json&limit_children=false&link_id=t3_%s&children=%s';
 
+    const INFO_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=%s';
+
     const METHOD_GET = 'GET';
 
     const METHOD_POST = 'POST';
@@ -228,6 +230,27 @@ class Api
         return
             $this->executeSimpleCall(self::METHOD_GET, $url)
                 ->toArray();
+    }
+
+    /**
+     * This is an all-purpose call to retrieve information about any Reddit
+     * item (Post, Comment, Subreddit, etc.) using the full Reddit ID.
+     *
+     * @param  string  $redditId Ex: t5_2sdu8
+     *
+     * @return array
+     */
+    public function getRedditItemInfoById(string $redditId): array
+    {
+        $cacheKey = md5('info-'.$redditId);
+
+        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
+            $endpoint = sprintf(self::INFO_ENDPOINT, $redditId);
+
+            return
+                $this->executeSimpleCall(self::METHOD_GET, $endpoint)
+                    ->toArray();
+        });
     }
 
     /**

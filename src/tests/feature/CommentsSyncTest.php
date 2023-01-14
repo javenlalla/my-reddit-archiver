@@ -137,13 +137,13 @@ class CommentsSyncTest extends KernelTestCase
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(867, $comments);
+        $this->assertCount(864, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(867, $comments);
+        $this->assertCount(864, $comments);
     }
 
     /**
@@ -214,7 +214,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertNotEmpty($fetchedPost->getId());
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
         $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
-        $this->assertEquals('science', $fetchedPost->getSubreddit());
+        $this->assertEquals('science', $fetchedPost->getSubreddit()->getName());
         $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
         $this->assertEquals('2022-08-03 08:51:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
 

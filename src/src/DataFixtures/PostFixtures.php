@@ -9,11 +9,13 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
+use App\Entity\Subreddit;
 use App\Entity\Type;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
+use App\Repository\SubredditRepository;
 use App\Repository\TypeRepository;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -25,12 +27,27 @@ class PostFixtures extends Fixture
         private readonly CommentRepository $commentRepository,
         private readonly KindRepository $kindRepository,
         private readonly TypeRepository $typeRepository,
+        private readonly SubredditRepository $subredditRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
     ) {
     }
 
     public function load(ObjectManager $manager): void
     {
+        // Create Subreddits.
+        $subredditsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/subreddits.csv', 'r');
+        while (($subredditRow = fgetcsv($subredditsDataFile)) !== FALSE) {
+            // Skip header row (first row).
+            if ($subredditRow[0] !== 'redditId') {
+                $subreddit = new Subreddit();
+                $subreddit->setRedditId($subredditRow[0]);
+                $subreddit->setName($subredditRow[1]);
+                $subreddit->setCreatedAt(new \DateTimeImmutable());
+
+                $manager->persist($subreddit);
+            }
+        }
+        fclose($subredditsDataFile);
         $manager->flush();
 
         // Create Contents.
@@ -109,13 +126,15 @@ class PostFixtures extends Fixture
         $post->setScore((int) $postRow[4]);
         $post->setUrl($postRow[5]);
         $post->setAuthor($postRow[6]);
-        $post->setSubreddit($postRow[7]);
         $post->setRedditPostUrl($postRow[8]);
         $post->setCreatedAt(new \DateTimeImmutable());
         $post->setFlairText($postRow[11] ?? null);
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);
+
+        $subreddit = $this->subredditRepository->findOneBy(['name' => $postRow[7]]);
+        $post->setSubreddit($subreddit);
 
         if (!empty($postRow[9])) {
             $authorText = new AuthorText();

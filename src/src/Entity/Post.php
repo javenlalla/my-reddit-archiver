@@ -36,9 +36,6 @@ class Post
     #[ORM\Column(type: 'string', length: 25)]
     private $author;
 
-    #[ORM\Column(type: 'string', length: 25)]
-    private $subreddit;
-
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $comments;
 
@@ -69,6 +66,10 @@ class Post
 
     #[ORM\Column(type: 'string', length: 150, nullable: true)]
     private $flairText;
+
+    #[ORM\ManyToOne(targetEntity: Subreddit::class, inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $subreddit;
 
     public function __construct()
     {
@@ -151,18 +152,6 @@ class Post
     public function setAuthor(string $author): self
     {
         $this->author = $author;
-
-        return $this;
-    }
-
-    public function getSubreddit(): ?string
-    {
-        return $this->subreddit;
-    }
-
-    public function setSubreddit(string $subreddit): self
-    {
-        $this->subreddit = $subreddit;
 
         return $this;
     }
@@ -433,5 +422,17 @@ class Post
         }
 
         return null;
+    }
+
+    public function getSubreddit(): ?Subreddit
+    {
+        return $this->subreddit;
+    }
+
+    public function setSubreddit(?Subreddit $subreddit): self
+    {
+        $this->subreddit = $subreddit;
+
+        return $this;
     }
 }

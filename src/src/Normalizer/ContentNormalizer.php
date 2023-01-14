@@ -51,6 +51,6 @@ class ContentNormalizer implements NormalizerInterface
      */
     public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Post;
+        return $data instanceof Content;
     }
 }

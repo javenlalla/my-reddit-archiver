@@ -10,6 +10,7 @@ use App\Entity\MediaAsset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
+use App\Entity\Subreddit;
 use App\Entity\Thumbnail;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
@@ -26,6 +27,7 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly PostRepository $postRepository,
         private readonly PostAwardRepository $postAwardRepository,
         private readonly MediaAssetsDenormalizer $mediaAssetsDenormalizer,
+        private readonly SubredditDenormalizer $subredditDenormalizer,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
@@ -81,11 +83,13 @@ class PostDenormalizer implements DenormalizerInterface
 
         $post->setRedditId($postData['id']);
         $post->setAuthor($postData['author']);
-        $post->setSubreddit($postData['subreddit']);
         $post->setCreatedAt(DateTimeImmutable::createFromFormat('U', (string) $postData['created_utc']));
         $post->setUrl($postData['url']);
         // @TODO: Replace hard-coded URL here.
         $post->setRedditPostUrl('https://www.reddit.com' . $postData['permalink']);
+
+        $subreddit = $this->subredditDenormalizer->denormalize($postData['subreddit_id'], Subreddit::class);
+        $post->setSubreddit($subreddit);
 
         if ($kindRedditId === Kind::KIND_LINK) {
             $type = $this->typeHelper->getContentTypeFromPostData($postData);

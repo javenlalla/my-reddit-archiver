@@ -35,7 +35,7 @@ class PostNormalizer implements NormalizerInterface
             'title' => $post->getTitle(),
             'score' => $post->getScore(),
             'url' => $post->getUrl(),
-            'subreddit' => $post->getSubreddit(),
+            'subreddit' => $post->getSubreddit()->getName(),
             'reddit_url' => $post->getRedditPostUrl(),
             'author' => $post->getAuthor(),
             'author_text' => null,

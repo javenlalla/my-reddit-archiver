@@ -80,7 +80,7 @@ class Search
             'id'            => (string) $content->getId(),
             'title'  => $post->getTitle(),
             'postRedditId' => $post->getRedditId(),
-            'subreddit' => $post->getSubreddit(),
+            'subreddit' => $post->getSubreddit()->getName(),
             'postText' => '',
             'flairText' => '',
             'tags' => [],
