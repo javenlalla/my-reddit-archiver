@@ -36,7 +36,10 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE type (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(20) NOT NULL, display_name VARCHAR(20) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE content_tag (content_id INT NOT NULL, tag_id INT NOT NULL, INDEX IDX_B662E17684A0A3ED (content_id), INDEX IDX_B662E176BAD26311 (tag_id), PRIMARY KEY(content_id, tag_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE tag (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, UNIQUE INDEX UNIQ_389B7835E237E06 (name), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE subreddit (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, name VARCHAR(50) NOT NULL, title LONGTEXT DEFAULT NULL, description LONGTEXT DEFAULT NULL, description_raw_html LONGTEXT DEFAULT NULL, description_html LONGTEXT DEFAULT NULL, public_description LONGTEXT DEFAULT NULL, public_description_raw_html LONGTEXT DEFAULT NULL, public_description_html LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE subreddit (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, name VARCHAR(50) NOT NULL, title LONGTEXT DEFAULT NULL, description LONGTEXT DEFAULT NULL, description_raw_html LONGTEXT DEFAULT NULL, description_html LONGTEXT DEFAULT NULL, public_description LONGTEXT DEFAULT NULL, public_description_raw_html LONGTEXT DEFAULT NULL, public_description_html LONGTEXT DEFAULT NULL, icon_image_asset_id INT DEFAULT NULL, banner_background_image_asset_id INT DEFAULT NULL, banner_image_asset_id INT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_D84B1B124FAE0DCA (icon_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12B854E187 (banner_background_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12D390D58E (banner_image_asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
+        // Asset
+        $this->addSql('CREATE TABLE asset (id INT AUTO_INCREMENT NOT NULL, filename VARCHAR(75) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url LONGTEXT NOT NULL, audio_filename VARCHAR(75) DEFAULT NULL, audio_source_url LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -57,6 +60,9 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE post_author_text ADD CONSTRAINT FK_3324A5372CB7AA0B FOREIGN KEY (author_text_id) REFERENCES author_text (id)');
         $this->addSql('ALTER TABLE post_award ADD CONSTRAINT FK_1D40A2084B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE post_award ADD CONSTRAINT FK_1D40A2083D5282CF FOREIGN KEY (award_id) REFERENCES award (id)');
+        $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B124FAE0DCA FOREIGN KEY (icon_image_asset_id) REFERENCES asset (id)');
+        $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12B854E187 FOREIGN KEY (banner_background_image_asset_id) REFERENCES asset (id)');
+        $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12D390D58E FOREIGN KEY (banner_image_asset_id) REFERENCES asset (id)');
 
         // Insert setup data.
         // Kinds.
@@ -79,6 +85,9 @@ final class Version20221128202003 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE subreddit DROP FOREIGN KEY FK_D84B1B124FAE0DCA');
+        $this->addSql('ALTER TABLE subreddit DROP FOREIGN KEY FK_D84B1B12B854E187');
+        $this->addSql('ALTER TABLE subreddit DROP FOREIGN KEY FK_D84B1B12D390D58E');
         $this->addSql('ALTER TABLE comment_author_text DROP FOREIGN KEY FK_E488EE5A2CB7AA0B');
         $this->addSql('ALTER TABLE post_author_text DROP FOREIGN KEY FK_3324A5372CB7AA0B');
         $this->addSql('ALTER TABLE comment_award DROP FOREIGN KEY FK_23C1B6163D5282CF');
@@ -114,5 +123,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE content_tag');
         $this->addSql('DROP TABLE tag');
         $this->addSql('DROP TABLE subreddit');
+        $this->addSql('DROP TABLE asset');
     }
 }

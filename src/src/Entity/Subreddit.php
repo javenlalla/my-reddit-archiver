@@ -48,6 +48,15 @@ class Subreddit
     #[ORM\OneToMany(mappedBy: 'subreddit', targetEntity: Post::class, orphanRemoval: true)]
     private $posts;
 
+    #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    private $iconImageAsset;
+
+    #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    private $bannerBackgroundImageAsset;
+
+    #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    private $bannerImageAsset;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -204,6 +213,42 @@ class Subreddit
                 $post->setSubreddit(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIconImageAsset(): ?Asset
+    {
+        return $this->iconImageAsset;
+    }
+
+    public function setIconImageAsset(?Asset $iconImageAsset): self
+    {
+        $this->iconImageAsset = $iconImageAsset;
+
+        return $this;
+    }
+
+    public function getBannerBackgroundImageAsset(): ?Asset
+    {
+        return $this->bannerBackgroundImageAsset;
+    }
+
+    public function setBannerBackgroundImageAsset(?Asset $bannerBackgroundImageAsset): self
+    {
+        $this->bannerBackgroundImageAsset = $bannerBackgroundImageAsset;
+
+        return $this;
+    }
+
+    public function getBannerImageAsset(): ?Asset
+    {
+        return $this->bannerImageAsset;
+    }
+
+    public function setBannerImageAsset(?Asset $bannerImageAsset): self
+    {
+        $this->bannerImageAsset = $bannerImageAsset;
 
         return $this;
     }

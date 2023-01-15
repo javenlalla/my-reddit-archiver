@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Tests\unit\Service\Reddit\Media;
 
+use App\Entity\Asset;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\MediaAsset;
@@ -15,6 +16,30 @@ use Symfony\Component\Filesystem\Filesystem;
 class DownloaderTest extends KernelTestCase
 {
     const BASE_PATH_FORMAT = '/var/www/mra/public/r-media/%s/%s/';
+
+    const SUBREDDIT_ICON_IMAGE_ASSET = [
+        'sourceUrl' => 'https://b.thumbs.redditmedia.com/VgpGZUKuANeo3HOjv6t-lZqF31zNAFqTTfdP6q_PYQk.png',
+        'filename' => 'aa7d838e7469d7d325d271459d452ae7.png',
+        'dirOne' => 'a',
+        'dirTwo' => 'a7',
+        'filesize' => 85865,
+    ];
+
+    const SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET = [
+        'sourceUrl' => 'https://styles.redditmedia.com/t5_2sdu8/styles/bannerBackgroundImage_vkavz41901m01.png',
+        'filename' => '963ee12348e5b7300dbff2db9c9ec2f3.png',
+        'dirOne' => '9',
+        'dirTwo' => '63',
+        'filesize' => 2929636,
+    ];
+
+    const SUBREDDIT_BANNER_IMAGE_ASSET = [
+        'sourceUrl' => 'https://b.thumbs.redditmedia.com/wrAra1971jR8b6hTiLEixTqMYyY0Jc5oPpGlky8xZrQ.png',
+        'filename' => '52cb64200009ba810d0af34c324ed678.png',
+        'dirOne' => '5',
+        'dirTwo' => '2c',
+        'filesize' => 1034844,
+    ];
 
     private Manager $manager;
 
@@ -30,6 +55,62 @@ class DownloaderTest extends KernelTestCase
         $this->entityManager = $container->get('doctrine')->getManager();
 
         $this->cleanupAssets();
+    }
+
+    /**
+     * Verify assets associated to a Subreddit, such as its Header Banner Image,
+     * are also persisted and downloaded locally.
+     *
+     * https://www.reddit.com/r/dbz/comments/10bt9qv/rewatching_the_namek_saga/
+     *
+     * @return void
+     */
+    public function testSaveSubredditAssets(): void
+    {
+        $iconImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_ICON_IMAGE_ASSET['dirOne'], self::SUBREDDIT_ICON_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_ICON_IMAGE_ASSET['filename'];
+        $bannerBackgroundImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['filename'];
+        $bannerImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'];
+        foreach ([$iconImageAssetPath, $bannerBackgroundImageAssetPath, $bannerImageAssetPath] as $assetPath) {
+            $this->assertFileDoesNotExist($assetPath);
+        }
+
+        $content = $this->manager->syncContentFromApiByFullRedditId('t3_10bt9qv');
+        $subreddit = $content->getPost()->getSubreddit();
+
+        $this->assertEquals('dbz', $subreddit->getName());
+        $this->assertEquals('t5_2sdu8', $subreddit->getRedditId());
+        $this->assertEquals('Dragon World', $subreddit->getTitle());
+        $this->assertEquals("A subreddit for all things Dragon Ball!\n\ndiscord.gg/dbz", $subreddit->getPublicDescription());
+
+        // Icon Image Asset.
+        $iconImageAsset = $subreddit->getIconImageAsset();
+        $this->assertInstanceOf(Asset::class, $iconImageAsset);
+        $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['sourceUrl'], $iconImageAsset->getSourceUrl());
+        $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['filename'], $iconImageAsset->getFilename());
+        $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['dirOne'], $iconImageAsset->getDirOne());
+        $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['dirTwo'], $iconImageAsset->getDirTwo());
+        $this->assertFileExists($iconImageAssetPath);
+        $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['filesize'], filesize($iconImageAssetPath));
+
+        // Banner Background Image Asset.
+        $bannerBackgroundImageAsset = $subreddit->getBannerBackgroundImageAsset();
+        $this->assertInstanceOf(Asset::class, $bannerBackgroundImageAsset);
+        $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['sourceUrl'], $bannerBackgroundImageAsset->getSourceUrl());
+        $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['filename'], $bannerBackgroundImageAsset->getFilename());
+        $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirOne'], $bannerBackgroundImageAsset->getDirOne());
+        $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirTwo'], $bannerBackgroundImageAsset->getDirTwo());
+        $this->assertFileExists($bannerBackgroundImageAssetPath);
+        $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['filesize'], filesize($bannerBackgroundImageAssetPath));
+
+        // Banner Image Asset.
+        $bannerImageAsset = $subreddit->getBannerImageAsset();
+        $this->assertInstanceOf(Asset::class, $bannerImageAsset);
+        $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['sourceUrl'], $bannerImageAsset->getSourceUrl());
+        $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'], $bannerImageAsset->getFilename());
+        $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['dirOne'], $bannerImageAsset->getDirOne());
+        $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['dirTwo'], $bannerImageAsset->getDirTwo());
+        $this->assertFileExists($bannerImageAssetPath);
+        $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['filesize'], filesize($bannerImageAssetPath));
     }
 
     /**
@@ -449,6 +530,17 @@ class DownloaderTest extends KernelTestCase
 
             $thumbAssetPath= sprintf(self::BASE_PATH_FORMAT, $targetData['thumbAsset']['dirOne'], $targetData['thumbAsset']['dirTwo']) . $targetData['thumbAsset']['filename'];
             $filesystem->remove($thumbAssetPath);
+        }
+
+        $additionalAssets = [
+            self::SUBREDDIT_ICON_IMAGE_ASSET,
+            self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET,
+            self::SUBREDDIT_BANNER_IMAGE_ASSET,
+        ];
+
+        foreach ($additionalAssets as $asset) {
+            $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
+            $filesystem->remove($assetPath);
         }
     }
 }

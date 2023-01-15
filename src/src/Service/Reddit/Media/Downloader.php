@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit\Media;
 
+use App\Entity\Asset;
 use App\Entity\MediaAsset;
 use App\Entity\Thumbnail;
+use App\Service\Reddit\Manager\Assets;
 use Exception;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -16,8 +18,34 @@ class Downloader
 
     public function __construct(
         private readonly string $publicPath,
-        private readonly Filesystem $filesystem
+        private readonly Filesystem $filesystem,
     ) {
+    }
+
+    /**
+     * Core function to download the provided Asset Entity to local.
+     *
+     * @param  Asset  $asset
+     * @param  string  $assetDirectoryPath
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function downloadAsset(Asset $asset, string $assetDirectoryPath): void
+    {
+        try {
+            $this->filesystem->mkdir(Path::normalize($assetDirectoryPath));
+        } catch (IOExceptionInterface $e) {
+            throw new Exception(sprintf('An error occurred while creating assets directory at %s: %s', $e->getPath(), $e->getMessage()));
+        }
+
+        $assetPath = $assetDirectoryPath . '/' . $asset->getFilename();
+        $this->executeDownload($asset->getSourceUrl(), $assetPath);
+
+        // @TODO: Move this to Assets Manager during refactor.
+        if (!empty($asset->getAudioSourceUrl())) {
+            $this->downloadAndMergeVideoAudio($asset, $assetPath, $assetDirectoryPath);
+        }
     }
 
     /**
@@ -40,7 +68,7 @@ class Downloader
         }
 
         $assetDownloadPath = $this->getFullPathFromMediaAsset($mediaAsset, $basePath);
-        // Onl download the asset if it does not already exist locally.
+        // Only download the asset if it does not already exist locally.
         if ($this->filesystem->exists($assetDownloadPath) === false) {
             $downloadResult = file_put_contents($assetDownloadPath, file_get_contents($mediaAsset->getSourceUrl()));
             if ($downloadResult === false) {
@@ -139,17 +167,17 @@ class Downloader
      * Download the Audio file associated to the provided Media Asset and
      * merge it into the Video file.
      *
-     * @param  MediaAsset  $mediaAsset
+     * @param  MediaAsset|Asset  $asset
      * @param  string  $videoDownloadPath
      * @param  string  $basePath
      *
      * @return void
      * @throws Exception
      */
-    private function downloadAndMergeVideoAudio(MediaAsset $mediaAsset, string $videoDownloadPath, string $basePath): void
+    private function downloadAndMergeVideoAudio(MediaAsset|Asset $asset, string $videoDownloadPath, string $basePath): void
     {
-        $audioDownloadPath = $basePath . '/' . $mediaAsset->getAudioFilename();
-        $this->executeDownload($mediaAsset->getAudioSourceUrl(), $audioDownloadPath);
+        $audioDownloadPath = $basePath . '/' . $asset->getAudioFilename();
+        $this->executeDownload($asset->getAudioSourceUrl(), $audioDownloadPath);
 
         $this->mergeVideoAndAudioFiles($basePath, $videoDownloadPath, $audioDownloadPath);
         // Audio file is no longer needed locally once merged into the Video file.

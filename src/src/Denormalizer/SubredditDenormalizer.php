@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Denormalizer;
 
+use App\Entity\Asset;
 use App\Entity\Subreddit;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\SubredditRepository;
@@ -16,6 +17,7 @@ class SubredditDenormalizer implements DenormalizerInterface
         private readonly SubredditRepository $subredditRepository,
         private readonly Api $redditApi,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
+        private readonly AssetDenormalizer $assetDenormalizer,
     ) {
     }
 
@@ -60,7 +62,7 @@ class SubredditDenormalizer implements DenormalizerInterface
         $subreddit = new Subreddit();
         $subreddit->setRedditId($subredditId);
         $subreddit->setName($subredditData['display_name']);
-        $subreddit->setTitle($subredditData['display_name'] ?? null);
+        $subreddit->setTitle($subredditData['title'] ?? null);
         $subreddit->setCreatedAt(DateTimeImmutable::createFromFormat('U', (string) $subredditData['created_utc']));
 
         $subreddit->setDescription($subredditData['description'] ?? null);
@@ -77,6 +79,25 @@ class SubredditDenormalizer implements DenormalizerInterface
 
             $subreddit->setPublicDescriptionRawHtml($publicDescriptionHtml);
             $subreddit->setPublicDescriptionHtml($this->sanitizeHtmlHelper->sanitizeHtml($publicDescriptionHtml));
+        }
+
+        if (!empty($subredditData['icon_img'])) {
+            $iconImageAsset = $this->assetDenormalizer->denormalize($subredditData['icon_img'], Asset::class);
+            $subreddit->setIconImageAsset($iconImageAsset);
+        }
+
+        if (!empty($subredditData['banner_background_image'])) {
+            // The Banner Background Image URL has additional query parameters
+            // that makes the URL inaccessible with a normal GET request. Remove
+            // those parameters to get the base URL of the Asset.
+            $bannerBackgroundImageUrlParts = explode('?', $subredditData['banner_background_image']);
+            $bannerBackgroundAsset = $this->assetDenormalizer->denormalize($bannerBackgroundImageUrlParts[0], Asset::class);
+            $subreddit->setBannerBackgroundImageAsset($bannerBackgroundAsset);
+        }
+
+        if (!empty($subredditData['banner_img'])) {
+            $bannerImageAsset = $this->assetDenormalizer->denormalize($subredditData['banner_img'], Asset::class);
+            $subreddit->setBannerImageAsset($bannerImageAsset);
         }
 
         $this->subredditRepository->add($subreddit, true);
