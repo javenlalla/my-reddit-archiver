@@ -530,9 +530,9 @@ class Manager
             $this->mediaDownloader->downloadMediaAsset($mediaAsset);
         }
 
-        if (!empty($post->getThumbnail())) {
-            $this->mediaDownloader->downloadThumbnail($post->getThumbnail());
-        }
+        // if (!empty($post->getThumbnailAsset())) {
+        //     $this->mediaDownloader->downloadThumbnail($post->getThumbnailAsset());
+        // }
 
         return $content;
     }

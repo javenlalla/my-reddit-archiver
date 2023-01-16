@@ -145,10 +145,8 @@ class Assets
 
         switch ($headers['content-type'][0]) {
             case 'image/jpg':
-                return 'jpg';
-
             case 'image/jpeg':
-                return 'jpeg';
+                return 'jpg';
 
             case 'image/png':
                 return 'png';

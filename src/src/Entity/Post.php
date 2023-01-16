@@ -58,9 +58,6 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $postAwards;
 
-    #[ORM\OneToOne(targetEntity: Thumbnail::class, cascade: ['persist', 'remove'])]
-    private $thumbnail;
-
     #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     private $isArchived = false;
 
@@ -70,6 +67,9 @@ class Post
     #[ORM\ManyToOne(targetEntity: Subreddit::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private $subreddit;
+
+    #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    private $thumbnailAsset;
 
     public function __construct()
     {
@@ -369,18 +369,6 @@ class Post
         return $count;
     }
 
-    public function getThumbnail(): ?Thumbnail
-    {
-        return $this->thumbnail;
-    }
-
-    public function setThumbnail(?Thumbnail $thumbnail): self
-    {
-        $this->thumbnail = $thumbnail;
-
-        return $this;
-    }
-
     public function isIsArchived(): ?bool
     {
         return $this->isArchived;
@@ -432,6 +420,18 @@ class Post
     public function setSubreddit(?Subreddit $subreddit): self
     {
         $this->subreddit = $subreddit;
+
+        return $this;
+    }
+
+    public function getThumbnailAsset(): ?Asset
+    {
+        return $this->thumbnailAsset;
+    }
+
+    public function setThumbnailAsset(?Asset $thumbnailAsset): self
+    {
+        $this->thumbnailAsset = $thumbnailAsset;
 
         return $this;
     }

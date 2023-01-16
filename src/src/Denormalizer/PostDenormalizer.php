@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Denormalizer;
 
+use App\Entity\Asset;
 use App\Entity\AuthorText;
 use App\Entity\Award;
 use App\Entity\Kind;
@@ -11,7 +12,6 @@ use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
 use App\Entity\Subreddit;
-use App\Entity\Thumbnail;
 use App\Entity\Type;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
@@ -23,6 +23,19 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class PostDenormalizer implements DenormalizerInterface
 {
+    /**
+     * Array of default image references within the `thumbnail` property on
+     * Reddit's side to indicate a default image be used.
+     */
+    public const THUMBNAIL_DEFAULT_IMAGE_NAMES = [
+        'image',
+        'default',
+        'nsfw',
+        'self',
+    ];
+
+    private const THUMBNAIL_FILENAME_FORMAT = '%s_thumb';
+
     public function __construct(
         private readonly PostRepository $postRepository,
         private readonly PostAwardRepository $postAwardRepository,
@@ -31,7 +44,7 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
-        private readonly ThumbnailDenormalizer $thumbnailDenormalizer,
+        private readonly AssetDenormalizer $assetDenormalizer,
     ) {
     }
 
@@ -114,11 +127,11 @@ class PostDenormalizer implements DenormalizerInterface
         // The `height` check is included to avoid false positives such as when
         // `thumbnail` = "self" in the case of a Text Post (for example).
         if (!empty($postData['thumbnail'])
-            && !in_array($postData['thumbnail'], ThumbnailDenormalizer::THUMBNAIL_DEFAULT_IMAGE_NAMES)
+            && !in_array($postData['thumbnail'], self::THUMBNAIL_DEFAULT_IMAGE_NAMES)
             && !empty($postData['thumbnail_height'])
         ) {
-            $thumbnail = $this->thumbnailDenormalizer->denormalize($post, Thumbnail::class, null, ['sourceUrl' => $postData['thumbnail']]);
-            $post->setThumbnail($thumbnail);
+            $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, ['filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT]);
+            $post->setThumbnailAsset($thumbnailAsset);
         }
 
         return $post;
