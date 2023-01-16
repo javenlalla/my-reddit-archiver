@@ -151,9 +151,9 @@ class Manager
         }
 
         $this->postRepository->save($post);
-        foreach ($post->getMediaAssets() as $mediaAsset) {
-            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
-        }
+        // foreach ($post->getMediaAssets() as $mediaAsset) {
+        //     $this->mediaDownloader->downloadMediaAsset($mediaAsset);
+        // }
 
         return $this->postRepository->find($post->getId());
     }
@@ -525,10 +525,10 @@ class Manager
      */
     private function executePreAddContentHooks(Content $content): Content
     {
-        $post = $content->getPost();
-        foreach ($post->getMediaAssets() as $mediaAsset) {
-            $this->mediaDownloader->downloadMediaAsset($mediaAsset);
-        }
+        // $post = $content->getPost();
+        // foreach ($post->getMediaAssets() as $mediaAsset) {
+        //     $this->mediaDownloader->downloadMediaAsset($mediaAsset);
+        // }
 
         // if (!empty($post->getThumbnailAsset())) {
         //     $this->mediaDownloader->downloadThumbnail($post->getThumbnailAsset());

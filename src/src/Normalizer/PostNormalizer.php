@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Normalizer;
 
+use App\Entity\Asset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\Thumbnail;
@@ -64,9 +65,9 @@ class PostNormalizer implements NormalizerInterface
             $normalizedData['comments'][] = $this->commentNormalizer->normalize($comment);
         }
 
-        $thumbnail = $post->getThumbnail();
-        if ($thumbnail instanceof Thumbnail) {
-            $normalizedData['thumbnail'] = $this->assetNormalizer->normalize($thumbnail);
+        $thumbnailAsset = $post->getThumbnailAsset();
+        if ($thumbnailAsset instanceof Asset) {
+            $normalizedData['thumbnail'] = $this->assetNormalizer->normalize($thumbnailAsset);
         }
 
         foreach ($post->getMediaAssets() as $mediaAsset) {

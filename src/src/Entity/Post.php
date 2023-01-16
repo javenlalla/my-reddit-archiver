@@ -39,9 +39,6 @@ class Post
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: Comment::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $comments;
 
-    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MediaAsset::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private $mediaAssets;
-
     #[ORM\Column(type: 'string', length: 255)]
     private $redditPostUrl;
 
@@ -71,12 +68,15 @@ class Post
     #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
     private $thumbnailAsset;
 
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    private $mediaAssets;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
-        $this->mediaAssets = new ArrayCollection();
         $this->postAuthorTexts = new ArrayCollection();
         $this->postAwards = new ArrayCollection();
+        $this->mediaAssets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -196,36 +196,6 @@ class Post
             // set the owning side to null (unless already changed)
             if ($comment->getParentPost() === $this) {
                 $comment->setParentPost(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MediaAsset>
-     */
-    public function getMediaAssets(): Collection
-    {
-        return $this->mediaAssets;
-    }
-
-    public function addMediaAsset(MediaAsset $mediaAsset): self
-    {
-        if (!$this->mediaAssets->contains($mediaAsset)) {
-            $this->mediaAssets[] = $mediaAsset;
-            $mediaAsset->setParentPost($this);
-        }
-
-        return $this;
-    }
-
-    public function removeMediaAsset(MediaAsset $mediaAsset): self
-    {
-        if ($this->mediaAssets->removeElement($mediaAsset)) {
-            // set the owning side to null (unless already changed)
-            if ($mediaAsset->getParentPost() === $this) {
-                $mediaAsset->setParentPost(null);
             }
         }
 
@@ -432,6 +402,36 @@ class Post
     public function setThumbnailAsset(?Asset $thumbnailAsset): self
     {
         $this->thumbnailAsset = $thumbnailAsset;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Asset>
+     */
+    public function getMediaAssets(): Collection
+    {
+        return $this->mediaAssets;
+    }
+
+    public function addMediaAsset(Asset $mediaAsset): self
+    {
+        if (!$this->mediaAssets->contains($mediaAsset)) {
+            $this->mediaAssets[] = $mediaAsset;
+            $mediaAsset->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMediaAsset(Asset $mediaAsset): self
+    {
+        if ($this->mediaAssets->removeElement($mediaAsset)) {
+            // set the owning side to null (unless already changed)
+            if ($mediaAsset->getPost() === $this) {
+                $mediaAsset->setPost(null);
+            }
+        }
 
         return $this;
     }

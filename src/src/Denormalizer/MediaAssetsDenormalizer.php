@@ -1,12 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
-use App\Denormalizer\MediaAssets\BaseDenormalizer;
 use App\Denormalizer\MediaAssets\MediaMetadataDenormalizer;
 use App\Denormalizer\MediaAssets\RedditVideoDenormalizer;
-use App\Entity\Content;
-use App\Entity\MediaAsset;
+use App\Entity\Asset;
 use App\Entity\Post;
 use App\Entity\Type;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -19,7 +18,7 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
     ];
 
     public function __construct(
-        private readonly BaseDenormalizer $baseDenormalizer,
+        private readonly AssetDenormalizer $assetDenormalizer,
         private readonly MediaMetadataDenormalizer $mediaMetadataDenormalizer,
         private readonly RedditVideoDenormalizer $redditVideoDenormalizer,
     ) {
@@ -29,32 +28,41 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
      * Based on the provided Post, inspect its properties and denormalize its
      * associated Response Data in order to return a Media Asset Entity.
      *
-     * @param  Post  $data
+     * @param  string  $data Source URL
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
-     *              postResponseData: array,
+     *              postType: Type,
+     *              mediasMetadata: array,
+     *              isVideo: bool,
+     *              videoSourceUrl: ?string,
+     *              isGif: bool,
+     *              gifSourceUrl: ?string,
      *          } $context  'postResponseData' contains the original API Response Data for this Post.
      *
-     * @return MediaAsset[]
+     * @return Asset[]
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): array
     {
-        $post = $data;
-        $responseData = $context['postResponseData'];
-        $type = $data->getType();
+        $sourceUrl = $data;
+        $type = $context['postType'];
 
         $mediaAssets = [];
         if (in_array($type->getName(), self::BASE_DENORMALIZER_CONTENT_TYPES)) {
-            $mediaAssets[] = $this->baseDenormalizer->denormalize($post, MediaAsset::class, null, $context);
+            $targetSourceUrl = $sourceUrl;
+            if (!empty($context['gifSourceUrl'])) {
+                $targetSourceUrl = $context['gifSourceUrl'];
+            }
+
+            $mediaAssets[] = $this->assetDenormalizer->denormalize($targetSourceUrl, Asset::class, null, $context);
         }
 
-        if ($type->getName() === Type::CONTENT_TYPE_IMAGE_GALLERY || !empty($responseData['media_metadata'])) {
-            $mediaAssets = $this->mediaMetadataDenormalizer->denormalize($post, MediaAsset::class, null, $context);
+        if ($type->getName() === Type::CONTENT_TYPE_IMAGE_GALLERY || !empty($context['mediasMetadata'])) {
+            $mediaAssets = $this->mediaMetadataDenormalizer->denormalize($context['mediasMetadata'], Asset::class, null, $context);
         }
 
-        if ($type->getName() === Type::CONTENT_TYPE_VIDEO && $responseData['is_video'] === true) {
-            $mediaAssets[] = $this->redditVideoDenormalizer->denormalize($post, MediaAsset::class, null, $context);
+        if ($type->getName() === Type::CONTENT_TYPE_VIDEO && $context['isVideo'] === true) {
+            $mediaAssets[] = $this->redditVideoDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
         }
 
         return $mediaAssets;
@@ -65,6 +73,6 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
      */
     public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
-        return $data instanceof Post && $type === MediaAsset::class;
+        return is_string($data) && $type === Asset::class;
     }
 }

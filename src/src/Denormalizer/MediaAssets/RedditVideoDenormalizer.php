@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace App\Denormalizer\MediaAssets;
 
-use App\Entity\MediaAsset;
+use App\Denormalizer\AssetDenormalizer;
+use App\Entity\Asset;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
@@ -16,7 +17,7 @@ class RedditVideoDenormalizer implements DenormalizerInterface
     const REDDIT_VIDEO_AUDIO_URL_FORMAT = 'https://v.redd.it/%s/DASH_audio.mp4';
 
     public function __construct(
-        private readonly BaseDenormalizer $baseDenormalizer,
+        private readonly AssetDenormalizer $assetDenormalizer,
         private readonly HttpClientInterface $httpClient
     ) {
     }
@@ -25,35 +26,38 @@ class RedditVideoDenormalizer implements DenormalizerInterface
      * Analyze the provided Post and denormalize the associated Response data
      * for a Reddit Video into a Media Asset Entity.
      *
-     * @param  Post  $data
+     * @param  string  $data
      * @param  string  $type
      * @param  string|null  $format
      * @param  array{
-     *              postResponseData: array,
-     *     } $context   'postResponseData' contains the original API Response Data for this Post.
+     *              isGif: bool,
+     *              videoSourceUrl: string,
+     *     }  $context  'postResponseData' contains the original API Response Data for this Post.
      *
-     * @return MediaAsset
+     * @return Asset
+     * @throws TransportExceptionInterface
      */
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): MediaAsset
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Asset
     {
-        $post = $data;
-        $responseData = $context['postResponseData'];
-        $context['overrideSourceUrl'] = $responseData['media']['reddit_video']['fallback_url'];
-        $mediaAsset = $this->baseDenormalizer->denormalize($post, MediaAsset::class, null, $context);
+        $sourceUrl = $data;
+        $videoSourceUrl = $context['videoSourceUrl'];
+        $isGif = $context['isGif'];
+        $context['audioFilename'] = null;
+        $context['audioSourceUrl'] = null;
 
         // If the Video Asset is not treated as a GIF on Reddit's side, assume
         // there is a separate Audio file to be retrieved.
-        if ($responseData['media']['reddit_video']['is_gif'] === false) {
-            $videoId = str_replace('https://v.redd.it/', '', $post->getUrl());
-            $mediaAsset->setAudioFilename(sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId));
+        if ($isGif === false) {
+            $videoId = str_replace('https://v.redd.it/', '', $sourceUrl);
+            $context['audioFilename'] = sprintf(self::REDDIT_VIDEO_LOCAL_AUDIO_FILENAME_FORMAT, $videoId);
 
             $audioUrl = sprintf(self::REDDIT_VIDEO_AUDIO_URL_FORMAT, $videoId);
             if ($this->audioUrlReturnsSuccessful($audioUrl) === true) {
-                $mediaAsset->setAudioSourceUrl($audioUrl);
+                $context['audioSourceUrl'] = $audioUrl;
             }
         }
 
-        return $mediaAsset;
+        return $this->assetDenormalizer->denormalize($videoSourceUrl, Asset::class, null, $context);
     }
 
     /**

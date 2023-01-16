@@ -28,7 +28,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE comment_award (id INT AUTO_INCREMENT NOT NULL, comment_id INT NOT NULL, award_id INT NOT NULL, count INT DEFAULT 0 NOT NULL, INDEX IDX_23C1B616F8697D13 (comment_id), INDEX IDX_23C1B6163D5282CF (award_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE content (id INT AUTO_INCREMENT NOT NULL, post_id INT NOT NULL, comment_id INT DEFAULT NULL, kind_id INT NOT NULL, next_sync_date DATETIME DEFAULT NULL, INDEX IDX_FEC530A94B89032C (post_id), UNIQUE INDEX UNIQ_FEC530A9F8697D13 (comment_id), INDEX IDX_FEC530A930602CA9 (kind_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE kind (id INT AUTO_INCREMENT NOT NULL, reddit_kind_id VARCHAR(2) NOT NULL, name VARCHAR(20) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE media_asset (id INT AUTO_INCREMENT NOT NULL, parent_post_id INT NOT NULL, filename VARCHAR(40) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url VARCHAR(255) NOT NULL, audio_source_url VARCHAR(255) DEFAULT NULL, audio_filename VARCHAR(55) DEFAULT NULL, INDEX IDX_1DB69EED39C1776A (parent_post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE post (id INT AUTO_INCREMENT NOT NULL, type_id INT NOT NULL, reddit_id VARCHAR(10) NOT NULL, subreddit_id INT NOT NULL, title LONGTEXT NOT NULL, score INT DEFAULT 0 NOT NULL, url LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', author VARCHAR(25) NOT NULL, reddit_post_url VARCHAR(255) NOT NULL, flair_text VARCHAR(150) DEFAULT NULL, thumbnail_asset_id INT DEFAULT NULL, is_archived TINYINT(1) DEFAULT 0 NOT NULL, UNIQUE INDEX UNIQ_5A8A6C8DA5B44A4D (reddit_id), UNIQUE INDEX UNIQ_5A8A6C8D2C2174B2 (thumbnail_asset_id), INDEX IDX_5A8A6C8DC54C8C93 (type_id), INDEX IDX_5A8A6C8D31DBE174 (subreddit_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE post_author_text (id INT AUTO_INCREMENT NOT NULL, post_id INT NOT NULL, author_text_id INT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_3324A5374B89032C (post_id), UNIQUE INDEX UNIQ_3324A5372CB7AA0B (author_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE post_award (id INT AUTO_INCREMENT NOT NULL, post_id INT NOT NULL, award_id INT NOT NULL, count INT DEFAULT 0 NOT NULL, INDEX IDX_1D40A2084B89032C (post_id), INDEX IDX_1D40A2083D5282CF (award_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -38,7 +37,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE subreddit (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, name VARCHAR(50) NOT NULL, title LONGTEXT DEFAULT NULL, description LONGTEXT DEFAULT NULL, description_raw_html LONGTEXT DEFAULT NULL, description_html LONGTEXT DEFAULT NULL, public_description LONGTEXT DEFAULT NULL, public_description_raw_html LONGTEXT DEFAULT NULL, public_description_html LONGTEXT DEFAULT NULL, icon_image_asset_id INT DEFAULT NULL, banner_background_image_asset_id INT DEFAULT NULL, banner_image_asset_id INT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_D84B1B124FAE0DCA (icon_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12B854E187 (banner_background_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12D390D58E (banner_image_asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         // Asset
-        $this->addSql('CREATE TABLE asset (id INT AUTO_INCREMENT NOT NULL, filename VARCHAR(75) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url LONGTEXT NOT NULL, audio_filename VARCHAR(75) DEFAULT NULL, audio_source_url LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE asset (id INT AUTO_INCREMENT NOT NULL, filename VARCHAR(75) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url LONGTEXT NOT NULL, audio_filename VARCHAR(75) DEFAULT NULL, audio_source_url LONGTEXT DEFAULT NULL, post_id INT DEFAULT NULL, INDEX IDX_2AF5A5C4B89032C (post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -51,7 +50,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE content ADD CONSTRAINT FK_FEC530A94B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE content ADD CONSTRAINT FK_FEC530A9F8697D13 FOREIGN KEY (comment_id) REFERENCES comment (id)');
         $this->addSql('ALTER TABLE content ADD CONSTRAINT FK_FEC530A930602CA9 FOREIGN KEY (kind_id) REFERENCES kind (id)');
-        $this->addSql('ALTER TABLE media_asset ADD CONSTRAINT FK_1DB69EED39C1776A FOREIGN KEY (parent_post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8DC54C8C93 FOREIGN KEY (type_id) REFERENCES type (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D31DBE174 FOREIGN KEY (subreddit_id) REFERENCES subreddit (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D2C2174B2 FOREIGN KEY (thumbnail_asset_id) REFERENCES asset (id)');
@@ -62,6 +60,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B124FAE0DCA FOREIGN KEY (icon_image_asset_id) REFERENCES asset (id)');
         $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12B854E187 FOREIGN KEY (banner_background_image_asset_id) REFERENCES asset (id)');
         $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12D390D58E FOREIGN KEY (banner_image_asset_id) REFERENCES asset (id)');
+        $this->addSql('ALTER TABLE asset ADD CONSTRAINT FK_2AF5A5C4B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
 
         // Insert setup data.
         // Kinds.
@@ -98,7 +97,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE content DROP FOREIGN KEY FK_FEC530A930602CA9');
         $this->addSql('ALTER TABLE comment DROP FOREIGN KEY FK_9474526C39C1776A');
         $this->addSql('ALTER TABLE content DROP FOREIGN KEY FK_FEC530A94B89032C');
-        $this->addSql('ALTER TABLE media_asset DROP FOREIGN KEY FK_1DB69EED39C1776A');
         $this->addSql('ALTER TABLE post_author_text DROP FOREIGN KEY FK_3324A5374B89032C');
         $this->addSql('ALTER TABLE post_award DROP FOREIGN KEY FK_1D40A2084B89032C');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8DFDFF2E92');
@@ -106,6 +104,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D31DBE174');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D2C2174B2');
         $this->addSql('ALTER TABLE content_tag DROP FOREIGN KEY FK_B662E176BAD26311');
+        $this->addSql('ALTER TABLE asset DROP FOREIGN KEY FK_2AF5A5C4B89032C');
         $this->addSql('DROP TABLE api_user');
         $this->addSql('DROP TABLE author_text');
         $this->addSql('DROP TABLE award');
@@ -114,7 +113,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE comment_award');
         $this->addSql('DROP TABLE content');
         $this->addSql('DROP TABLE kind');
-        $this->addSql('DROP TABLE media_asset');
         $this->addSql('DROP TABLE post');
         $this->addSql('DROP TABLE post_author_text');
         $this->addSql('DROP TABLE post_award');

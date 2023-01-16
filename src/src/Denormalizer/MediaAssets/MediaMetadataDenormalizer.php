@@ -1,51 +1,48 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer\MediaAssets;
 
-use App\Entity\MediaAsset;
-use App\Entity\Post;
-use App\Helper\MediaMetadataHelper;
+use App\Denormalizer\AssetDenormalizer;
+use App\Entity\Asset;
+use App\Service\Reddit\Manager\Assets;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class MediaMetadataDenormalizer implements DenormalizerInterface
 {
-    public function __construct(private readonly BaseDenormalizer $baseDenormalizer, private readonly MediaMetadataHelper $mediaMetadataHelper)
+    public function __construct(private readonly AssetDenormalizer $assetDenormalizer, private readonly Assets $assetsManager)
     {
     }
 
     /**
-     * Analyze the provided Post and denormalize the associated Response data
-     * for an Image Gallery or Media Metadata array into Media Asset Entities.
+     * Analyze the provided array of Media Metadata and denormalize the
+     * metadata for an Image Gallery or Media Metadata array into Asset
+     * Entities.
      *
-     * @param  Post  $data
+     * @param  array  $data
      * @param  string  $type
      * @param  string|null  $format
-     * @param  array{
-     *              postResponseData: array,
-     *          } $context  'postResponseData' contains the original API Response Data for this Post.
+     * @param  array  $context
      *
-     * @return MediaAsset[]
+     * @return Asset[]
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): array
     {
-        $post = $data;
-        $responseData = $context['postResponseData'];
+        $mediasMetadata = $data;
 
-        $mediaAssets = [];
-        foreach ($responseData["media_metadata"] as $assetId => $mediaMetadata) {
-            $extension = $this->mediaMetadataHelper->extractExtensionFromMediaMetadata($mediaMetadata);
+        $assets = [];
+        foreach ($mediasMetadata as $assetId => $mediaMetadata) {
+            $extension = $this->assetsManager->getAssetExtensionFromContentTypeValue($mediaMetadata['m']);
             if ($extension === 'mp4') {
                 $sourceUrl = html_entity_decode($mediaMetadata['s']['mp4']);
             } else {
                 $sourceUrl = html_entity_decode($mediaMetadata['s']['u']);
             }
 
-            $context['assetExtension'] = $extension;
-            $context['overrideSourceUrl'] = $sourceUrl;
-            $mediaAssets[] = $this->baseDenormalizer->denormalize($post, MediaAsset::class, null, $context);
+            $assets[] = $this->assetDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
         }
 
-        return $mediaAssets;
+        return $assets;
     }
 
     /**
@@ -53,6 +50,6 @@ class MediaMetadataDenormalizer implements DenormalizerInterface
      */
     public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
-        return $data instanceof Post;
+        return is_array($data);
     }
 }

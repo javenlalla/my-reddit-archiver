@@ -7,6 +7,7 @@ use App\Entity\Asset;
 use App\Entity\AssetInterface;
 use App\Service\Reddit\Media\Downloader;
 use Exception;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -22,6 +23,7 @@ class Assets
         private readonly string $publicDirectoryAbsolutePath,
         private readonly HttpClientInterface $httpClient,
         private readonly Downloader $downloaderService,
+        private readonly Filesystem $filesystem,
     ) {
     }
 
@@ -59,7 +61,16 @@ class Assets
         $asset->setDirOne(substr($idHash, 0, 1));
         $asset->setDirTwo(substr($idHash, 1, 2));
 
-        $this->downloaderService->downloadAsset($asset, $this->getAssetDirectoryPath($asset, true));
+        $assetDirectoryPath = $this->getAssetDirectoryPath($asset, true);
+        $this->downloaderService->downloadAsset($asset, $assetDirectoryPath);
+
+        if (!empty($asset->getAudioSourceUrl())) {
+            $videoFile = $assetDirectoryPath . '/' . $asset->getFilename();
+            $audioFile = $assetDirectoryPath . '/' . $asset->getAudioFilename();
+            $this->downloaderService->downloadSourceToLocalFile($asset->getAudioSourceUrl(), $audioFile);
+
+            $this->mergeVideoAndAudioFiles($assetDirectoryPath, $videoFile, $audioFile);
+        }
 
         return $asset;
     }
@@ -89,6 +100,36 @@ class Assets
     public function getAssetDirectoryPath(AssetInterface $asset, bool $absolutePath = false): string
     {
         return $this->getAssetBasePath($asset, $absolutePath);
+    }
+
+    /**
+     * Return the appropriate extension for the provided media Content Type
+     * value.
+     *
+     * @param  string  $contentTypeValue
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getAssetExtensionFromContentTypeValue(string $contentTypeValue): string
+    {
+        switch ($contentTypeValue) {
+            case 'image/jpg':
+            case 'image/jpeg':
+                return 'jpg';
+
+            case 'image/png':
+                return 'png';
+
+            case 'image/webp':
+                return 'webp';
+
+            case 'video/mp4':
+            case 'image/gif':
+                return 'mp4';
+        }
+
+        throw new Exception(sprintf('Unexpected Content Type in extension extraction: %s', $contentTypeValue));
     }
 
     /**
@@ -143,21 +184,36 @@ class Assets
             return 'jpg';
         }
 
-        switch ($headers['content-type'][0]) {
-            case 'image/jpg':
-            case 'image/jpeg':
-                return 'jpg';
+        return $this->getAssetExtensionFromContentTypeValue($headers['content-type'][0]);
+    }
 
-            case 'image/png':
-                return 'png';
+    /**
+     * Merge the provided Reddit Video and Audio files into one video file.
+     *
+     * Once merged, move the combined file to replace the original Video
+     * download path.
+     *
+     * @param  string  $assetDirectoryPath
+     * @param  string  $videoFilePath
+     * @param  string  $audioFilePath
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function mergeVideoAndAudioFiles(string $assetDirectoryPath, string $videoFilePath, string $audioFilePath): void
+    {
+        $combinedOutputPath = $assetDirectoryPath . '/' . uniqid() . '_combined.mp4';
 
-            case 'image/webp':
-                return 'webp';
+        $cmd = sprintf('ffmpeg -i %s  -i %s  -c:v copy -c:a aac %s -hide_banner -loglevel error', $videoFilePath, $audioFilePath, $combinedOutputPath);
+        $cmdResult = exec($cmd, result_code: $resultCode);
 
-            case 'image/gif':
-                return 'mp4';
+        if ($resultCode !== 0 || !empty($cmdResult)) {
+            throw new Exception(sprintf('Unexpected command output combining Reddit Video and Audio files. Command: %s. Output: %s. Result Code: %d', $cmd, $cmdResult, $resultCode));
         }
 
-        return 'jpg';
+        // Rename the combined output to the original video filename.
+        // Also, remove the Audio file as it's no longer needed.
+        $this->filesystem->rename($combinedOutputPath, $videoFilePath, true);
+        $this->filesystem->remove($audioFilePath);
     }
 }

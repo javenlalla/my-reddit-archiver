@@ -23,6 +23,8 @@ class AssetDenormalizer implements DenormalizerInterface
      * @param  string|null  $format
      * @param  array{
      *              filenameFormat: string,
+     *              audioFilename: string,
+     *              audioSourceUrl: string,
      *          }  $context  filenameFormat  Optional. Provide a custom format for the filename.
      *                                       Extension MUST be excluded.
      *                                       A placeholder for the ID hash MUST be included.
@@ -40,6 +42,11 @@ class AssetDenormalizer implements DenormalizerInterface
         $filenameFormat = null;
         if (!empty($context['filenameFormat'])) {
             $filenameFormat = $context['filenameFormat'];
+        }
+
+        if (!empty($context['audioFilename']) && !empty($context['audioSourceUrl'])) {
+            $asset->setAudioFilename($context['audioFilename']);
+            $asset->setAudioSourceUrl($context['audioSourceUrl']);
         }
 
         $this->assetsManager->downloadAndProcessAsset($asset, $filenameFormat);

@@ -7,7 +7,6 @@ use App\Entity\Asset;
 use App\Entity\AuthorText;
 use App\Entity\Award;
 use App\Entity\Kind;
-use App\Entity\MediaAsset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
@@ -111,28 +110,7 @@ class PostDenormalizer implements DenormalizerInterface
         }
         $post->setType($type);
 
-        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($post, MediaAsset::class, null, ['postResponseData' => $postData]);
-        foreach ($mediaAssets as $mediaAsset) {
-            $post->addMediaAsset($mediaAsset);
-        }
-
-        $typeName = $type->getName();
-        if (($typeName === Type::CONTENT_TYPE_GIF || $typeName === Type::CONTENT_TYPE_VIDEO)
-            && !empty($mediaAssets)
-        ) {
-            $post->setUrl($mediaAssets[0]->getSourceUrl());
-        }
-
-        // Process the Post's Thumbnail, if any.
-        // The `height` check is included to avoid false positives such as when
-        // `thumbnail` = "self" in the case of a Text Post (for example).
-        if (!empty($postData['thumbnail'])
-            && !in_array($postData['thumbnail'], self::THUMBNAIL_DEFAULT_IMAGE_NAMES)
-            && !empty($postData['thumbnail_height'])
-        ) {
-            $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, ['filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT]);
-            $post->setThumbnailAsset($thumbnailAsset);
-        }
+        $post = $this->processAssets($post, $type, $postData);
 
         return $post;
     }
@@ -197,6 +175,70 @@ class PostDenormalizer implements DenormalizerInterface
                 $postAward->setCount((int) $awarding['count']);
                 $post->addPostAward($postAward);
             }
+        }
+
+        return $post;
+    }
+
+    /**
+     * Download and instantiate new Asset Entities for any Media and/or
+     * Thumbnail Assets the provided Post may have associated to it.
+     *
+     * @param  Post  $post
+     * @param  Type  $type
+     * @param  array  $postData
+     *
+     * @return Post
+     */
+    private function processAssets(Post $post, Type $type, array $postData): Post
+    {
+        $mediasMetadata = [];
+        if (!empty($postData['media_metadata'])) {
+            $mediasMetadata = $postData['media_metadata'];
+        }
+
+        $isVideo = false;
+        $videoSourceUrl = null;
+        if (!empty($postData['is_video']) && $postData['is_video'] === true) {
+            $isVideo = true;
+            $videoSourceUrl = $postData['media']['reddit_video']['fallback_url'];
+        }
+
+        $isGif = false;
+        if (!empty($postData['media']['reddit_video']['is_gif']) && $postData['media']['reddit_video']['is_gif'] === true) {
+            $isGif = true;
+        }
+
+        $gifSourceUrl = null;
+        if (!empty($postData['preview']['images'][0]['variants']['mp4']['source']['url'])) {
+            $gifSourceUrl = html_entity_decode($postData['preview']['images'][0]['variants']['mp4']['source']['url']);
+        }
+
+        $context = [
+            'mediasMetadata' => $mediasMetadata,
+            'isVideo' => $isVideo,
+            'videoSourceUrl' => $videoSourceUrl,
+            'isGif' => $isGif,
+            'gifSourceUrl' => $gifSourceUrl,
+            'postType' => $type,
+        ];
+
+        $sourceUrl = $postData['url'];
+
+        $mediaAssets = $this->mediaAssetsDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
+        foreach ($mediaAssets as $mediaAsset) {
+            $post->addMediaAsset($mediaAsset);
+        }
+
+        // Process the Post's Thumbnail, if any.
+        // The `height` check is included to avoid false positives such as when
+        // `thumbnail` = "self" in the case of a Text Post (for example).
+        if (!empty($postData['thumbnail'])
+            && !in_array($postData['thumbnail'], self::THUMBNAIL_DEFAULT_IMAGE_NAMES)
+            && !empty($postData['thumbnail_height'])
+        ) {
+            $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, ['filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT]);
+            $post->setThumbnailAsset($thumbnailAsset);
         }
 
         return $post;

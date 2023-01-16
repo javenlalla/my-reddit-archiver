@@ -37,10 +37,6 @@ services:
             $clientId: '%app.reddit.client_id%'
             $clientSecret: '%app.reddit.client_secret%'
 
-    App\Service\Reddit\Media\Downloader:
-        arguments:
-            $publicPath: '%app.path.public%'
-
     App\Service\Typesense\Api:
         arguments:
             $apiKey: '%app.typesense.api_key%'

@@ -6,7 +6,6 @@ namespace App\Tests\unit\Service\Reddit\Media;
 use App\Entity\Asset;
 use App\Entity\Content;
 use App\Entity\Kind;
-use App\Entity\MediaAsset;
 use App\Service\Reddit\Manager;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\InvalidArgumentException;
@@ -175,9 +174,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://i.imgur.com/ThRMZx5.jpg',
-                        'filename' => 'faac0cc02f38ca7aa896f5dafdeaacb9.jpg',
-                        'dirOne' => 'f',
-                        'dirTwo' => 'aa',
+                        'filename' => '46f25e262b7481f62265d0d879a2729d.jpg',
+                        'dirOne' => '4',
+                        'dirTwo' => '6f',
                         'filesize' => 809422,
                     ],
                 ],
@@ -195,9 +194,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://i.redd.it/cnfk33iv9sh91.jpg',
-                        'filename' => '44cdd5b77a44b3ebd1e955946e71efc0.jpg',
-                        'dirOne' => '4',
-                        'dirTwo' => '4c',
+                        'filename' => '2af6ecd6022400dc4c4fecc4714b8ab2.jpg',
+                        'dirOne' => '2',
+                        'dirTwo' => 'af',
                         'filesize' => 362284,
                     ],
                 ],
@@ -215,9 +214,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&v=enabled&s=8a5a16f886e24f206b0dbea9cc0e5a6cd25ef018',
-                        'filename' => '4c1777c271523e2b78cf5f4f6ebda336.jpg',
-                        'dirOne' => '4',
-                        'dirTwo' => 'c1',
+                        'filename' => 'ff9831e41692d083012ffb5157a66399.jpg',
+                        'dirOne' => 'f',
+                        'dirTwo' => 'f9',
                         'filesize' => 176023,
                     ],
                 ],
@@ -235,9 +234,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&v=enabled&s=a156b30a7caf0da0c73550b61b0e11e938d92c3b',
-                        'filename' => '1a20e9b5017645a72dedbf8e74b6851b.mp4',
-                        'dirOne' => '1',
-                        'dirTwo' => 'a2',
+                        'filename' => 'b72022b6e8399f658df62276cda40209.mp4',
+                        'dirOne' => 'b',
+                        'dirTwo' => '72',
                         'filesize' => 264714,
                     ],
                 ],
@@ -256,9 +255,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://v.redd.it/8u3caw3zm6p81/DASH_720.mp4?source=fallback',
-                        'filename' => 'a01b41d34f5bb8bceb7540fa1b84728a.mp4',
-                        'dirOne' => 'a',
-                        'dirTwo' => '01',
+                        'filename' => '48467e749b3af6948b71047136067d79.mp4',
+                        'dirOne' => '4',
+                        'dirTwo' => '84',
                         'filesize' => 3405946,
                         'audioSourceUrl' => 'https://v.redd.it/8u3caw3zm6p81/DASH_audio.mp4',
                         'audioFilename' => '8u3caw3zm6p81_audio.mp4',
@@ -286,9 +285,9 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://v.redd.it/bofh9q9jkof91/DASH_720.mp4?source=fallback',
-                        'filename' => '17de4f10fe97940aba8170d1eec6caf0.mp4',
-                        'dirOne' => '1',
-                        'dirTwo' => '7d',
+                        'filename' => '9efda9eb6caeae9aa75f2851281a5d91.mp4',
+                        'dirOne' => '9',
+                        'dirTwo' => 'ef',
                         'filesize' => 1563120,
                     ],
                 ],
@@ -306,44 +305,44 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://preview.redd.it/zy4xzki4jx291.jpg?width=2543&format=pjpg&auto=webp&v=enabled&s=b0cf2604fd569427de1dafb369f1339d59c4f319',
-                        'filename' => 'e9d5f407c7771dee3694290a14378f19.jpg',
-                        'dirOne' => 'e',
-                        'dirTwo' => '9d',
+                        'filename' => '830c1e333479ed797fe848a39d5a0d2c.jpg',
+                        'dirOne' => '8',
+                        'dirTwo' => '30',
                         'filesize' => 548236,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/exunuhm4jx291.jpg?width=612&format=pjpg&auto=webp&v=enabled&s=939b5eb1e639801c2e64daf805da1f00f658b93a',
-                        'filename' => 'a1f009e2b2e71a7432437aa907bcabd8.jpg',
-                        'dirOne' => 'a',
-                        'dirTwo' => '1f',
+                        'filename' => 'e68b955d98177394370056dcd3625208.jpg',
+                        'dirOne' => 'e',
+                        'dirTwo' => '68',
                         'filesize' => 73414,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/rs5yhje4jx291.jpg?width=1080&format=pjpg&auto=webp&v=enabled&s=8b73da617e1183de4589b87231d09676c8eeb1db',
-                        'filename' => '0c3f6c913219920f7b4f7b69c557aa1e.jpg',
-                        'dirOne' => '0',
-                        'dirTwo' => 'c3',
+                        'filename' => '82722e2ec6cf58a33f9ad1ced844d54d.jpg',
+                        'dirOne' => '8',
+                        'dirTwo' => '27',
                         'filesize' => 84855,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/s0yrptf4jx291.jpg?width=612&format=pjpg&auto=webp&v=enabled&s=a01a35da6a1d30198e535bff5ee1011a9a905760',
-                        'filename' => '73bc5e0da29fab2d4a1190119eaaeb75.jpg',
-                        'dirOne' => '7',
-                        'dirTwo' => '3b',
+                        'filename' => 'd10730e41dd145a41654850aff314b44.jpg',
+                        'dirOne' => 'd',
+                        'dirTwo' => '10',
                         'filesize' => 52506,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/jpmunxg4jx291.jpg?width=1080&format=pjpg&auto=webp&v=enabled&s=f1f2950bdbaaf9c0120349536da6dfedfd5c4a2f',
-                        'filename' => '4df1192cc7dd1f46c6b53bf6f4bfc45b.jpg',
-                        'dirOne' => '4',
-                        'dirTwo' => 'df',
+                        'filename' => 'e1d6b0043ef8c4f07c59b9432ce80b25.jpg',
+                        'dirOne' => 'e',
+                        'dirTwo' => '1d',
                         'filesize' => 129301,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/6p3g7c64jx291.jpg?width=2543&format=pjpg&auto=webp&v=enabled&s=8c6a551a7cb35c5e42173bc22c6f255c4c07c13c',
-                        'filename' => '792e4e54b0582acce505c21217e638dc.jpg',
-                        'dirOne' => '7',
-                        'dirTwo' => '92',
+                        'filename' => '66147ecef1eda09b6534dbc517a2eddb.jpg',
+                        'dirOne' => '6',
+                        'dirTwo' => '61',
                         'filesize' => 467076,
                     ],
                 ],
@@ -361,65 +360,65 @@ class DownloaderTest extends KernelTestCase
                 'assets' => [
                     [
                         'sourceUrl' => 'https://preview.redd.it/hzhtz9fydej91.gif?format=mp4&v=enabled&s=47e39b0a722c44d3574d128da260a3c215812f35',
-                        'filename' => '992392223d007c8fe5ea19d23097039a.mp4',
-                        'dirOne' => '9',
-                        'dirTwo' => '92',
+                        'filename' => '6bc287524c859df4f3e3b0971f647ed2.mp4',
+                        'dirOne' => '6',
+                        'dirTwo' => 'bc',
                         'filesize' => 179072,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/pwhjkwyxdej91.gif?format=mp4&v=enabled&s=f4d165ed609dd65758ce49f958074d4206a784b5',
-                        'filename' => 'd4c3fb2adbc9b9b6496aff54a3ff4737.mp4',
-                        'dirOne' => 'd',
-                        'dirTwo' => '4c',
+                        'filename' => 'fa9a19ea20b42fcf69814d89a953427b.mp4',
+                        'dirOne' => 'f',
+                        'dirTwo' => 'a9',
                         'filesize' => 419880,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/59hsb44ydej91.gif?format=mp4&v=enabled&s=c470715029f618028026c0193a99d08ff308c1ec',
-                        'filename' => 'd8daa31157e20ea933a18ff1054f9dd8.mp4',
-                        'dirOne' => 'd',
-                        'dirTwo' => '8d',
+                        'filename' => 'c61a987805dfcf94cc720a9263d048f7.mp4',
+                        'dirOne' => 'c',
+                        'dirTwo' => '61',
                         'filesize' => 799835,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/h7tin1jydej91.gif?format=mp4&v=enabled&s=bfd0493433e222daa3dd0b3b2636462cd26e9bae',
-                        'filename' => 'fbe9a2e4368c492f2fbf0416b813298a.mp4',
-                        'dirOne' => 'f',
-                        'dirTwo' => 'be',
+                        'filename' => '86935f653967c188b10c07fc20b1ebb1.mp4',
+                        'dirOne' => '8',
+                        'dirTwo' => '69',
                         'filesize' => 843758,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/6b6pwxvydej91.gif?format=mp4&v=enabled&s=193a375ae0bedbbabaabf4c06704c8f8eba99881',
-                        'filename' => '5f69f51086847029e25567afd0dbed44.mp4',
-                        'dirOne' => '5',
-                        'dirTwo' => 'f6',
+                        'filename' => 'f8538ce4daeebed38254d2a71be2960a.mp4',
+                        'dirOne' => 'f',
+                        'dirTwo' => '85',
                         'filesize' => 509102,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/9fy58fazdej91.gif?format=mp4&v=enabled&s=99cdd935ad2a2261aaaefdaf569decfa0456d775',
-                        'filename' => '9eff207f342087373f5fff7679c0549b.mp4',
-                        'dirOne' => '9',
-                        'dirTwo' => 'ef',
+                        'filename' => '4b477864b3e23c070ad204e004b9ecac.mp4',
+                        'dirOne' => '4',
+                        'dirTwo' => 'b4',
                         'filesize' => 735407,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/42cnannxdej91.gif?format=mp4&v=enabled&s=eba55f272ad80243afb6397d20cdadcf876214c9',
-                        'filename' => 'd1fe0c2b428e05200b21894f933f8546.mp4',
-                        'dirOne' => 'd',
-                        'dirTwo' => '1f',
+                        'filename' => '270a2aff1a822e30e95147ac5bc1b1ad.mp4',
+                        'dirOne' => '2',
+                        'dirTwo' => '70',
                         'filesize' => 730840,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/yvs1hq2zdej91.gif?format=mp4&v=enabled&s=8b9984580ee1a575c6aca1d2151a91ac61847afb',
-                        'filename' => '8ef163c1660ca3da2067cfbff8f8a4b2.mp4',
-                        'dirOne' => '8',
-                        'dirTwo' => 'ef',
+                        'filename' => '53568813525709a9307b50302313c2e2.mp4',
+                        'dirOne' => '5',
+                        'dirTwo' => '35',
                         'filesize' => 576520,
                     ],
                     [
                         'sourceUrl' => 'https://preview.redd.it/lkve7ervdej91.gif?format=mp4&v=enabled&s=e30ca459633d5724ac22f39eee3b95b8b00e0bce',
-                        'filename' => '2446a5bbd6b9b80358e82fe6d8a19d56.mp4',
-                        'dirOne' => '2',
-                        'dirTwo' => '44',
+                        'filename' => '9d5b919f4887901d6ed4b51cb152368d.mp4',
+                        'dirOne' => '9',
+                        'dirTwo' => 'd5',
                         'filesize' => 722310,
                     ],
                 ],
@@ -496,16 +495,16 @@ class DownloaderTest extends KernelTestCase
         // Assert assets can be retrieved from the database and are
         // associated to the intended Post.
         foreach ($assets as $asset) {
-            /** @var MediaAsset $mediaAsset */
+            /** @var Asset $mediaAsset */
             $mediaAsset = $this->entityManager
-                ->getRepository(MediaAsset::class)
+                ->getRepository(Asset::class)
                 ->findOneBy(['filename' => $asset['filename']])
             ;
 
             $this->assertEquals($asset['sourceUrl'], $mediaAsset->getSourceUrl());
             $this->assertEquals($asset['dirOne'], $mediaAsset->getDirOne());
             $this->assertEquals($asset['dirTwo'], $mediaAsset->getDirTwo());
-            $this->assertEquals($post->getId(), $mediaAsset->getParentPost()->getId());
+            $this->assertEquals($post->getId(), $mediaAsset->getPost()->getId());
 
             if (!empty($asset['audioSourceUrl'])) {
                 $this->assertEquals($asset['audioSourceUrl'], $mediaAsset->getAudioSourceUrl());
