@@ -5,6 +5,7 @@ namespace App\Form;
 
 use App\Entity\Tag;
 use App\Repository\PostRepository;
+use App\Repository\SubredditRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -16,6 +17,7 @@ class SearchForm extends AbstractType
 {
     public function __construct(
         private readonly PostRepository $postRepository,
+        private readonly SubredditRepository $subredditRepository,
         private readonly RouterInterface $router,
     ) {
     }
@@ -77,15 +79,18 @@ class SearchForm extends AbstractType
      */
     private function getSubredditChoices(): array
     {
-        $subredditsData = $this->postRepository->findAllSubreddits();
+        $subreddits = $this->subredditRepository->findBy(
+            [],
+            ['name' => 'ASC'],
+        );
 
-        $subreddits = [];
-        foreach ($subredditsData as $subredditData) {
-            $subreddit = $subredditData['subreddit'];
-            $subreddits[$subreddit] = $subreddit;
+        $subredditChoices = [];
+        foreach ($subreddits as $subreddit) {
+            $subredditName = $subreddit->getName();
+            $subredditChoices[$subredditName] = $subredditName;
         }
 
-        return $subreddits;
+        return $subredditChoices;
     }
 
     /**

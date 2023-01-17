@@ -3,7 +3,7 @@
         <div id="{{ content.id }}" class="search-result-content">
             <div class="row">
                 <div class="col-12 search-result-content__header mb-1">
-                    r/{{ content.post.subreddit }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
+                    r/{{ content.post.subreddit.name }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
                 </div>
             </div>
             <div class="row">
@@ -22,14 +22,14 @@
         <div id="{{ content.id }}" class="search-result-content">
             <div class="row">
                 <div class="col-12 search-result-content__header mb-2">
-                    r/{{ content.post.subreddit }}
+                    r/{{ content.post.subreddit.name }}
                 </div>
             </div>
             <div class="row">
-                {% if content.post.thumbnail %}
+                {% if content.post.thumbnailAsset %}
                     <div class="col-4 col-lg-1">
                         {{ component('asset_render', {
-                            asset: content.post.thumbnail
+                            asset: content.post.thumbnailAsset
                         }) }}
                     </div>
                 {% endif %}

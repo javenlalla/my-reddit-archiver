@@ -37,22 +37,6 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
-     * Execute a query to retrieve all unique Subreddits associated to Posts.
-     *
-     * @return array
-     */
-    public function findAllSubreddits(): array
-    {
-        return $this->createQueryBuilder('p')
-            ->select('p.subreddit')
-            ->distinct()
-            ->orderBy('p.subreddit')
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
-    /**
      * Execute a query to retrieve all unique Flair Texts associated to Posts.
      *
      * @return array
