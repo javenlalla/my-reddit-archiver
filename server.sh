@@ -13,6 +13,8 @@ elif [[ "${action}" = "stop-dev" ]]; then
     docker-compose -f docker-compose.development.yml stop
 elif [[ "${action}" = "connect-dev" ]]; then
     docker exec -it mra-dev bash
+elif [[ "${action}" = "yarn-watch" ]]; then
+    docker exec -it mra-dev yarn watch
 else
   echo "Invalid `action` argument provided. See usage details."
   exit 1
