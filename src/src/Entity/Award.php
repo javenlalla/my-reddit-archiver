@@ -25,8 +25,9 @@ class Award
     #[ORM\Column(type: 'string', length: 10)]
     private $referenceId;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private $redditUrl;
+    #[ORM\OneToOne(targetEntity: Asset::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private $iconAsset;
 
     public function getId(): ?int
     {
@@ -81,14 +82,14 @@ class Award
         return $this;
     }
 
-    public function getRedditUrl(): ?string
+    public function getIconAsset(): ?Asset
     {
-        return $this->redditUrl;
+        return $this->iconAsset;
     }
 
-    public function setRedditUrl(string $redditUrl): self
+    public function setIconAsset(Asset $iconAsset): self
     {
-        $this->redditUrl = $redditUrl;
+        $this->iconAsset = $iconAsset;
 
         return $this;
     }

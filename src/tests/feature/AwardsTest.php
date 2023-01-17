@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Tests\Feature;
+namespace App\Tests\feature;
 
 use App\Entity\Kind;
 use App\Service\Reddit\Manager;

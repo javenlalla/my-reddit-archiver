@@ -40,6 +40,22 @@ class DownloaderTest extends KernelTestCase
         'filesize' => 1034844,
     ];
 
+    const AWARD_SILVER_ICON_ASSET = [
+        'sourceUrl' => 'https://www.redditstatic.com/gold/awards/icon/silver_512.png',
+        'filename' => '67dc13e06c2ede9b414970cef60e7e50.png',
+        'dirOne' => '6',
+        'dirTwo' => '7d',
+        'filesize' => 40381,
+    ];
+
+    const AWARD_FACEPALM_ICON_ASSET = [
+        'sourceUrl' => 'https://i.redd.it/award_images/t5_22cerq/ey2iodron2s41_Facepalm.png',
+        'filename' => 'e7b2abf9441645936879161ed466faeb.png',
+        'dirOne' => 'e',
+        'dirTwo' => '7b',
+        'filesize' => 166418,
+    ];
+
     private Manager $manager;
 
     private EntityManager $entityManager;
@@ -54,6 +70,45 @@ class DownloaderTest extends KernelTestCase
         $this->entityManager = $container->get('doctrine')->getManager();
 
         $this->cleanupAssets();
+    }
+
+    /**
+     * Verify the Icon Asset for an Award is persisted and downloaded locally.
+     *
+     * @return void
+     */
+    public function testSaveAwardIconAsset(): void
+    {
+        foreach ([self::AWARD_SILVER_ICON_ASSET, self::AWARD_FACEPALM_ICON_ASSET] as $asset) {
+            $assetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'];
+            $this->assertFileDoesNotExist($assetPath);
+        }
+
+        $commentUrl = 'https://www.reddit.com/r/Jokes/comments/y1vmdf/comment/is022vs';
+        $content = $this->manager->syncContentFromJsonUrl(Kind::KIND_COMMENT, $commentUrl);
+        $comment = $content->getComment();
+
+        $commentAwards = $comment->getCommentAwards();
+        $this->assertCount(2, $commentAwards);
+
+        foreach ($commentAwards as $commentAward) {
+            $award = $commentAward->getAward();
+            $iconAsset = $award->getIconAsset();
+
+            $expectedAsset = self::AWARD_FACEPALM_ICON_ASSET;
+            if ($award->getRedditId() === 'gid_1') {
+                $expectedAsset = self::AWARD_SILVER_ICON_ASSET;
+            }
+
+            $iconAssetPath = sprintf(self::BASE_PATH_FORMAT, $expectedAsset['dirOne'], $expectedAsset['dirTwo']) . $expectedAsset['filename'];
+            $this->assertInstanceOf(Asset::class, $iconAsset);
+            $this->assertEquals($expectedAsset['sourceUrl'], $iconAsset->getSourceUrl());
+            $this->assertEquals($expectedAsset['filename'], $iconAsset->getFilename());
+            $this->assertEquals($expectedAsset['dirOne'], $iconAsset->getDirOne());
+            $this->assertEquals($expectedAsset['dirTwo'], $iconAsset->getDirTwo());
+            $this->assertFileExists($iconAssetPath);
+            $this->assertEquals($expectedAsset['filesize'], filesize($iconAssetPath));
+        }
     }
 
     /**
@@ -566,6 +621,8 @@ class DownloaderTest extends KernelTestCase
             self::SUBREDDIT_ICON_IMAGE_ASSET,
             self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET,
             self::SUBREDDIT_BANNER_IMAGE_ASSET,
+            self::AWARD_SILVER_ICON_ASSET,
+            self::AWARD_FACEPALM_ICON_ASSET,
         ];
 
         foreach ($additionalAssets as $asset) {

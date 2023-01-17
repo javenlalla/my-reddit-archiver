@@ -2,6 +2,7 @@
 
 namespace App\Denormalizer;
 
+use App\Entity\Asset;
 use App\Entity\Award;
 use App\Repository\AwardRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -10,6 +11,7 @@ class AwardDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly AwardRepository $awardRepository,
+        private readonly AssetDenormalizer $assetDenormalizer,
     ) {
     }
 
@@ -45,7 +47,9 @@ class AwardDenormalizer implements DenormalizerInterface
         $award->setRedditId($redditId);
         $award->setName($awardData['name']);
         $award->setReferenceId(substr(md5($awardData['name']), 0, 10));
-        $award->setRedditUrl($awardData['icon_url']);
+
+        $iconAsset = $this->assetDenormalizer->denormalize($awardData['icon_url'], Asset::class);
+        $award->setIconAsset($iconAsset);
 
         if (!empty($awardData['description'])) {
             $award->setDescription($awardData['description']);

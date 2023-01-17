@@ -22,7 +22,7 @@ final class Version20221128202003 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE TABLE api_user (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(100) NOT NULL, access_token VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE author_text (id INT AUTO_INCREMENT NOT NULL, text LONGTEXT NOT NULL, text_raw_html LONGTEXT NOT NULL, text_html LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
-        $this->addSql('CREATE TABLE award (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(50) NOT NULL, name VARCHAR(30) NOT NULL, description VARCHAR(255) DEFAULT NULL, reference_id VARCHAR(10) NOT NULL, reddit_url VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE award (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(50) NOT NULL, name VARCHAR(30) NOT NULL, description VARCHAR(255) DEFAULT NULL, reference_id VARCHAR(10) NOT NULL, icon_asset_id INT NOT NULL, UNIQUE INDEX UNIQ_8A5B2EE718CF367E (icon_asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, parent_comment_id INT DEFAULT NULL, parent_post_id INT NOT NULL, author VARCHAR(25) NOT NULL, score INT DEFAULT 0 NOT NULL, reddit_id VARCHAR(10) NOT NULL, flair_text VARCHAR(150) DEFAULT NULL, depth INT DEFAULT 0 NOT NULL, UNIQUE INDEX UNIQ_9474526CA5B44A4D (reddit_id), INDEX IDX_9474526CBF2AF943 (parent_comment_id), INDEX IDX_9474526C39C1776A (parent_post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE comment_author_text (id INT AUTO_INCREMENT NOT NULL, comment_id INT NOT NULL, author_text_id INT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_E488EE5AF8697D13 (comment_id), UNIQUE INDEX UNIQ_E488EE5A2CB7AA0B (author_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql('CREATE TABLE comment_award (id INT AUTO_INCREMENT NOT NULL, comment_id INT NOT NULL, award_id INT NOT NULL, count INT DEFAULT 0 NOT NULL, INDEX IDX_23C1B616F8697D13 (comment_id), INDEX IDX_23C1B6163D5282CF (award_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -61,6 +61,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12B854E187 FOREIGN KEY (banner_background_image_asset_id) REFERENCES asset (id)');
         $this->addSql('ALTER TABLE subreddit ADD CONSTRAINT FK_D84B1B12D390D58E FOREIGN KEY (banner_image_asset_id) REFERENCES asset (id)');
         $this->addSql('ALTER TABLE asset ADD CONSTRAINT FK_2AF5A5C4B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
+        $this->addSql('ALTER TABLE award ADD CONSTRAINT FK_8A5B2EE718CF367E FOREIGN KEY (icon_asset_id) REFERENCES asset (id)');
 
         // Insert setup data.
         // Kinds.
@@ -105,6 +106,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D2C2174B2');
         $this->addSql('ALTER TABLE content_tag DROP FOREIGN KEY FK_B662E176BAD26311');
         $this->addSql('ALTER TABLE asset DROP FOREIGN KEY FK_2AF5A5C4B89032C');
+        $this->addSql('ALTER TABLE award DROP FOREIGN KEY FK_8A5B2EE718CF367E');
         $this->addSql('DROP TABLE api_user');
         $this->addSql('DROP TABLE author_text');
         $this->addSql('DROP TABLE award');
