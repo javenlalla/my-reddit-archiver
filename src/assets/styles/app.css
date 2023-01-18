@@ -57,3 +57,9 @@ body {
     background-color: #212529;
     padding: 20px;
 }
+
+blockquote>p {
+    color: #212529;
+    border-left: 5px solid #343a40;
+    padding-left: 5px
+}
