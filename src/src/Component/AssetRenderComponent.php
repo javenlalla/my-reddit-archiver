@@ -13,6 +13,8 @@ class AssetRenderComponent extends AbstractController
 {
     public AssetInterface $asset;
 
+    public bool $linkImage = false;
+
     public function __construct(private readonly Assets $assetsManager)
     {
     }

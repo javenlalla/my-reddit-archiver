@@ -1,6 +1,6 @@
 {% for content in contents %}
     {% if content.comment is defined and content.comment is not null %}
-        <div id="{{ content.id }}" class="search-result-content">
+        <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
             <div class="row">
                 <div class="col-12 search-result-content__header mb-1">
                     r/{{ content.post.subreddit.name }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
@@ -19,7 +19,7 @@
 
         </div>
     {% else %}
-        <div id="{{ content.id }}" class="search-result-content">
+        <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
             <div class="row">
                 <div class="col-12 search-result-content__header mb-2">
                     r/{{ content.post.subreddit.name }}
@@ -34,7 +34,7 @@
                     </div>
                 {% endif %}
                 <div class="col-8 col-lg-11 font-size--14">
-                    {{ content.post.title }}
+                    <a href="{{ path('contents_view_content', {id: content.id}) }}">{{ content.post.title }}</a>
                 </div>
             </div>
 

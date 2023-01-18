@@ -1,1 +1,5 @@
-<img class="img-fluid" src="{{ this.path }}" />
+{% if linkImage %}
+    <a href="{{ computed.path }}" target="_blank"><img class="img-fluid" src="{{ computed.path }}" /></a>
+{% else %}
+    <img class="img-fluid" src="{{ this.path }}" />
+{% endif %}

@@ -1,6 +1,8 @@
+body {
+    background-color: #343a40;
+}
+
 .search-result-content {
-    border: thin gray solid;
-    border-radius: 0.25em;
     padding: 5px 15px;
     background-color: white;
     margin-bottom: 10px;
@@ -9,6 +11,20 @@
 .search-result-content__header {
     border-bottom: thin gray solid;
     font-size: 10px;
+}
+
+.border-radius--top-25em {
+    border-top-left-radius: 0.25em;
+    border-top-right-radius: 0.25em;
+}
+
+.border-radius--bottom-25em {
+    border-bottom-left-radius: 0.25em;
+    border-bottom-right-radius: 0.25em;
+}
+
+.border--thin-gray {
+    border: thin gray solid;
 }
 
 .font-size--14 {

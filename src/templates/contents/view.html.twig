@@ -1,0 +1,71 @@
+{% extends 'layout.html.twig' %}
+
+{% block main_content %}
+
+    <div class="row">
+        <div class="col">
+            <div class="border--thin-gray">
+                {{ component('asset_render', {
+                    asset: content.post.subreddit.bannerBackgroundImageAsset,
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="search-result-content border-radius--bottom-25em">
+                <div class="row search-result-content__header">
+                    <div class="col-lg-6">
+                        <span>r/{{ content.post.subreddit.name }}</span> | <span>Posted by u/{{ content.post.author }}</span> on <span>{{ content.post.createdAt|date("Y-m-d") }}</span>
+                    </div>
+
+                    <div class="col-lg-6 text-end">
+                        {% for award in content.post.postAwards %}
+                            {{ component('asset_render', {
+                                asset: award.iconAsset
+                            }) }}
+                        {% endfor %}
+
+                        {% if content.post.flairText %}
+                            <span>{{ content.post.flairText }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <span>{{ content.post.title }}</span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col text-center">
+                        {% for mediaAsset in content.post.mediaAssets %}
+                            {{ component('asset_render', {
+                                asset: mediaAsset,
+                                linkImage: true
+                            }) }}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {{ include('contents/list/_content_footer.html.twig', {
+                    postScore: content.post.score,
+                    commentsCount: content.post.comments.count,
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="search-result-content border-radius--top-25em border-radius--bottom-25em">
+                {% for comment in content.post.topLevelComments %}
+                    <p>{{ comment.author }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
