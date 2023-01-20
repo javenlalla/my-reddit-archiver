@@ -50,18 +50,6 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
                 $comment->setParentComment($context['parentComment']);
             }
 
-            if (!empty($commentData['all_awardings'])) {
-                foreach ($commentData['all_awardings'] as $awarding) {
-                    $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
-
-                    $commentAward = new CommentAward();
-                    $commentAward->setAward($award);
-                    $commentAward->setCount((int) $awarding['count']);
-
-                    $comment->addCommentAward($commentAward);
-                }
-            }
-
             if (!empty($commentData['replies'])) {
                 $context['parentComment'] = $comment;
                 $replies = $this->denormalize($commentData['replies']['data']['children'], 'array', null, $context);
