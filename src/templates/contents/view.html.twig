@@ -2,15 +2,17 @@
 
 {% block main_content %}
 
-    <div class="row">
-        <div class="col">
-            <div class="border--thin-gray">
-                {{ component('asset_render', {
-                    asset: content.post.subreddit.bannerBackgroundImageAsset,
-                }) }}
+    {% if content.post.subreddit.bannerBackgroundImageAsset %}
+        <div class="row">
+            <div class="col">
+                <div class="border--thin-gray">
+                    {{ component('asset_render', {
+                        asset: content.post.subreddit.bannerBackgroundImageAsset,
+                    }) }}
+                </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 
     <div class="row">
         <div class="col">

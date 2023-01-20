@@ -181,6 +181,11 @@ class PostFixtures extends Fixture
         $comment->setScore((int) $commentRow[4]);
         $comment->setRedditId($commentRow[5]);
         $comment->setDepth((int) $commentRow[6]);
+        $comment->setRedditUrl(sprintf(Comment::REDDIT_URL_FORMAT,
+            $post->getSubreddit()->getName(),
+            $post->getRedditId(),
+            $commentRow[5]
+        ));
 
         $authorText = new AuthorText();
         $authorText->setText($commentRow[2]);

@@ -15,6 +15,7 @@
         {{ include('contents/list/_content_footer.html.twig', {
             postScore: content.post.score,
             commentsCount: content.post.comments.count,
+            redditLink: content.post.redditPostUrl,
         }) }}
 
         </div>
@@ -41,7 +42,7 @@
             {{ include('contents/list/_content_footer.html.twig', {
                 postScore: content.post.score,
                 commentsCount: content.post.comments.count,
-                redditLink: content.post.redditPostUrl
+                redditLink: content.post.redditPostUrl,
             }) }}
 
         </div>

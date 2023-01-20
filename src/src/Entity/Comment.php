@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
+    const REDDIT_URL_FORMAT = 'https://www.reddit.com/r/%s/comments/%s/comment/%s';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -50,6 +52,9 @@ class Comment
 
     #[ORM\Column(type: 'string', length: 150, nullable: true)]
     private $flairText;
+
+    #[ORM\Column(type: 'text')]
+    private $redditUrl;
 
     public function __construct()
     {
@@ -306,5 +311,17 @@ class Comment
         }
 
         return null;
+    }
+
+    public function getRedditUrl(): ?string
+    {
+        return $this->redditUrl;
+    }
+
+    public function setRedditUrl(string $redditUrl): self
+    {
+        $this->redditUrl = $redditUrl;
+
+        return $this;
     }
 }

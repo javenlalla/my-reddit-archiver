@@ -72,6 +72,7 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setRedditId($commentData['id']);
         $comment->setAuthor($commentData['author']);
         $comment->setParentPost($post);
+        $comment = $this->attachRedditUrl($post, $comment);
 
         $depth = $commentData['depth'] ?? 0;
         $comment->setDepth((int) $depth);
@@ -136,6 +137,28 @@ class CommentDenormalizer implements DenormalizerInterface
                 $comment->addCommentAward($commentAward);
             }
         }
+
+        return $comment;
+    }
+
+    /**
+     * Generate the direct URL linked to the provided Comment and set it to
+     * the Comment Entity.
+     *
+     * @param  Post  $post
+     * @param  Comment  $comment
+     *
+     * @return Comment
+     */
+    private function attachRedditUrl(Post $post, Comment $comment): Comment
+    {
+        $redditUrl = sprintf(Comment::REDDIT_URL_FORMAT,
+            $post->getSubreddit()->getName(),
+            $post->getRedditId(),
+            $comment->getRedditUrl(),
+        );
+
+        $comment->setRedditUrl($redditUrl);
 
         return $comment;
     }

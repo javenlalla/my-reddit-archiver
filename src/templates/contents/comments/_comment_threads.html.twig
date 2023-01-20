@@ -6,7 +6,7 @@
         {{ include('contents/list/_content_footer.html.twig', {
             postScore: comment.score,
             commentsCount: comment.replies.count,
-            redditLink: comment.redditId
+            redditLink: comment.redditUrl
         }) }}
 
         {{ include('contents/comments/_comment_threads.html.twig', {
