@@ -1,22 +1,22 @@
 <?php
+declare(strict_types=1);
 
 namespace App\DataFixtures;
 
 use App\Entity\AuthorText;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
-use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
 use App\Entity\Subreddit;
-use App\Entity\Type;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
 use App\Repository\TypeRepository;
+use App\Service\Reddit\Manager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -29,6 +29,7 @@ class PostFixtures extends Fixture
         private readonly TypeRepository $typeRepository,
         private readonly SubredditRepository $subredditRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
+        private readonly Manager $manager,
     ) {
     }
 
@@ -106,7 +107,7 @@ class PostFixtures extends Fixture
         }
         fclose($commentsDataFile);
 
-        // Create Media Assets.
+        $this->syncTestContents();
     }
 
     /**
@@ -205,5 +206,35 @@ class PostFixtures extends Fixture
         }
 
         return $comment;
+    }
+
+    /**
+     * Execute actual syncs against a set of Posts/Comments to populate test
+     * data based on real Contents.
+     *
+     * @return void
+     */
+    private function syncTestContents()
+    {
+        $redditIds = [
+            't3_vepbt0',
+            't3_won0ky',
+            't3_vlyukg',
+            't3_vdmg2f',
+            't3_v443nh',
+            't3_tl8qic',
+            't3_wfylnl',
+            't3_v27nr7',
+            't1_ia1smh6',
+            't3_wgb8wj',
+            't3_cs8urd',
+            't3_utsmkw',
+            't3_urn2yw',
+            't1_ip914eh',
+        ];
+
+        foreach ($redditIds as $redditId) {
+            $this->manager->syncContentFromApiByFullRedditId($redditId);
+        }
     }
 }
