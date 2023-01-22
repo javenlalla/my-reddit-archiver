@@ -15,6 +15,8 @@ class AssetRenderComponent extends AbstractController
 
     public bool $linkImage = false;
 
+    public string $customClass = '';
+
     public function __construct(private readonly Assets $assetsManager)
     {
     }

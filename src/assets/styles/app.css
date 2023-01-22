@@ -47,6 +47,10 @@ body {
     width: 100%;
 }
 
+.width--16px {
+    width: 16px;
+}
+
 .main-content {
     padding-top: 15px;
     padding-right: 15px;

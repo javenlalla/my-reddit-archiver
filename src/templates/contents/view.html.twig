@@ -22,11 +22,12 @@
                         <span>r/{{ content.post.subreddit.name }}</span> | <span>Posted by u/{{ content.post.author }}</span> on <span>{{ content.post.createdAt|date("Y-m-d") }}</span>
                     </div>
 
-                    <div class="col-lg-6 text-end">
-                        {% for award in content.post.postAwards %}
-                            {{ component('asset_render', {
-                                asset: award.iconAsset
-                            }) }}
+                    <div class="col-lg-6 text-lg-end">
+                        {% for postAward in content.post.postAwards %}
+                                {{ component('asset_render', {
+                                    asset: postAward.award.iconAsset,
+                                    customClass: "width--16px"
+                                }) }}
                         {% endfor %}
 
                         {% if content.post.flairText %}
