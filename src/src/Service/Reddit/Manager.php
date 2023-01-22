@@ -70,18 +70,22 @@ class Manager
      * Full Reddit ID example: t3_vepbt0
      *
      * @param  string  $fullRedditId
+     * @param  bool  $syncComments
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromApiByFullRedditId(string $fullRedditId): Content
+    public function syncContentFromApiByFullRedditId(string $fullRedditId, bool $syncComments = false): Content
     {
-        $idParts = explode('_', $fullRedditId);
-        if (count($idParts) !== 2) {
-            throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
-        }
+        // $idParts = explode('_', $fullRedditId);
+        // if (count($idParts) !== 2) {
+        //     throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
+        // }
 
-        return $this->syncContentFromApiByRedditId($idParts[0], $idParts[1]);
+        $response = $this->api->getRedditItemInfoById($fullRedditId);
+        $contentUrl = $response['data']['children'][0]['data']['permalink'];
+
+        return $this->syncContentByUrl($contentUrl, $syncComments);
     }
 
     /**
@@ -180,12 +184,14 @@ class Manager
 
     /**
      * Sync a piece of Content by its URL.
+     *
      * @param  string  $url
+     * @param  bool  $syncComments
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentByUrl(string $url): Content
+    public function syncContentByUrl(string $url, bool $syncComments = false): Content
     {
         $kind = Kind::KIND_LINK;
 
@@ -194,7 +200,7 @@ class Manager
             $kind = Kind::KIND_COMMENT;
         }
 
-        return $this->syncContentFromJsonUrl($kind, $url);
+        return $this->syncContentFromJsonUrl($kind, $url, $syncComments);
     }
 
     /**
@@ -206,11 +212,12 @@ class Manager
      *
      * @param  string  $kind
      * @param  string  $postLink
+     * @param  bool  $syncComments
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromJsonUrl(string $kind, string $postLink): Content
+    public function syncContentFromJsonUrl(string $kind, string $postLink, bool $syncComments = false): Content
     {
         $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
@@ -218,7 +225,7 @@ class Manager
             return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
+        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData'], $syncComments);
     }
 
     /**
@@ -380,14 +387,16 @@ class Manager
      *
      * @return Content
      */
-    private function persistLinkContentJsonUrlData(array $postData, array $commentsData): Content
+    private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false): Content
     {
         $content = $this->hydrateContentFromResponseData($postData['kind'], $postData);
         $content = $this->executePreAddContentHooks($content);
 
         $this->contentRepository->add($content, true);
 
-        $this->processJsonCommentsData($content, $commentsData);
+        if ($syncComments === true) {
+            $this->processJsonCommentsData($content, $commentsData);
+        }
 
         $this->entityManager->flush();
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Tests\Feature;
+namespace App\Tests\feature;
 
 use App\Entity\Comment;
 use App\Entity\Kind;
@@ -16,10 +16,6 @@ class CommentsSyncTest extends KernelTestCase
 {
     private Manager $manager;
 
-    private CommentRepository $commentRepository;
-
-    private EntityManagerInterface $entityManager;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -27,8 +23,6 @@ class CommentsSyncTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
-        $this->commentRepository = $container->get(CommentRepository::class);
-        $this->entityManager = $container->get(EntityManagerInterface::class);
     }
 
     public function testGetComments()
@@ -285,7 +279,7 @@ class CommentsSyncTest extends KernelTestCase
         $kind = Kind::KIND_LINK;
         $postLink = 'https://www.reddit.com/r/mildlyinfuriating/comments/a6ezwg/your_comment_was_removed_for_being_a_very_short/';
 
-        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink, true);
         $comments = $content->getPost()->getComments();
 
         $deletedComment = null;
@@ -306,5 +300,21 @@ class CommentsSyncTest extends KernelTestCase
         $replyComment = $replies->get(0);
         $this->assertEquals('[deleted]', $replyComment->getAuthor());
         $this->assertEquals('I like your thinking.', $replyComment->getLatestCommentAuthorText()->getAuthorText()->getText());
+    }
+
+    /**
+     * Verify no Comments are synced by default when syncing Contents.
+     *
+     * @return void
+     */
+    public function testNoCommentsSynced()
+    {
+        $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $this->assertCount(0, $content->getPost()->getComments());
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId, true);
+        $this->assertCount(76, $content->getPost()->getComments());
     }
 }
