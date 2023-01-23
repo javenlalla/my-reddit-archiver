@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -16,6 +17,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class MoreCommentRepository extends ServiceEntityRepository
 {
+    const DEFAULT_LIMIT = 20;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MoreComment::class);
@@ -37,6 +40,52 @@ class MoreCommentRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Find all More Comment Entities under the provided More Comment's Parent
+     * Comment.
+     *
+     * @param  MoreComment  $moreComment
+     * @param  int  $limit
+     *
+     * @return array
+     */
+    public function findByRelatedParentComment(MoreComment $moreComment, int $limit = self::DEFAULT_LIMIT): array
+    {
+        $qb = $this->createQueryBuilder('m')
+           ->andWhere('m.parentComment = :parentComment')
+           ->setParameter('parentComment', $moreComment->getParentComment());
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find all More Comment Entities under the provided More Comment's Parent
+     * Post.
+     *
+     * @param  MoreComment  $moreComment
+     * @param  int  $limit
+     *
+     * @return array
+     */
+    public function findByRelatedParentPost(MoreComment $moreComment, int $limit = self::DEFAULT_LIMIT): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->andWhere('m.parentPost = :parentPost')
+            ->setParameter('parentPost', $moreComment->getParentPost());
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+
+        return $qb->getQuery()
+            ->getResult();
     }
 
 //    /**

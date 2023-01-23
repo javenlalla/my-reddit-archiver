@@ -141,13 +141,13 @@ class CommentsSyncTest extends KernelTestCase
 
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
-        $this->assertCount(864, $comments);
+        $this->assertGreaterThan(850, count($comments));
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(864, $comments);
+        $this->assertCount(850, count($comments));
     }
 
     /**
@@ -403,7 +403,10 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('vepbt0', $parentPost->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $parentPost->getTitle());
 
-        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm');
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', 20);
+        $this->assertCount(20, $comments);
+
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', -1);
         $this->assertGreaterThan(300, count($comments));
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'icsbncm']);

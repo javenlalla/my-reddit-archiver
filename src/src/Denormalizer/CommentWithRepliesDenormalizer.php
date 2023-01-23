@@ -1,19 +1,29 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
 use App\Entity\Comment;
 use App\Entity\MoreComment;
 use App\Entity\Post;
-use App\Trait\CommentUrlTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentWithRepliesDenormalizer implements DenormalizerInterface
 {
-    use CommentUrlTrait;
+    public function __construct(
+        private readonly CommentDenormalizer $commentDenormalizer,
+        private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
+    ) {
+    }
 
-    public function __construct(private readonly CommentDenormalizer $commentDenormalizer)
+    /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
+        return $data instanceof Post
+            && $type === Comment::class
+            && !empty($context['commentData']);
     }
 
     /**
@@ -47,12 +57,7 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
                 } else if ($replyCommentData['kind'] === 'more' && !empty($replyCommentData['data']['children'])) {
 
                     foreach ($replyCommentData['data']['children'] as $moreCommentRedditId) {
-                        $moreComment = new MoreComment();
-                        $moreComment->setRedditId($moreCommentRedditId);
-
-                        $commentUrl = $this->generateRedditUrl($post, $moreCommentRedditId);
-                        $moreComment->setUrl($commentUrl);
-
+                        $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
                         $comment->addMoreComment($moreComment);
                     }
                 }
@@ -60,13 +65,5 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
         }
 
         return $comment;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Post && $type === Comment::class;
     }
 }

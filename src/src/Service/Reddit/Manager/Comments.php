@@ -3,25 +3,25 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit\Manager;
 
+use App\Denormalizer\CommentDenormalizer;
 use App\Denormalizer\CommentWithRepliesDenormalizer;
+use App\Denormalizer\MoreCommentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
-use App\Entity\Kind;
 use App\Entity\MoreComment;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
-use App\Trait\CommentUrlTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
 class Comments
 {
-    use CommentUrlTrait;
-
     public function __construct(
         private readonly Api $redditApi,
-        private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
+        private readonly CommentDenormalizer $commentDenormalizer,
+        private readonly CommentWithRepliesDenormalizer $commentWithRepliesDenormalizer,
+        private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
         private readonly EntityManagerInterface $entityManager,
         private readonly MoreCommentRepository $moreCommentRepository,
     ) {
@@ -38,40 +38,44 @@ class Comments
      */
     public function getLatestCommentByContent(Content $content): ?Comment
     {
-        $commentsRawResponse = $this->redditApi->getPostCommentsByRedditId(
+        $commentsRawData = $this->redditApi->getPostCommentsByRedditId(
             redditId: $content->getPost()->getRedditId(),
             sort: Api::COMMENTS_SORT_NEW,
         );
 
-        $commentData = [];
-        foreach ($commentsRawResponse as $topLevelRaw) {
-            foreach ($topLevelRaw['data']['children'] as $topLevelChildRaw) {
-                if ($topLevelChildRaw['kind'] === Kind::KIND_COMMENT) {
-                    $commentData = $topLevelChildRaw['data'];
-                }
-            }
-        }
-
-        // If no Comment data found (i.e.: Link Post contained no Comments),
-        // return null.
-        if (empty($commentData)) {
+        if (!empty($commentsRawData[0]['data'])) {
+            $commentData = $commentsRawData[0]['data'];
+        } else {
+            // If no Comment data found (i.e.: Link Post contained no Comments),
+            // return null.
             return null;
         }
 
         return $this->commentDenormalizer->denormalize($content->getPost(), Comment::class, null, ['commentData' => $commentData]);
     }
 
+    /**
+     * Sync a set of Comments associated to the provided Content.
+     *
+     * Not all Comments are immediately synced; those that are set as "more"
+     * will instead be persisted as More Comment Entities for syncing at a
+     * later time.
+     *
+     * @param  Content  $content
+     *
+     * @return ArrayCollection
+     * @throws InvalidArgumentException
+     */
     public function syncCommentsByContent(Content $content): ArrayCollection
     {
         $post = $content->getPost();
         $postRedditId = $post->getRedditId();
-        $commentsRawResponse = $this->redditApi->getPostCommentsByRedditId($postRedditId);
-        $commentsRawData = $commentsRawResponse[1]['data']['children'];
+        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($postRedditId);
 
         foreach ($commentsRawData as $commentRawData) {
             if ($commentRawData['kind'] !== 'more') {
                 $commentData = $commentRawData['data'];
-                $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
+                $comment = $this->commentWithRepliesDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
 
                 $this->entityManager->persist($comment);
 
@@ -80,11 +84,7 @@ class Comments
             } else if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
 
                 foreach ($commentRawData['data']['children'] as $moreCommentRedditId) {
-                    $moreComment = new MoreComment();
-                    $moreComment->setRedditId($moreCommentRedditId);
-
-                    $commentUrl = $this->generateRedditUrl($post, $moreCommentRedditId);
-                    $moreComment->setUrl($commentUrl);
+                    $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
                     $this->entityManager->persist($moreComment);
 
                     $post->addMoreComment($moreComment);
@@ -99,12 +99,19 @@ class Comments
     }
 
     /**
-     * @param  string  $redditId
+     * Sync More Comment Entities related to the provided More Comment Reddit
+     * ID.
      *
-     * @return Comment[]
+     * Fetch all related More Comment Entities first, by Comment or Post, and
+     * then sync each Entity.
+     *
+     * @param  string  $redditId
+     * @param  int  $limit
+     *
+     * @return array
      * @throws InvalidArgumentException
      */
-    public function syncMoreCommentAndRelatedByRedditId(string $redditId): array
+    public function syncMoreCommentAndRelatedByRedditId(string $redditId, int $limit = MoreCommentRepository::DEFAULT_LIMIT): array
     {
         $initialMoreComment = $this->moreCommentRepository->findOneBy(['redditId' => $redditId]);
         if (empty($initialMoreComment)) {
@@ -113,10 +120,10 @@ class Comments
 
         if (!empty($initialMoreComment->getParentComment())) {
             $post = $initialMoreComment->getParentComment()->getParentPost();
-            $allMoreComments = $this->moreCommentRepository->findBy(['parentComment' => $initialMoreComment->getParentComment()]);
+            $allMoreComments = $this->moreCommentRepository->findByRelatedParentComment($initialMoreComment, $limit);
         } else {
             $post = $initialMoreComment->getParentPost();
-            $allMoreComments = $this->moreCommentRepository->findBy(['parentPost' => $initialMoreComment->getParentPost()]);
+            $allMoreComments = $this->moreCommentRepository->findByRelatedParentPost($initialMoreComment, $limit);
         }
 
         $comments = [];
@@ -131,7 +138,7 @@ class Comments
             }
 
             $moreCommentData = $moreCommentResponseData[1]['data']['children'][0]['data'];
-            $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $moreCommentData]);
+            $comment = $this->commentWithRepliesDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $moreCommentData]);
             $this->entityManager->persist($comment);
 
             // Remove More Comment to avoid unnecessary subsequent syncs.
@@ -158,12 +165,11 @@ class Comments
     {
         $post = $content->getPost();
         $postRedditId = $post->getRedditId();
-        $commentsRawResponse = $this->redditApi->getPostCommentsByRedditId($postRedditId);
-        $commentsRawData = $commentsRawResponse[1]['data']['children'];
+        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($postRedditId);
 
         $commentsData = $this->retrieveAllComments($postRedditId, $commentsRawData);
         foreach ($commentsData as $commentData) {
-            $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
+            $comment = $this->commentWithRepliesDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
 
             $this->entityManager->persist($comment);
 

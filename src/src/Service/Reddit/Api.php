@@ -153,8 +153,13 @@ class Api
             }
 
             $response = $this->executeSimpleCall(self::METHOD_GET, $commentsUrl);
+            $responseData = $response->toArray();
 
-            return $response->toArray();
+            if (!empty($responseData[1]['data']['children'])) {
+                return $responseData[1]['data']['children'];
+            }
+
+            return [];
         });
     }
 
