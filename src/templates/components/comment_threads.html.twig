@@ -1,0 +1,24 @@
+<div {{ attributes }}>
+    <div class="row search-result-content">
+        <button class="btn"
+                type="button"
+                data-model="comments"
+                data-action="live#action"
+                data-action-name="syncComments"
+        >Sync Comments</button>
+
+        <span data-loading="action(syncComments)|show">
+            Refreshing Comments
+        </span>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="search-result-content border-radius--top-25em border-radius--bottom-25em">
+                {{ include('contents/comments/_comment_threads.html.twig', {
+                    comments: this.comments,
+                }) }}
+            </div>
+        </div>
+    </div>
+</div>

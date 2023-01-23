@@ -9,12 +9,16 @@ use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Service\Reddit\Manager;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class CommentsSyncTest extends KernelTestCase
 {
     private Manager $manager;
+
+    private Comments $commentsManager;
+
+    private CommentRepository $commentRepository;
 
     public function setUp(): void
     {
@@ -23,6 +27,8 @@ class CommentsSyncTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
+        $this->commentsManager = $container->get(Comments::class);
+        $this->commentRepository = $container->get(CommentRepository::class);
     }
 
     public function testGetComments()
@@ -316,5 +322,25 @@ class CommentsSyncTest extends KernelTestCase
 
         $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId, true);
         $this->assertCount(76, $content->getPost()->getComments());
+    }
+
+    /**
+     * Verify all Comments, including those found under "more" can be synced
+     * under one function call.
+     *
+     * @return void
+     */
+    public function testSyncAllMoreComments()
+    {
+        $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $this->assertCount(0, $content->getPost()->getComments());
+
+        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $this->assertGreaterThan(400, $comments->count());
+
+        $allCommentsCount = $this->commentRepository->getTotalPostCount($content->getPost());
+        $this->assertGreaterThan(510, $allCommentsCount);
     }
 }

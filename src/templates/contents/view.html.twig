@@ -62,14 +62,8 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">
-            <div class="search-result-content border-radius--top-25em border-radius--bottom-25em">
-                {{ include('contents/comments/_comment_threads.html.twig', {
-                    comments: content.post.topLevelComments,
-                }) }}
-            </div>
-        </div>
-    </div>
+    {{ component('comment_threads', {
+        content: content,
+    }) }}
 
 {% endblock %}
