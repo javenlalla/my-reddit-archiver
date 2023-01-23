@@ -8,6 +8,7 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
+use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -20,6 +21,8 @@ class CommentsSyncTest extends KernelTestCase
 
     private CommentRepository $commentRepository;
 
+    private MoreCommentRepository $moreCommentRepository;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -29,6 +32,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->manager = $container->get(Manager::class);
         $this->commentsManager = $container->get(Comments::class);
         $this->commentRepository = $container->get(CommentRepository::class);
+        $this->moreCommentRepository = $container->get(MoreCommentRepository::class);
     }
 
     public function testGetComments()
@@ -342,5 +346,73 @@ class CommentsSyncTest extends KernelTestCase
 
         $allCommentsCount = $this->commentRepository->getTotalPostCount($content->getPost());
         $this->assertGreaterThan(510, $allCommentsCount);
+    }
+
+    /**
+     * Verify that when Comments are synced with replies, "More" elements are
+     * synced as MoreComment Entities related to Comments and can also be
+     * synced themselves.
+     *
+     * @return void
+     */
+    public function testSyncMoreCommentRelationToComment()
+    {
+        $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $this->assertCount(0, $content->getPost()->getComments());
+
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $this->assertGreaterThan(70, $comments->count());
+
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
+        $parentComment = $moreComment->getParentComment();
+        $this->assertEquals('icryh77', $parentComment->getRedditId());
+        $this->assertEquals('Omg my whole family is dying laughing over this one', $parentComment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icugcmt');
+        $this->assertCount(1, $comments);
+        $comment = $comments[0];
+        $this->assertEquals('icugcmt', $comment->getRedditId());
+        $this->assertEquals('"Um, you are going to remember to wash your hands before you eat?"', $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
+        // Verify the synced More Comment record was purged after syncing.
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
+        $this->assertEmpty($moreComment);
+    }
+
+    /**
+     * Verify that when a Post is synced with Comments, top-level "More"
+     * elements directly associated to the Post are synced as MoreComment
+     * Entities related to Comments and can also be synced themselves.
+     *
+     * @return void
+     */
+    public function testSyncMoreCommentRelationToPost()
+    {
+        $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $this->assertCount(0, $content->getPost()->getComments());
+
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $this->assertGreaterThan(70, $comments->count());
+
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
+        $parentPost = $moreComment->getParentPost();
+        $this->assertEquals('vepbt0', $parentPost->getRedditId());
+        $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $parentPost->getTitle());
+
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm');
+        $this->assertGreaterThan(300, count($comments));
+
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'icsbncm']);
+        $this->assertEquals('icsbncm', $comment->getRedditId());
+        $this->assertEquals('It could also pass for a bison plop. Working in Yellowstone, I dodged more than a few of these.', $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
+        $this->assertEmpty($comment->getParentComment());
+
+        // Verify the synced More Comment record was purged after syncing.
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
+        $this->assertEmpty($moreComment);
     }
 }

@@ -234,7 +234,7 @@ class PostFixtures extends Fixture
         ];
 
         foreach ($redditIds as $redditId) {
-            $this->manager->syncContentFromApiByFullRedditId($redditId, true);
+            $this->manager->syncContentFromApiByFullRedditId($redditId);
         }
     }
 }

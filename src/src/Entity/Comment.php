@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
-    const REDDIT_URL_FORMAT = 'https://www.reddit.com/r/%s/comments/%s/comment/%s';
+    const REDDIT_URL_FORMAT = 'https://www.reddit.com/r/%s/comments/%s/comment/%s/';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -56,11 +56,15 @@ class Comment
     #[ORM\Column(type: 'text')]
     private $redditUrl;
 
+    #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: MoreComment::class, cascade: ['persist', 'remove'])]
+    private $moreComments;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
         $this->commentAuthorTexts = new ArrayCollection();
         $this->commentAwards = new ArrayCollection();
+        $this->moreComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -321,6 +325,36 @@ class Comment
     public function setRedditUrl(string $redditUrl): self
     {
         $this->redditUrl = $redditUrl;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MoreComment>
+     */
+    public function getMoreComments(): Collection
+    {
+        return $this->moreComments;
+    }
+
+    public function addMoreComment(MoreComment $moreComment): self
+    {
+        if (!$this->moreComments->contains($moreComment)) {
+            $this->moreComments[] = $moreComment;
+            $moreComment->setParentComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMoreComment(MoreComment $moreComment): self
+    {
+        if ($this->moreComments->removeElement($moreComment)) {
+            // set the owning side to null (unless already changed)
+            if ($moreComment->getParentComment() === $this) {
+                $moreComment->setParentComment(null);
+            }
+        }
 
         return $this;
     }

@@ -7,17 +7,23 @@ use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\Kind;
+use App\Entity\MoreComment;
+use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
+use App\Trait\CommentUrlTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
 class Comments
 {
+    use CommentUrlTrait;
+
     public function __construct(
         private readonly Api $redditApi,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly MoreCommentRepository $moreCommentRepository,
     ) {
     }
 
@@ -53,6 +59,90 @@ class Comments
         }
 
         return $this->commentDenormalizer->denormalize($content->getPost(), Comment::class, null, ['commentData' => $commentData]);
+    }
+
+    public function syncCommentsByContent(Content $content): ArrayCollection
+    {
+        $post = $content->getPost();
+        $postRedditId = $post->getRedditId();
+        $commentsRawResponse = $this->redditApi->getPostCommentsByRedditId($postRedditId);
+        $commentsRawData = $commentsRawResponse[1]['data']['children'];
+
+        foreach ($commentsRawData as $commentRawData) {
+            if ($commentRawData['kind'] !== 'more') {
+                $commentData = $commentRawData['data'];
+                $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
+
+                $this->entityManager->persist($comment);
+
+                $post->addComment($comment);
+                $this->entityManager->persist($post);
+            } else if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
+
+                foreach ($commentRawData['data']['children'] as $moreCommentRedditId) {
+                    $moreComment = new MoreComment();
+                    $moreComment->setRedditId($moreCommentRedditId);
+
+                    $commentUrl = $this->generateRedditUrl($post, $moreCommentRedditId);
+                    $moreComment->setUrl($commentUrl);
+                    $this->entityManager->persist($moreComment);
+
+                    $post->addMoreComment($moreComment);
+                    $this->entityManager->persist($post);
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $post->getTopLevelComments();
+    }
+
+    /**
+     * @param  string  $redditId
+     *
+     * @return Comment[]
+     * @throws InvalidArgumentException
+     */
+    public function syncMoreCommentAndRelatedByRedditId(string $redditId): array
+    {
+        $initialMoreComment = $this->moreCommentRepository->findOneBy(['redditId' => $redditId]);
+        if (empty($initialMoreComment)) {
+            return [];
+        }
+
+        if (!empty($initialMoreComment->getParentComment())) {
+            $post = $initialMoreComment->getParentComment()->getParentPost();
+            $allMoreComments = $this->moreCommentRepository->findBy(['parentComment' => $initialMoreComment->getParentComment()]);
+        } else {
+            $post = $initialMoreComment->getParentPost();
+            $allMoreComments = $this->moreCommentRepository->findBy(['parentPost' => $initialMoreComment->getParentPost()]);
+        }
+
+        $comments = [];
+        foreach ($allMoreComments as $moreComment) {
+            $moreCommentResponseData = $this->redditApi->getPostFromJsonUrl($moreComment->getUrl());
+
+            // In the case of a More Comment that is "missing" (deleted, removed, etc.)
+            // on the Reddit side, delete the More Comment entity and skip processing.
+            if (empty($moreCommentResponseData[1]['data']['children'][0])) {
+                $this->entityManager->remove($moreComment);
+                continue;
+            }
+
+            $moreCommentData = $moreCommentResponseData[1]['data']['children'][0]['data'];
+            $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $moreCommentData]);
+            $this->entityManager->persist($comment);
+
+            // Remove More Comment to avoid unnecessary subsequent syncs.
+            $this->entityManager->remove($moreComment);
+
+            $comments[] = $comment;
+        }
+
+        $this->entityManager->flush();
+
+        return $comments;
     }
 
     /**

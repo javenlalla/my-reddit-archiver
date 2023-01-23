@@ -11,11 +11,14 @@ use App\Entity\Post;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentAwardRepository;
 use App\Repository\CommentRepository;
+use App\Trait\CommentUrlTrait;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentDenormalizer implements DenormalizerInterface
 {
+    use CommentUrlTrait;
+
     public function __construct(
         private readonly CommentRepository $commentRepository,
         private readonly CommentAwardRepository $commentAwardRepository,
@@ -72,7 +75,9 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setRedditId($commentData['id']);
         $comment->setAuthor($commentData['author']);
         $comment->setParentPost($post);
-        $comment = $this->attachRedditUrl($post, $comment);
+
+        $commentUrl = $this->generateRedditUrl($post, $comment->getRedditId());
+        $comment->setRedditUrl($commentUrl);
 
         $depth = $commentData['depth'] ?? 0;
         $comment->setDepth((int) $depth);
@@ -137,28 +142,6 @@ class CommentDenormalizer implements DenormalizerInterface
                 $comment->addCommentAward($commentAward);
             }
         }
-
-        return $comment;
-    }
-
-    /**
-     * Generate the direct URL linked to the provided Comment and set it to
-     * the Comment Entity.
-     *
-     * @param  Post  $post
-     * @param  Comment  $comment
-     *
-     * @return Comment
-     */
-    private function attachRedditUrl(Post $post, Comment $comment): Comment
-    {
-        $redditUrl = sprintf(Comment::REDDIT_URL_FORMAT,
-            $post->getSubreddit()->getName(),
-            $post->getRedditId(),
-            $comment->getRedditUrl(),
-        );
-
-        $comment->setRedditUrl($redditUrl);
 
         return $comment;
     }

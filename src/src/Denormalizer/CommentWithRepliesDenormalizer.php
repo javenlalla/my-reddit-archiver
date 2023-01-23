@@ -3,11 +3,15 @@
 namespace App\Denormalizer;
 
 use App\Entity\Comment;
+use App\Entity\MoreComment;
 use App\Entity\Post;
+use App\Trait\CommentUrlTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentWithRepliesDenormalizer implements DenormalizerInterface
 {
+    use CommentUrlTrait;
+
     public function __construct(private readonly CommentDenormalizer $commentDenormalizer)
     {
     }
@@ -40,6 +44,17 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
 
                     $reply = $this->denormalize($post, $type, $format, $context);
                     $comment->addReply($reply);
+                } else if ($replyCommentData['kind'] === 'more' && !empty($replyCommentData['data']['children'])) {
+
+                    foreach ($replyCommentData['data']['children'] as $moreCommentRedditId) {
+                        $moreComment = new MoreComment();
+                        $moreComment->setRedditId($moreCommentRedditId);
+
+                        $commentUrl = $this->generateRedditUrl($post, $moreCommentRedditId);
+                        $moreComment->setUrl($commentUrl);
+
+                        $comment->addMoreComment($moreComment);
+                    }
                 }
             }
         }

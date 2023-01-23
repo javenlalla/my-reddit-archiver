@@ -71,12 +71,16 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Asset::class, cascade: ['persist', 'remove'])]
     private $mediaAssets;
 
+    #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MoreComment::class, cascade: ['persist', 'remove'])]
+    private $moreComments;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->postAuthorTexts = new ArrayCollection();
         $this->postAwards = new ArrayCollection();
         $this->mediaAssets = new ArrayCollection();
+        $this->moreComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -430,6 +434,36 @@ class Post
             // set the owning side to null (unless already changed)
             if ($mediaAsset->getPost() === $this) {
                 $mediaAsset->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MoreComment>
+     */
+    public function getMoreComments(): Collection
+    {
+        return $this->moreComments;
+    }
+
+    public function addMoreComment(MoreComment $moreComment): self
+    {
+        if (!$this->moreComments->contains($moreComment)) {
+            $this->moreComments[] = $moreComment;
+            $moreComment->setParentPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMoreComment(MoreComment $moreComment): self
+    {
+        if ($this->moreComments->removeElement($moreComment)) {
+            // set the owning side to null (unless already changed)
+            if ($moreComment->getParentPost() === $this) {
+                $moreComment->setParentPost(null);
             }
         }
 
