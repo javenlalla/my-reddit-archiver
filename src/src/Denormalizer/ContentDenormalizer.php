@@ -32,7 +32,10 @@ class ContentDenormalizer implements DenormalizerInterface
      */
     public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = null): bool
     {
-        return is_array($data) && $type === Content::class;
+        return $type === Content::class
+            && is_array($data)
+            && !empty($data['kind'])
+            && is_string($data['kind']);
     }
 
     /**

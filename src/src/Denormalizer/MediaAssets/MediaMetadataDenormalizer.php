@@ -50,6 +50,12 @@ class MediaMetadataDenormalizer implements DenormalizerInterface
      */
     public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
     {
-        return is_array($data);
+        if (is_array($data) && $type === Asset::class) {
+            $firstElement = array_pop(array_reverse($data));
+
+            return isset($firstElement['m']) && is_string($firstElement['m']);
+        }
+
+        return false;
     }
 }
