@@ -376,6 +376,14 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('icugcmt', $comment->getRedditId());
         $this->assertEquals('"Um, you are going to remember to wash your hands before you eat?"', $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
 
+        // Verify the Comment has been correctly associated to its parent
+        // Comment (same parent Comment as the original More Comment Entity
+        // above).
+        $parentComment = $comment->getParentComment();
+        $this->assertInstanceOf(Comment::class, $parentComment);
+        $this->assertEquals('icryh77', $parentComment->getRedditId());
+        $this->assertEquals('Omg my whole family is dying laughing over this one', $parentComment->getLatestCommentAuthorText()->getAuthorText()->getText());
+
         // Verify the synced More Comment record was purged after syncing.
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
         $this->assertEmpty($moreComment);

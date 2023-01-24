@@ -108,7 +108,7 @@ class Comments
      * @param  string  $redditId
      * @param  int  $limit
      *
-     * @return array
+     * @return Comment[]
      * @throws InvalidArgumentException
      */
     public function syncMoreCommentAndRelatedByRedditId(string $redditId, int $limit = MoreCommentRepository::DEFAULT_LIMIT): array
@@ -118,7 +118,9 @@ class Comments
             return [];
         }
 
+        $parentComment = null;
         if (!empty($initialMoreComment->getParentComment())) {
+            $parentComment = $initialMoreComment->getParentComment();
             $post = $initialMoreComment->getParentComment()->getParentPost();
             $allMoreComments = $this->moreCommentRepository->findByRelatedParentComment($initialMoreComment, $limit);
         } else {
@@ -140,6 +142,11 @@ class Comments
             $moreCommentData = $moreCommentResponseData[1]['data']['children'][0]['data'];
             $comment = $this->commentWithRepliesDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $moreCommentData]);
             $this->entityManager->persist($comment);
+
+            if (!empty($parentComment)) {
+                $parentComment->addReply($comment);
+                $this->entityManager->persist($parentComment);
+            }
 
             // Remove More Comment to avoid unnecessary subsequent syncs.
             $this->entityManager->remove($moreComment);
