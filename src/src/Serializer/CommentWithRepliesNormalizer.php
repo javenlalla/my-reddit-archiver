@@ -39,6 +39,6 @@ class CommentWithRepliesNormalizer implements NormalizerInterface
      */
     public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
-        return $data instanceof Comment;
+        return $data instanceof Comment && $format === 'api.json';
     }
 }
