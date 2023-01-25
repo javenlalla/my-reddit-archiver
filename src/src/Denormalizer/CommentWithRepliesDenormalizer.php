@@ -6,6 +6,7 @@ namespace App\Denormalizer;
 use App\Entity\Comment;
 use App\Entity\MoreComment;
 use App\Entity\Post;
+use App\Repository\CommentRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentWithRepliesDenormalizer implements DenormalizerInterface
@@ -13,6 +14,7 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
     public function __construct(
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
+        private readonly CommentRepository $commentRepository,
     ) {
     }
 
@@ -57,8 +59,12 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
                 } else if ($replyCommentData['kind'] === 'more' && !empty($replyCommentData['data']['children'])) {
 
                     foreach ($replyCommentData['data']['children'] as $moreCommentRedditId) {
-                        $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
-                        $comment->addMoreComment($moreComment);
+                        // Only create a new More Comment Entity if it has not
+                        // already been synced as a Comment.
+                        if (empty($this->commentRepository->findOneBy(['redditId' => $moreCommentRedditId]))) {
+                            $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
+                            $comment->addMoreComment($moreComment);
+                        }
                     }
                 }
             }

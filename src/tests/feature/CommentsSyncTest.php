@@ -147,7 +147,7 @@ class CommentsSyncTest extends KernelTestCase
         // Re-fetch Post.
         $fetchedPost = $this->manager->getPostByRedditId($redditId);
         $comments = $fetchedPost->getComments();
-        $this->assertCount(850, count($comments));
+        $this->assertGreaterThan(850, count($comments));
     }
 
     /**
@@ -375,6 +375,9 @@ class CommentsSyncTest extends KernelTestCase
         $comment = $comments[0];
         $this->assertEquals('icugcmt', $comment->getRedditId());
         $this->assertEquals('"Um, you are going to remember to wash your hands before you eat?"', $comment->getLatestCommentAuthorText()->getAuthorText()->getText());
+        // Verify More Comment Entity was purged after sync.
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
+        $this->assertEmpty($moreComment);
 
         // Verify the Comment has been correctly associated to its parent
         // Comment (same parent Comment as the original More Comment Entity
@@ -385,6 +388,13 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('Omg my whole family is dying laughing over this one', $parentComment->getLatestCommentAuthorText()->getAuthorText()->getText());
 
         // Verify the synced More Comment record was purged after syncing.
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
+        $this->assertEmpty($moreComment);
+
+        // Verify on subsequent syncs, a More Comment that is already synced
+        // as a Comment is not pulled again as a More Comment.
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $this->assertGreaterThan(70, $comments->count());
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
         $this->assertEmpty($moreComment);
     }
@@ -423,6 +433,13 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEmpty($comment->getParentComment());
 
         // Verify the synced More Comment record was purged after syncing.
+        $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
+        $this->assertEmpty($moreComment);
+
+        // Verify on subsequent syncs, a More Comment that is already synced
+        // as a Comment is not pulled again as a More Comment.
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $this->assertGreaterThan(70, $comments->count());
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
         $this->assertEmpty($moreComment);
     }

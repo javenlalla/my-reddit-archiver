@@ -9,6 +9,7 @@ use App\Denormalizer\MoreCommentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\MoreComment;
+use App\Repository\CommentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -24,6 +25,7 @@ class Comments
         private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
         private readonly EntityManagerInterface $entityManager,
         private readonly MoreCommentRepository $moreCommentRepository,
+        private readonly CommentRepository $commentRepository,
     ) {
     }
 
@@ -84,11 +86,15 @@ class Comments
             } else if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
 
                 foreach ($commentRawData['data']['children'] as $moreCommentRedditId) {
-                    $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
-                    $this->entityManager->persist($moreComment);
+                    // Only create a new More Comment Entity if it has not
+                    // already been synced as a Comment.
+                    if (empty($this->commentRepository->findOneBy(['redditId' => $moreCommentRedditId]))) {
+                        $moreComment = $this->moreCommentDenormalizer->denormalize($moreCommentRedditId, MoreComment::class, null, ['post' => $post]);
+                        $this->entityManager->persist($moreComment);
 
-                    $post->addMoreComment($moreComment);
-                    $this->entityManager->persist($post);
+                        $post->addMoreComment($moreComment);
+                        $this->entityManager->persist($post);
+                    }
                 }
             }
         }
