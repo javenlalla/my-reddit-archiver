@@ -1,6 +1,6 @@
 <div {{ attributes }}>
     <div style="border-left: 2px solid #dedede; padding-left: 5px; margin-left: 10px;">
-        <p style="font-size: 10px; font-weight: bold; color: #1c1c1c"><span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}</p>
+        <span style="font-size: 10px; font-weight: bold; color: #1c1c1c"><span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}</span>
         <div style="font-size: 12px; color: #1c1c1c">{{ comment.latestCommentAuthorText.authorText.textHtml|raw }}</div>
 
         {{ include('contents/list/_content_footer.html.twig', {

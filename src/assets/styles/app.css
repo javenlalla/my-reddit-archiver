@@ -67,3 +67,7 @@ blockquote>p {
     border-left: 5px solid #343a40;
     padding-left: 5px
 }
+
+.md>p {
+    margin: 0;
+}
