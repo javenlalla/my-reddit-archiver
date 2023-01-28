@@ -25,7 +25,7 @@ class SearchForm extends AbstractType
                     'placeholder' => 'Search Archive',
                     'data-model' => 'debounce(200)|query',
                 ],
-                'required' => true,
+                'required' => false,
                 'constraints' => [
                     new Length(['min' => 3]),
                     new NotBlank(),
