@@ -25,6 +25,7 @@
         "symfony/runtime": "6.1.*",
         "symfony/serializer": "6.1.*",
         "symfony/twig-bundle": "6.1.*",
+        "symfony/ux-autocomplete": "^2.7",
         "symfony/ux-live-component": "^2.6",
         "symfony/ux-twig-component": "^2.6",
         "symfony/validator": "6.1.*",

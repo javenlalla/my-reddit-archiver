@@ -35,19 +35,24 @@ class SearchForm extends AbstractType
                 'class' => Subreddit::class,
                 'choice_label' => 'name',
                 'choice_value' => 'name',
-                'placeholder' => 'Filter By Sub-Reddit',
+                'placeholder' => 'Filter By Sub-Reddits',
                 'query_builder' => function (SubredditRepository $repository) {
                     return $repository->createQueryBuilder('s')
                         ->orderBy('s.name', 'ASC');
                 },
                 'attr' => [
-                    'data-model' => 'subreddit',
+                    'data-model' => 'subreddits',
                 ],
                 'required' => false,
+                'autocomplete' => true,
+                'multiple' => true,
+                'tom_select_options' => [
+                    'placeholder' => 'Filter By Sub-Reddits',
+                ],
             ])
             ->add('flairTexts', EntityType::class, [
                 'class' => Post::class,
-                'placeholder' => 'Filter By Flair',
+                'placeholder' => 'Filter By Flairs',
                 'choice_label' => 'flairText',
                 'choice_value' => 'flairText',
                 'query_builder' => function (PostRepository $repository) {
@@ -57,18 +62,28 @@ class SearchForm extends AbstractType
                         ->orderBy('p.flairText');
                 },
                 'attr' => [
-                    'data-model' => 'flairText',
+                    'data-model' => 'flairTexts',
                 ],
                 'required' => false,
+                'autocomplete' => true,
+                'multiple' => true,
+                'tom_select_options' => [
+                    'placeholder' => 'Filter By Flairs',
+                ],
             ])
             ->add('tags', EntityType::class, [
-                'placeholder' => 'Filter By Tag',
+                'placeholder' => 'Filter By Tags',
                 'class' => Tag::class,
                 'choice_label' => 'name',
                 'attr' => [
-                    'data-model' => 'tag',
+                    'data-model' => 'tags',
                 ],
                 'required' => false,
+                'autocomplete' => true,
+                'multiple' => true,
+                'tom_select_options' => [
+                    'placeholder' => 'Filter By Tags',
+                ],
             ])
         ;
     }

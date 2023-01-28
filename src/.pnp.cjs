@@ -32,10 +32,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:7.20.2"],\
             ["@hotwired/stimulus", "npm:3.2.1"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.1"],\
+            ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.2.0"],\
             ["core-js", "npm:3.27.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\
+            ["tom-select", "npm:2.2.2"],\
             ["webpack", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.75.0"],\
             ["webpack-cli", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.10.0"],\
             ["webpack-notifier", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:1.15.0"]\
@@ -2382,6 +2384,25 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@orchidjs/sifter", [\
+        ["npm:1.0.3", {\
+          "packageLocation": "./.yarn/cache/@orchidjs-sifter-npm-1.0.3-72700bbb63-5925ce6e5b.zip/node_modules/@orchidjs/sifter/",\
+          "packageDependencies": [\
+            ["@orchidjs/sifter", "npm:1.0.3"],\
+            ["@orchidjs/unicode-variants", "npm:1.0.4"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@orchidjs/unicode-variants", [\
+        ["npm:1.0.4", {\
+          "packageLocation": "./.yarn/cache/@orchidjs-unicode-variants-npm-1.0.4-38337cc8c0-a6ad1c66f4.zip/node_modules/@orchidjs/unicode-variants/",\
+          "packageDependencies": [\
+            ["@orchidjs/unicode-variants", "npm:1.0.4"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@sinclair/typebox", [\
         ["npm:0.24.51", {\
           "packageLocation": "./.yarn/cache/@sinclair-typebox-npm-0.24.51-cdde4a266f-fd0d855e74.zip/node_modules/@sinclair/typebox/",\
@@ -2414,6 +2435,32 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packagePeers": [\
             "@hotwired/stimulus",\
             "@types/hotwired__stimulus"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@symfony/ux-autocomplete", [\
+        ["file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/cache/@symfony-ux-autocomplete-file-853714a923-11d8f98c49.zip/node_modules/@symfony/ux-autocomplete/",\
+          "packageDependencies": [\
+            ["@symfony/ux-autocomplete", "file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A."]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/__virtual__/@symfony-ux-autocomplete-virtual-afe1084f6b/0/cache/@symfony-ux-autocomplete-file-853714a923-11d8f98c49.zip/node_modules/@symfony/ux-autocomplete/",\
+          "packageDependencies": [\
+            ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@hotwired/stimulus", "npm:3.2.1"],\
+            ["@types/hotwired__stimulus", null],\
+            ["@types/tom-select", null],\
+            ["tom-select", "npm:2.2.2"]\
+          ],\
+          "packagePeers": [\
+            "@hotwired/stimulus",\
+            "@types/hotwired__stimulus",\
+            "@types/tom-select",\
+            "tom-select"\
           ],\
           "linkType": "HARD"\
         }]\
@@ -7824,10 +7871,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@babel/preset-env", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:7.20.2"],\
             ["@hotwired/stimulus", "npm:3.2.1"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.1"],\
+            ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.2.0"],\
             ["core-js", "npm:3.27.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\
+            ["tom-select", "npm:2.2.2"],\
             ["webpack", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.75.0"],\
             ["webpack-cli", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.10.0"],\
             ["webpack-notifier", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:1.15.0"]\
@@ -8495,6 +8544,17 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/toidentifier-npm-1.0.1-f759712599-952c29e2a8.zip/node_modules/toidentifier/",\
           "packageDependencies": [\
             ["toidentifier", "npm:1.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["tom-select", [\
+        ["npm:2.2.2", {\
+          "packageLocation": "./.yarn/cache/tom-select-npm-2.2.2-306fcc3ca5-44483e82ff.zip/node_modules/tom-select/",\
+          "packageDependencies": [\
+            ["tom-select", "npm:2.2.2"],\
+            ["@orchidjs/sifter", "npm:1.0.3"],\
+            ["@orchidjs/unicode-variants", "npm:1.0.4"]\
           ],\
           "linkType": "HARD"\
         }]\

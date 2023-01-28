@@ -20,13 +20,13 @@ class ArchiveSearchComponent extends AbstractController
     public string $query = '';
 
     #[LiveProp(writable: true)]
-    public string $subreddit = '';
+    public array $subreddits = [];
 
     #[LiveProp(writable: true)]
-    public string $flairText = '';
+    public array $flairTexts = [];
 
     #[LiveProp(writable: true)]
-    public string $tag = '';
+    public array $tags = [];
 
     public function __construct(private readonly Search $searchService)
     {
@@ -39,21 +39,6 @@ class ArchiveSearchComponent extends AbstractController
 
     public function getContents(): array
     {
-        $subreddit = [];
-        if (!empty($this->subreddit)) {
-            $subreddit[] = $this->subreddit;
-        }
-
-        $flairText = [];
-        if (!empty($this->flairText)) {
-            $flairText[] = $this->flairText;
-        }
-
-        $tag = [];
-        if (!empty($this->tag)) {
-            $tag[] = $this->tag;
-        }
-
-        return $this->searchService->search($this->query, $subreddit, $flairText, $tag);
+        return $this->searchService->search($this->query, $this->subreddits, $this->flairTexts, $this->tags);
     }
 }
