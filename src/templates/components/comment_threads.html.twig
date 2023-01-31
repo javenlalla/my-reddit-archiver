@@ -1,23 +1,28 @@
 <div {{ attributes }}>
-    <div class="row search-result-content">
-        <button class="btn"
-                type="button"
-                data-model="comments"
-                data-action="live#action"
-                data-action-name="syncComments"
-        >Sync Comments</button>
-
-        <span data-loading="action(syncComments)|show">
-            Syncing Comments
-        </span>
-    </div>
-
     <div class="row">
         <div class="col">
             <div class="search-result-content border-radius--top-25em border-radius--bottom-25em">
-                {{ include('contents/comments/_comment_threads.html.twig', {
-                    comments: this.comments,
-                }) }}
+                {% if this.comments|length > 0 %}
+                    {{ include('contents/comments/_comment_threads.html.twig', {
+                        comments: this.comments,
+                    }) }}
+                {% else %}
+                    <span class="font-size--12"><em>No comments yet.</em></span>
+                    <br/>
+
+                    <button class="btn btn-secondary btn-sm"
+                            type="button"
+                            data-model="comments"
+                            data-action="live#action"
+                            data-action-name="syncComments"
+                            data-loading="action(syncComments)|hide"
+                    >Sync Comments</button>
+
+                    <span data-loading="action(syncComments)|show" class="font-size--24">
+                        {{ include('icons/loading_icon.html.twig') }}
+                    </span>
+                {% endif %}
+
             </div>
         </div>
     </div>
