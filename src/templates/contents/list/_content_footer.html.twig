@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col font-size--10">
-        {% if content %}
+        {% if content is defined %}
             {{ component('content_tags', {content: content}) }}
         {% endif %}
     </div>
