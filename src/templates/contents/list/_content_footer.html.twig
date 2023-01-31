@@ -1,4 +1,10 @@
 <div class="row">
+    <div class="col font-size--10">
+        {% if content %}
+            {{ component('content_tags', {content: content}) }}
+        {% endif %}
+    </div>
+
     <div class="col text-end font-size--10">
         <i class="fa-solid fa-arrows-up-down"></i> {{ postScore|number_format(0, '.', ',') }}
         <span class="ms-1"><i class="fa-regular fa-comment"></i> {{ commentsCount|number_format(0, '.', ',') }}</span>

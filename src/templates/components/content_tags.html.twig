@@ -1,0 +1,37 @@
+<div {{ attributes.add(stimulus_controller('footer-tags')) }}>
+    {% for tag in content.tags %}
+        <span class="badge rounded-pill bg-info" data-footer-tags-target="displayMode">{{ tag.name }}</span>
+    {% endfor %}
+
+    <span role="button" class="color--light-gray pointer-event" data-action="click->footer-tags#edit" data-footer-tags-target="displayMode"><i class="fa-solid fa-tags"></i></span>
+
+    <div class="row d-none mt-2 mb-2" data-footer-tags-target="editMode">
+        <div class="col-lg-4">
+            <div>
+                {{ form_start(computed.contentTagsForm) }}
+                <div class="my-custom-class-for-errors">
+                    {{ form_errors(computed.contentTagsForm) }}
+                </div>
+
+                {{ form_widget(computed.contentTagsForm.tags) }}
+
+                <small>{{ form_help(computed.contentTagsForm.tags) }}</small>
+
+                <div class="form-error">
+                    {{ form_errors(computed.contentTagsForm.tags) }}
+                </div>
+                {{ form_end(computed.contentTagsForm) }}
+            </div>
+
+            <div class="row justify-center">
+                <div class="col">
+                    <span role="button" class="text-danger font-size--24" data-action="click->footer-tags#close"><i class="fa-regular fa-rectangle-xmark"></i></span>
+                </div>
+                <div class="col text-end">
+                    <span role="button" class="text-success font-size--24" data-action="click->live#action" data-action-name="saveTags" data-loading="action(saveTags)|hide"><i class="fa-regular fa-square-check"></i></span>
+                    <span class="text-info font-size--24" data-loading="action(saveTags)|show"><i class="fa-solid fa-spinner fa-spin-pulse"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -75,6 +75,7 @@ class SearchForm extends AbstractType
                 'placeholder' => 'Filter By Tags',
                 'class' => Tag::class,
                 'choice_label' => 'name',
+                'choice_value' => 'name',
                 'attr' => [
                     'data-model' => 'tags',
                 ],
@@ -83,6 +84,8 @@ class SearchForm extends AbstractType
                 'multiple' => true,
                 'tom_select_options' => [
                     'placeholder' => 'Filter By Tags',
+                    'create' => true,
+                    'createOnBlur' => true,
                 ],
             ])
         ;

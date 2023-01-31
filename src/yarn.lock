@@ -1460,12 +1460,12 @@ __metadata:
 
 "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
-  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=1e7233&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=e9919d&locator=root-workspace-0b6124%40workspace%3A."
   dependencies:
     morphdom: ^2.6.1
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
-  checksum: 118e38d39cf021482d171d5aa538bec98c1138d058bff41885a3872ea7945a85c81416e3c37af5bad0956b95604a13964cefaa04968dbfb44d37d3d5eea1eabd
+  checksum: c9cd8971979d8afcbd806b6eb6e4ce014aa9f5f228624963879e46982eba923161d3ff1a7d687c8c89bef2d7642a08e3d8af538d2bbb745a342aec7a2e1ad3f7
   languageName: node
   linkType: hard
 

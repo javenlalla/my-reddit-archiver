@@ -54,6 +54,7 @@
                 </div>
 
                 {{ include('contents/list/_content_footer.html.twig', {
+                    content: content,
                     postScore: content.post.score,
                     commentsCount: content.post.comments.count,
                     redditLink: content.post.redditPostUrl
