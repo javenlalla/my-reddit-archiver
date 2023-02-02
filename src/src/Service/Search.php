@@ -6,8 +6,8 @@ namespace App\Service;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
-use App\Normalizer\ContentNormalizer;
 use App\Repository\ContentRepository;
+use App\Service\Search\Results;
 use App\Service\Typesense\Api;
 use Http\Client\Exception;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -21,7 +21,6 @@ class Search
 
     public function __construct(
         private readonly ContentRepository $contentRepository,
-        private readonly ContentNormalizer $contentNormalizer,
         private readonly Api $searchApi,
         private readonly CacheInterface $cache,
     ) {
@@ -37,18 +36,23 @@ class Search
      * @param  int  $perPage
      * @param  int  $page
      *
-     * @return array
+     * @return Results
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): array
+    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): Results
     {
         // $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
 
         // return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
+            $searchRawResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
+            $searchResults = new Results();
+            $searchResults->setPerPage($perPage);
+            $searchResults->setPage($searchRawResults['page']);
+            $searchResults->setTotal($searchRawResults['found']);
+
             $contents = [];
-            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
-            foreach ($searchResults['hits'] as $hit) {
+            foreach ($searchRawResults['hits'] as $hit) {
                 $contentId = (int) $hit['document']['id'];
 
                 $content = $this->contentRepository->find($contentId);
@@ -56,13 +60,15 @@ class Search
                     $contents[] = $content;
                 }
             }
+            $searchResults->setResults($contents);
+
 
             // $contentsNormalized = [];
             // foreach ($contents as $content) {
             //     $contentsNormalized[] = $this->contentNormalizer->normalize($content);
             // }
 
-            return $contents;
+            return $searchResults;
         // });
     }
 

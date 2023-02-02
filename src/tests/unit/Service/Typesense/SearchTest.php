@@ -8,6 +8,7 @@ use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use App\Service\Search;
+use App\Service\Search\Results;
 use App\Service\Typesense\Collection\Contents;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -55,15 +56,16 @@ class SearchTest extends KernelTestCase
     public function testBasicSearchQueries(string $postRedditId, string $searchQuery): void
     {
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertIsArray($searchResults);
-        $this->assertCount(0, $searchResults);
+        $this->assertInstanceOf(Results::class, $searchResults);
+        $this->assertEquals(0, $searchResults->getTotal());
 
         $post = $this->postRepository->findOneBy(['redditId' => $postRedditId]);
         $content = $post->getContent();
         $this->searchService->indexContent($content);
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(1, $searchResults);
+        $this->assertEquals(Search::DEFAULT_LIMIT, $searchResults->getPerPage());
+        $this->assertEquals(1, $searchResults->getTotal());
     }
 
     /**
@@ -86,21 +88,21 @@ class SearchTest extends KernelTestCase
         }
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(2, $searchResults);
+        $this->assertEquals(2, $searchResults->getTotal());
 
         // Verify filtering by one Subreddit.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             subreddits: ['jokesALT'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(1, $searchResults);
+        $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify filtering by multiple Subreddits.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             subreddits: ['jokesALT, JOKES'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(2, $searchResults);
+        $this->assertEquals(2, $searchResults->getTotal());
     }
 
     /**
@@ -119,21 +121,26 @@ class SearchTest extends KernelTestCase
         ]);
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(3, $searchResults);
+        $this->assertEquals(3, $searchResults->getTotal());
+
+        // Verify pagination.
+        $searchResults = $this->searchService->search($searchQuery, perPage: 1, page: 2);
+        $this->assertEquals(3, $searchResults->getTotal());
+        $this->assertEquals(1, $searchResults->getCount());
 
         // Verify filtering by one Flair Text.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             flairTexts: ['GrEAT Dad joke'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(1, $searchResults);
+        $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify no results filtering by non-existent Flair Texts.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(0, $searchResults);
+        $this->assertEquals(0, $searchResults->getTotal());
     }
 
     /**
@@ -181,32 +188,32 @@ class SearchTest extends KernelTestCase
         $this->contentRepository->add($content, true);
 
         $searchResults = $this->searchService->search($searchQuery);
-        $this->assertCount(3, $searchResults);
+        $this->assertEquals(3, $searchResults->getTotal());
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             tags: ['hilarious', 'SERIOUS'] // Intentionally use different cases to verify results still surface.
         );
-        $this->assertCount(2, $searchResults);
+        $this->assertEquals(2, $searchResults->getTotal());
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             tags: ['funny']
         );
-        $this->assertCount(3, $searchResults);
+        $this->assertEquals(3, $searchResults->getTotal());
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             tags: ['serIOUS']
         );
-        $this->assertCount(1, $searchResults);
+        $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify no results filtering by non-existent Tags.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
             tags: ['Not Funny']
         );
-        $this->assertCount(0, $searchResults);
+        $this->assertEquals(0, $searchResults->getTotal());
     }
 
     public function tearDown(): void

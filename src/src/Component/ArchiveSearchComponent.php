@@ -8,12 +8,15 @@ use App\Entity\Subreddit;
 use App\Entity\Tag;
 use App\Form\SearchForm;
 use App\Service\Search;
+use App\Service\Search\Results;
 use Doctrine\ORM\EntityManagerInterface;
+use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormView;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Typesense\Exceptions\TypesenseClientError;
 
 #[AsLiveComponent('archive_search')]
 class ArchiveSearchComponent extends AbstractController
@@ -75,7 +78,12 @@ class ArchiveSearchComponent extends AbstractController
         ])->createView();
     }
 
-    public function getContents(): array
+    /**
+     * @return Results
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function getSearchResults(): Results
     {
         return $this->searchService->search(
             $this->query,
