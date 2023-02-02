@@ -3,11 +3,12 @@
 {% block main_content %}
 
     {{ component('archive_search', {
-        limit: 10,
         query: query,
         subreddits: subreddits,
         flairTexts: flairTexts,
         tags: tags,
+        perPage: perPage,
+        page: page,
     }) }}
 
 {% endblock %}

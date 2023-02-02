@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\Search;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,16 +14,13 @@ class HomeController extends AbstractController
     #[Route('/', name: 'home')]
     public function home(Request $request): Response
     {
-        $query = $request->get('query');
-        $subreddits = $request->get('subreddits', []);
-        $flairTexts = $request->get('flairTexts', []);
-        $tags = $request->get('tags', []);
-
         return $this->render('home/home.html.twig', [
-            'query' => $query,
-            'subreddits' => $subreddits,
-            'flairTexts' => $flairTexts,
-            'tags' => $tags,
+            'query' => $request->get('query'),
+            'subreddits' => $request->get('subreddits', []),
+            'flairTexts' => $request->get('flairTexts', []),
+            'tags' => $request->get('tags', []),
+            'perPage' => (int) $request->get('perPage', Search::DEFAULT_LIMIT),
+            'page' => (int) $request->get('page', 1),
         ]);
     }
 }

@@ -17,6 +17,8 @@ class Search
 {
     const CACHE_KEY_PREFIX = 'search_';
 
+    const DEFAULT_LIMIT = 50;
+
     public function __construct(
         private readonly ContentRepository $contentRepository,
         private readonly ContentNormalizer $contentNormalizer,
@@ -32,18 +34,20 @@ class Search
      * @param  array  $subreddits  Array of Subreddits to filter results by.
      * @param  array  $flairTexts  Array of Flair Texts to filter results by.
      * @param  array  $tags
+     * @param  int  $perPage
+     * @param  int  $page
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = []): array
+    public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): array
     {
         // $cacheKey = $this->generateSearchCacheKey($searchQuery, $subreddits, $flairTexts);
 
         // return $this->cache->get($cacheKey, function() use ($searchQuery, $subreddits, $flairTexts) {
             $contents = [];
-            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts, $tags);
+            $searchResults = $this->executeSearch($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
             foreach ($searchResults['hits'] as $hit) {
                 $contentId = (int) $hit['document']['id'];
 
@@ -120,12 +124,14 @@ class Search
      * @param  array  $subreddits
      * @param  array  $flairTexts
      * @param  array  $tags
+     * @param  int  $perPage
+     * @param  int  $page
      *
      * @return array
      * @throws Exception
      * @throws TypesenseClientError
      */
-    private function executeSearch(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = []): array
+    private function executeSearch(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): array
     {
         $filters = [];
         if (!empty($subreddits)) {
@@ -140,7 +146,7 @@ class Search
             $filters[] = sprintf('tags:[%s]', implode(',', $tags));
         }
 
-        return $this->searchApi->search($searchQuery, $filters);
+        return $this->searchApi->search($searchQuery, $filters, $perPage, $page);
     }
 
     /**

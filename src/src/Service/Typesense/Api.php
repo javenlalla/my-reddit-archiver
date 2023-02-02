@@ -13,6 +13,8 @@ use Typesense\Exceptions\TypesenseClientError;
 
 class Api
 {
+    const DEFAULT_PAGE_LIMIT = 50;
+
     /**
      * Target Document fields to search by.
      */
@@ -70,7 +72,7 @@ class Api
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function search(?string $searchQuery, array $filters = [])
+    public function search(?string $searchQuery, array $filters = [], int $perPage = self::DEFAULT_PAGE_LIMIT, int $page = 1)
     {
         $filterParam = '';
         if (!empty($filters)) {
@@ -81,7 +83,8 @@ class Api
             'q' => $searchQuery ?? '*',
             'filter_by' => $filterParam,
             'query_by' =>implode(',', self::SEARCH_FIELDS),
-            'per_page' => 100,
+            'per_page' => $perPage,
+            'page' => $page,
         ];
 
         return $this->client->collections['contents']->documents->search($searchParams);

@@ -33,7 +33,10 @@ class ArchiveSearchComponent extends AbstractController
     public array $tags = [];
 
     #[LiveProp(writable: true)]
-    public int $limit = 50;
+    public int $perPage = Search::DEFAULT_LIMIT;
+
+    #[LiveProp(writable: true)]
+    public int $page = 1;
 
     public function __construct(private readonly Search $searchService, private readonly EntityManagerInterface $entityManager)
     {
@@ -74,6 +77,13 @@ class ArchiveSearchComponent extends AbstractController
 
     public function getContents(): array
     {
-        return $this->searchService->search($this->query, $this->subreddits, $this->flairTexts, $this->tags);
+        return $this->searchService->search(
+            $this->query,
+            $this->subreddits,
+            $this->flairTexts,
+            $this->tags,
+            $this->perPage,
+            $this->page,
+        );
     }
 }
