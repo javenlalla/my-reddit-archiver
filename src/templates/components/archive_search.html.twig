@@ -53,7 +53,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col mt-3 text-center" style="color: white;">
+                            <div class="col mt-3 text-center color--white" data-loading="hide">
                                 <h6 class="mb-0">{{ computed.searchResults.total|number_format(0, ',') }} Results</h6>
                             </div>
                         </div>
@@ -65,31 +65,45 @@
     </div>
     {% set currentPaginator = this.paginator(computed.searchResults.total) %}
 
-    {% if computed.searchResults.total > 0 %}
-        {{ include('contents/_pagination.html.twig', {
-            query: query,
-            subreddits: subreddits,
-            flairTexts: flairTexts,
-            tags: tags,
-            perPage: perPage,
-            paginator: currentPaginator,
-        }) }}
-    {% endif %}
+    <div class="row">
+        <div class="col text-center font-size--36 color--white" data-loading>
+            {{ include('icons/loading_icon.html.twig') }}
+        </div>
+    </div>
 
     <div class="row">
-        <div class="col">
+        <div class="col" data-loading="hide">
+        {% if computed.searchResults.total > 0 %}
+            {{ include('contents/_pagination.html.twig', {
+                query: query,
+                subreddits: subreddits,
+                flairTexts: flairTexts,
+                tags: tags,
+                perPage: perPage,
+                paginator: currentPaginator,
+            }) }}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col" data-loading="hide">
             {{ include('contents/_list.html.twig', {contents: computed.searchResults.results}) }}
         </div>
     </div>
 
-    {% if computed.searchResults.total > 0 %}
-        {{ include('contents/_pagination.html.twig', {
-            query: query,
-            subreddits: subreddits,
-            flairTexts: flairTexts,
-            tags: tags,
-            perPage: perPage,
-            paginator: currentPaginator,
-        }) }}
-    {% endif %}
+    <div class="row">
+        <div class="col" data-loading="hide">
+            {% if computed.searchResults.total > 0 %}
+                {{ include('contents/_pagination.html.twig', {
+                    query: query,
+                    subreddits: subreddits,
+                    flairTexts: flairTexts,
+                    tags: tags,
+                    perPage: perPage,
+                    paginator: currentPaginator,
+                }) }}
+            {% endif %}
+        </div>
+    </div>
 </div>

@@ -27,6 +27,10 @@ body {
     border: thin gray solid;
 }
 
+.font-size--36 {
+    font-size: 36px;
+}
+
 .font-size--24 {
     font-size: 24px;
 }
@@ -78,4 +82,8 @@ blockquote>p {
 
 .color--light-gray {
     color: #abb0b5;
+}
+
+.color--white {
+    color: white;
 }
