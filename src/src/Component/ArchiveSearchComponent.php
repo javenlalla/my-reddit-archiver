@@ -7,6 +7,8 @@ use App\Entity\Post;
 use App\Entity\Subreddit;
 use App\Entity\Tag;
 use App\Form\SearchForm;
+use App\Service\Pagination;
+use App\Service\Pagination\Paginator;
 use App\Service\Search;
 use App\Service\Search\Results;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,10 +43,18 @@ class ArchiveSearchComponent extends AbstractController
     #[LiveProp(writable: true)]
     public int $page = 1;
 
-    public function __construct(private readonly Search $searchService, private readonly EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private readonly Search $searchService,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly Pagination $paginationService
+    ) {
     }
 
+    /**
+     * Instantiate the Search Form.
+     *
+     * @return FormView
+     */
     public function getSearchForm(): FormView
     {
         $subredditEntities = [];
@@ -79,6 +89,8 @@ class ArchiveSearchComponent extends AbstractController
     }
 
     /**
+     * Execute a Search using the currently inputted search parameters.
+     *
      * @return Results
      * @throws Exception
      * @throws TypesenseClientError
@@ -90,6 +102,23 @@ class ArchiveSearchComponent extends AbstractController
             $this->subreddits,
             $this->flairTexts,
             $this->tags,
+            $this->perPage,
+            $this->page,
+        );
+    }
+
+    /**
+     * Generate and return a Paginator based on the current pagination
+     * parameters and total Search results.
+     *
+     * @param  int  $totalResults
+     *
+     * @return Paginator
+     */
+    public function getPaginator(int $totalResults = 0): Paginator
+    {
+        return $this->paginationService->createNewPaginator(
+            $totalResults,
             $this->perPage,
             $this->page,
         );
