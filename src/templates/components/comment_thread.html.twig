@@ -14,13 +14,17 @@
         }) }}
 
         {% if not comment.moreComments.isEmpty %}
-            <span class="text-secondary fst-italic font-size--10" role="button" data-action="click->live#action"
-                 data-action-name="syncLoadMore(redditId={{ comment.moreComments[0].redditId }})">
+            <span class="text-secondary fst-italic font-size--10"
+                  role="button"
+                  data-action="click->live#action"
+                  data-action-name="syncLoadMore(redditId={{ comment.moreComments[0].redditId }})"
+                  data-loading="action(syncLoadMore)|hide"
+            >
                 Load More ({{ comment.moreComments|length }})
             </span>
 
             <span data-loading="action(syncLoadMore)|show">
-                Loading More Comments
+                {{ include('icons/loading_icon.html.twig') }}
             </span>
         {% endif %}
 
