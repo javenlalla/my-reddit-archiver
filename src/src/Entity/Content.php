@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Entity;
 
@@ -112,5 +113,19 @@ class Content
         $this->tags->removeElement($tag);
 
         return $this;
+    }
+
+    /**
+     * Determine if this Content is a Comment Content.
+     *
+     * @return bool
+     */
+    public function isCommentContent(): bool
+    {
+        if ($this->getComment() instanceof Comment) {
+            return true;
+        }
+
+        return false;
     }
 }

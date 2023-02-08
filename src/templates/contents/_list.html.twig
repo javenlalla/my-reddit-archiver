@@ -1,16 +1,12 @@
 {% for content in contents %}
-    {% if content.comment is defined and content.comment is not null %}
-        <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
-            <div class="row">
-                <div class="col-12 search-result-content__header mb-1">
-                    r/{{ content.post.subreddit.name }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col font-size--14">
-                    {{ content.comment.latestCommentAuthorText.authorText.text }}
-                </div>
-            </div>
+    <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
+        {{ include('contents/list/_content_header.html.twig', {
+            content: content,
+        }) }}
+
+        {{ include('contents/list/_content_body.html.twig', {
+            content: content,
+        }) }}
 
         {{ include('contents/list/_content_footer.html.twig', {
             content: content,
@@ -18,35 +14,5 @@
             commentsCount: content.post.comments.count,
             redditLink: content.post.redditPostUrl,
         }) }}
-
-        </div>
-    {% else %}
-        <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
-            <div class="row">
-                <div class="col-12 search-result-content__header mb-2">
-                    r/{{ content.post.subreddit.name }}
-                </div>
-            </div>
-            <div class="row">
-                {% if content.post.thumbnailAsset %}
-                    <div class="col-4 col-lg-1">
-                        {{ component('asset_render', {
-                            asset: content.post.thumbnailAsset
-                        }) }}
-                    </div>
-                {% endif %}
-                <div class="col-8 col-lg-11 font-size--14">
-                    <a href="{{ path('contents_view_content', {id: content.id}) }}">{{ content.post.title }}</a>
-                </div>
-            </div>
-
-            {{ include('contents/list/_content_footer.html.twig', {
-                content: content,
-                postScore: content.post.score,
-                commentsCount: content.post.comments.count,
-                redditLink: content.post.redditPostUrl,
-            }) }}
-
-        </div>
-    {% endif %}
+    </div>
 {% endfor %}

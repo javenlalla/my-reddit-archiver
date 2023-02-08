@@ -1,0 +1,9 @@
+<div class="row">
+    <div class="col-12 search-result-content__header mb-1">
+        {% if content.isCommentContent %}
+            r/{{ content.post.subreddit.name }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
+        {% else %}
+            r/{{ content.post.subreddit.name }}
+        {% endif %}
+    </div>
+</div>

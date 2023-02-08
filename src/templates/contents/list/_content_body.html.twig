@@ -1,0 +1,13 @@
+{% if content.isCommentContent %}
+    <div class="row">
+        <div class="col font-size--14">
+            <a class="color--black text-decoration-none" href="{{ path('contents_view_content', {id: content.id}) }}">
+                {{ content.comment.latestCommentAuthorText.authorText.text }}
+            </a>
+        </div>
+    </div>
+{% else %}
+    {{ include('contents/list/content_body/_post.html.twig', {
+        content: content,
+    }) }}
+{% endif %}

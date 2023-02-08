@@ -1,0 +1,22 @@
+{% if content.post.thumbnailAsset %}
+    <div class="row">
+        <div class="col-4 col-lg-1">
+            {{ component('asset_render', {
+                asset: content.post.thumbnailAsset
+            }) }}
+        </div>
+        <div class="col-8 col-lg-11 font-size--14">
+            <a class="color--black text-decoration-none" href="{{ path('contents_view_content', {id: content.id}) }}">
+                <h6>{{ content.post.title }}</h6>
+            </a>
+        </div>
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col font-size--14">
+            <a class="color--black text-decoration-none" href="{{ path('contents_view_content', {id: content.id}) }}">
+                <h6>{{ content.post.title }}</h6>
+            </a>
+        </div>
+    </div>
+{% endif %}
