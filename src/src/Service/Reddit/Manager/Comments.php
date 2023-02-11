@@ -9,6 +9,7 @@ use App\Denormalizer\MoreCommentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\MoreComment;
+use App\Entity\Post;
 use App\Repository\CommentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
@@ -193,6 +194,22 @@ class Comments
         $this->entityManager->flush();
 
         return $post->getTopLevelComments();
+    }
+
+    /**
+     * Get all Comments associated to the provided Post.
+     *
+     * By default, since this is a Post Entity, sort and return only top-level
+     * Comments.
+     *
+     * @param  Post  $post
+     * @param  bool  $topLevelCommentsOnly
+     *
+     * @return Comment[]
+     */
+    public function getOrderedCommentsByPost(Post $post, bool $topLevelCommentsOnly = true): array
+    {
+        return $this->commentRepository->getOrderedCommentsByPost($post, $topLevelCommentsOnly);
     }
 
     /**

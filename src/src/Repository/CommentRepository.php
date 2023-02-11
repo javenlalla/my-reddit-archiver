@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -91,6 +92,34 @@ class CommentRepository extends ServiceEntityRepository
             ->setParameter('val', $post)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Fetch all Comments associated to the provided Post.
+     *
+     * Optionally, sort and return top-level Comments only.
+     *
+     * @param  Post  $post
+     * @param  bool  $topLevelCommentsOnly
+     *
+     * @return Comment[]
+     */
+    public function getOrderedCommentsByPost(Post $post, bool $topLevelCommentsOnly = true): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->andWhere('c.parentPost = :parentPost')
+            ->setParameter('parentPost', $post)
+            ->orderBy('c.score', 'DESC')
+        ;
+
+        if ($topLevelCommentsOnly === true) {
+            $qb->andWhere('c.parentComment IS NULL');
+        }
+
+        return $qb
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
 //    /**

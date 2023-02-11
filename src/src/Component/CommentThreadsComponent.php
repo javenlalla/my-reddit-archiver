@@ -37,7 +37,8 @@ class CommentThreadsComponent extends AbstractController
     #[PreMount]
     public function preMount(array $data): array
     {
-        $data['comments'] = $data['content']->getPost()->getTopLevelComments()->toArray();
+        $post = $data['content']->getPost();
+        $data['comments'] = $this->commentsManager->getOrderedCommentsByPost($post);
 
         return $data;
     }
@@ -45,6 +46,9 @@ class CommentThreadsComponent extends AbstractController
     #[LiveAction]
     public function syncComments()
     {
-        $this->comments = $this->commentsManager->syncCommentsByContent($this->content)->toArray();
+        $syncedComments = $this->commentsManager->syncCommentsByContent($this->content)->toArray();
+
+        $post = $this->content->getPost();
+        $this->comments = $this->commentsManager->getOrderedCommentsByPost($post);
     }
 }

@@ -443,4 +443,42 @@ class CommentsSyncTest extends KernelTestCase
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
         $this->assertEmpty($moreComment);
     }
+
+    /**
+     * Verify Comments be retrieved from a Post, ordered by Upvotes in
+     * descending order.
+     *
+     * Also, verify the ordered Comments are top-level (no Parent Comment)
+     * Comments only.
+     *
+     * https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/
+     *
+     * @return void
+     */
+    public function testSortCommentsByUpvotes()
+    {
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' .'vepbt0');
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+
+        $orderedComments = $this->commentsManager->getOrderedCommentsByPost($content->getPost());
+
+        $ordered = true;
+        $previousComment = null;
+        foreach ($orderedComments as $orderedComment) {
+            if (!empty($previousComment)
+                && $previousComment->getScore() < $orderedComment->getScore()
+            ) {
+                $ordered = false;
+
+                // The order has already been detected as incorrect; no need to
+                // continue going through the remainder of the list.
+                break;
+            }
+
+            $this->assertEmpty($orderedComment->getParentComment());
+            $previousComment = $orderedComment;
+        }
+
+        $this->assertTrue($ordered);
+    }
 }
