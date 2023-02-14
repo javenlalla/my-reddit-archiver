@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Content;
+use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -36,6 +37,24 @@ class ContentRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Find all Contents that are Comment Contents under the same Post provided.
+     *
+     * @param  Post  $post
+     *
+     * @return Content[]
+     */
+    public function fetchCommentContentsByPost(Post $post): array
+    {
+       return $this->createQueryBuilder('c')
+           ->andWhere('c.post = :post')
+           ->andWhere('c.comment IS NOT NULL')
+           ->setParameter('post', $post)
+           ->getQuery()
+           ->getResult()
+       ;
     }
 
 //    /**

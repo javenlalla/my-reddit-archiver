@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Component;
 
 use App\Entity\Content;
+use App\Entity\Post;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
@@ -38,7 +39,7 @@ class CommentThreadsComponent extends AbstractController
     public function preMount(array $data): array
     {
         $post = $data['content']->getPost();
-        $data['comments'] = $this->commentsManager->getOrderedCommentsByPost($post);
+        $data['comments'] = $this->getCommentsByPost($post);
 
         return $data;
     }
@@ -49,6 +50,27 @@ class CommentThreadsComponent extends AbstractController
         $syncedComments = $this->commentsManager->syncCommentsByContent($this->content)->toArray();
 
         $post = $this->content->getPost();
-        $this->comments = $this->commentsManager->getOrderedCommentsByPost($post);
+        $this->comments = $this->getCommentsByPost($post);
+    }
+
+    /**
+     * Fetching the Comments for this Component happens in multiple places.
+     * This function consolidates the fetching logic under one function, so if
+     * the logic changes or requires updating, it only needs to be done in one
+     * place (here).
+     *
+     * @param  Post  $post
+     *
+     * @return array
+     */
+    private function getCommentsByPost(Post $post): array
+    {
+        return $this->commentsManager
+            ->getOrderedCommentsByPost(
+                $post,
+                true,
+                true
+            )
+        ;
     }
 }

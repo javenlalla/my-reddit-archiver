@@ -358,4 +358,32 @@ class Comment
 
         return $this;
     }
+
+    /**
+     * Climb the current Comment's tree to find and return, if any, the root
+     * Parent Comment.
+     *
+     * If the current Comment is already a top-level Comment (no Parent
+     * Comment), then return null to indicate so.
+     *
+     * @return Comment|null
+     */
+    public function getRootComment(): ?Comment
+    {
+        $parentComment = $this->getParentComment();
+        if (empty($parentComment)) {
+            return null;
+        }
+
+        $rootComment = $parentComment;
+        while ($parentComment instanceof Comment) {
+            $parentComment = $parentComment->getParentComment();
+
+            if ($parentComment instanceof Comment) {
+                $rootComment = $parentComment;
+            }
+        }
+
+        return $rootComment;
+    }
 }

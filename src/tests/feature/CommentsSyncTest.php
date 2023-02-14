@@ -451,8 +451,6 @@ class CommentsSyncTest extends KernelTestCase
      * Also, verify the ordered Comments are top-level (no Parent Comment)
      * Comments only.
      *
-     * https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/
-     *
      * @return void
      */
     public function testSortCommentsByUpvotes()
@@ -464,6 +462,47 @@ class CommentsSyncTest extends KernelTestCase
 
         $ordered = true;
         $previousComment = null;
+        foreach ($orderedComments as $orderedComment) {
+            if (!empty($previousComment)
+                && $previousComment->getScore() < $orderedComment->getScore()
+            ) {
+                $ordered = false;
+
+                // The order has already been detected as incorrect; no need to
+                // continue going through the remainder of the list.
+                break;
+            }
+
+            $this->assertEmpty($orderedComment->getParentComment());
+            $previousComment = $orderedComment;
+        }
+
+        $this->assertTrue($ordered);
+    }
+
+    /**
+     * Verify that Comments that have been saved as Content are pushed to the
+     * top of the ordered Comments.
+     *
+     * https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/
+     *
+     * @return void
+     */
+    public function testContentCommentsSortedTop()
+    {
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . 'ip914eh');
+        $comments = $this->commentsManager->syncCommentsByContent($content);
+
+        $orderedComments = $this->commentsManager->getOrderedCommentsByPost($content->getPost(), true, true);
+        $firstComment = $orderedComments[0];
+        $this->assertEquals('ip78grf', $firstComment->getRedditId());
+
+        // Skipping the Content Comment, verify the rest of the Comments array
+        // is ordered as expected.
+        unset($orderedComments[0]);
+        $ordered = true;
+        $previousComment = null;
+
         foreach ($orderedComments as $orderedComment) {
             if (!empty($previousComment)
                 && $previousComment->getScore() < $orderedComment->getScore()

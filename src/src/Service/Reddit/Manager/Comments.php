@@ -11,6 +11,7 @@ use App\Entity\Content;
 use App\Entity\MoreComment;
 use App\Entity\Post;
 use App\Repository\CommentRepository;
+use App\Repository\ContentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -27,6 +28,7 @@ class Comments
         private readonly EntityManagerInterface $entityManager,
         private readonly MoreCommentRepository $moreCommentRepository,
         private readonly CommentRepository $commentRepository,
+        private readonly ContentRepository $contentRepository,
     ) {
     }
 
@@ -204,12 +206,21 @@ class Comments
      *
      * @param  Post  $post
      * @param  bool  $topLevelCommentsOnly
+     * @param  bool  $prioritizeContentComments Set to true if it is desired
+     *                  that Comments under the Post that have been saved as
+     *                  Contents are pushed to the beginning of the order.
      *
      * @return Comment[]
      */
-    public function getOrderedCommentsByPost(Post $post, bool $topLevelCommentsOnly = true): array
+    public function getOrderedCommentsByPost(Post $post, bool $topLevelCommentsOnly = true, bool $prioritizeContentComments = false): array
     {
-        return $this->commentRepository->getOrderedCommentsByPost($post, $topLevelCommentsOnly);
+        $orderedComments = $this->commentRepository->getOrderedCommentsByPost($post, $topLevelCommentsOnly);
+
+        if ($prioritizeContentComments === true) {
+            return $this->prioritizeContentComments($post, $orderedComments);
+        }
+
+        return $orderedComments;
     }
 
     /**
@@ -243,5 +254,46 @@ class Comments
         }
 
         return $comments;
+    }
+
+    /**
+     * Push Comments under the Post that have been saved as Contents to the
+     * beginning of the provided ordered Comments array.
+     * @param  Post  $post
+     * @param  array  $orderedComments
+     *
+     * @return array
+     */
+    private function prioritizeContentComments(Post $post, array $orderedComments = []): array
+    {
+        $contentComments = $this->contentRepository->fetchCommentContentsByPost($post);
+        if (empty($contentComments)) {
+            // No Content Comments to prioritize, so return the ordered
+            // Comments as is.
+            return $orderedComments;
+        }
+
+        $prioritizedComments = [];
+        $contentCommentIds = [];
+        foreach ($contentComments as $contentComment) {
+            $comment = $contentComment->getComment();
+            $rootComment = $comment->getRootComment();
+
+            if ($rootComment instanceof Comment) {
+                $prioritizedComments[] = $rootComment;
+                $contentCommentIds[] = $rootComment->getId();
+            } else {
+                $prioritizedComments[] = $comment;
+                $contentCommentIds[] = $comment->getId();
+            }
+        }
+
+        foreach ($orderedComments as $orderedComment) {
+            if (!in_array($orderedComment->getId(), $contentCommentIds)) {
+                $prioritizedComments[] = $orderedComment;
+            }
+        }
+
+        return $prioritizedComments;
     }
 }
