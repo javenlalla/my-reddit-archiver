@@ -119,8 +119,8 @@ The `Environment` variables can be provided in-line if using the `docker run` co
     ```
 
 3. Modify as needed.
-    - If using an `.env` file based on the provided `.env.sample` file, no other changes should be needed.
-    - If using the database provided in the `docker-compose.yml` file, be sure the `DB_ROOT_PASSWORD` Environment Variable is uncommented and set.
+    - **If using an `.env` file** based on the provided `.env.sample` file, no other changes should be needed.
+    - **If not using an `.env` file**, ensure the expected environment variable references within the `docker-compose.yml` have been configured with real values.
 4. Start application:
 
     ```bash
