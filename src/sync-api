@@ -1,3 +1,3 @@
 #!/bin/sh
 
-php bin/console app:process-saved
+php bin/console reddit:sync:saved:full
