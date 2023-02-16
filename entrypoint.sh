@@ -38,6 +38,10 @@ if [[ $APP_ENV != "prod" ]]; then
     echo "APP_ENV=dev" >> .env
 fi
 
+# Generate APP_SECRET.
+export APP_SECRET=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
+echo "APP_SECRET=${APP_SECRET}" >> .env
+
 # Configure Typesense.
 TYPESENSE_API_KEY=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
 > /etc/typesense/typesense-config.ini
@@ -78,6 +82,13 @@ fi
 # Once database is reachable, execute any pending migrations and console commands.
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console app:persist-reddit-account
+
+# Install Symfony UX/Encore dependencies.
+echo "Installing Symfony UX/Encore dependencies."
+yarn install
+if [[ $APP_ENV = "prod" ]]; then
+    yarn encore prod
+fi
 
 # Container is set up. Start services.
 echo "Starting services."

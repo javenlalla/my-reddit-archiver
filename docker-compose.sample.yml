@@ -12,8 +12,7 @@ services:
     ports:
       - "2080:80" # Adjust port as needed.
 
-  # If desired to use this database, uncomment and provide a secure
-  # password for the `MARIADB_ROOT_PASSWORD` Environment variable.
+  # If desired to use this database, uncomment below and ensure the designated environment values are configured here or within the .env file.
   # mra-db:
   #   container_name: mra-db
   #   image: mariadb:10.8.6

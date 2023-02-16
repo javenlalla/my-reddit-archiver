@@ -60,9 +60,6 @@ COPY src /var/www/mra
 WORKDIR /var/www/mra
 RUN rm -rf var
 
-RUN yarn install && \
-    yarn encore prod
-
 # Cron setup.
 RUN mkdir /cron-execution
 RUN touch /var/log/cron-execution.log
