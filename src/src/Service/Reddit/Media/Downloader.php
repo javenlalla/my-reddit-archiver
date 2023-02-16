@@ -8,11 +8,14 @@ use Exception;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class Downloader
 {
     public function __construct(
         private readonly Filesystem $filesystem,
+        private readonly HttpClientInterface $httpClient,
     ) {
     }
 
@@ -47,15 +50,16 @@ class Downloader
      * @param  string  $targetFilepath
      *
      * @return void
-     * @throws Exception
+     * @throws TransportExceptionInterface
      */
     public function downloadSourceToLocalFile(string $sourceUrl, string $targetFilepath): void
     {
         if ($this->filesystem->exists($targetFilepath) === false) {
-            $downloadResult = file_put_contents($targetFilepath, file_get_contents($sourceUrl));
+            $response = $this->httpClient->request('GET', $sourceUrl);
 
-            if ($downloadResult === false) {
-                throw new Exception(sprintf('Unable to download asset `%s` to `%s`.', $sourceUrl, $targetFilepath));
+            $fileHandler = fopen($targetFilepath, 'w');
+            foreach ($this->httpClient->stream($response) as $chunk) {
+                fwrite($fileHandler, $chunk->getContent());
             }
         }
     }
