@@ -199,7 +199,10 @@ class PostDenormalizer implements DenormalizerInterface
 
         $isVideo = false;
         $videoSourceUrl = null;
-        if (!empty($postData['is_video']) && $postData['is_video'] === true) {
+        if (!empty($postData['is_video'])
+            && $postData['is_video'] === true
+            && !empty($postData['media']['reddit_video']['fallback_url'])
+        ) {
             $isVideo = true;
             $videoSourceUrl = $postData['media']['reddit_video']['fallback_url'];
         }

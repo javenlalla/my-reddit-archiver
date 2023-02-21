@@ -73,6 +73,33 @@ class DownloaderTest extends KernelTestCase
     }
 
     /**
+     * It has been found that if a Post had a Video Media Asset that was removed
+     * by Reddit (for copyright reasons, for example), the Denormalization logic
+     * will still attempt to reference the video, resulting in an error.
+     *
+     * To address, update the logic to explicitly check for the existence of the Video
+     * property within the Post data using the following line:
+     *  - !empty($postData['media']['reddit_video']['fallback_url']
+     *
+     * Once updated, verify with this test that the Post can now be synced
+     * without throwing an error and without downloading any Media Assets
+     * (because there are none).
+     *
+     * https://www.reddit.com/r/funny/comments/jtwoe0/the_cat_just_took_a_huge_mouthful/.json
+     *
+     * @return void
+     */
+    public function testAssetRemovedByReddit(): void
+    {
+        $content = $this->manager->syncContentByUrl('/r/funny/comments/jtwoe0/the_cat_just_took_a_huge_mouthful/');
+        $post = $content->getPost();
+
+        $this->assertEquals('The cat just took a huge mouthful', $post->getTitle());
+        $this->assertStringContainsString('Removed by reddit', $post->getLatestPostAuthorText()->getAuthorText()->getText());
+        $this->assertEmpty($post->getMediaAssets());
+    }
+
+    /**
      * Verify the Icon Asset for an Award is persisted and downloaded locally.
      *
      * @return void
