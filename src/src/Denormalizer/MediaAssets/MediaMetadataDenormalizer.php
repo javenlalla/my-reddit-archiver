@@ -39,7 +39,10 @@ class MediaMetadataDenormalizer implements DenormalizerInterface
                 $sourceUrl = html_entity_decode($mediaMetadata['s']['u']);
             }
 
-            $assets[] = $this->assetDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
+            $asset = $this->assetDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
+            if ($asset instanceof Asset) {
+                $assets[] = $asset;
+            }
         }
 
         return $assets;

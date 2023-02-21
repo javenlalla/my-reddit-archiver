@@ -73,6 +73,37 @@ class DownloaderTest extends KernelTestCase
     }
 
     /**
+     * A somewhat edge-case has been discovered in which a Reddit Award asset
+     * 404s on Reddit's side, causing the Award asset download logic to error
+     * out.
+     *
+     * To address, add graceful degradation logic to avoid erroring out on a 404
+     * and to avoid persisting incomplete Award and Asset Entities.
+     *
+     * https://www.reddit.com/r/ketorecipes/comments/jcc799/keto_gummies_made_with_koolaid/
+     *
+     * @return void
+     */
+    public function testAwardAssetIcon404(): void
+    {
+        $content = $this->manager->syncContentByUrl('/r/ketorecipes/comments/jcc799/keto_gummies_made_with_koolaid/');
+        $post = $content->getPost();
+
+        $this->assertEquals('Keto gummies (made with kool-aid)', $post->getTitle());
+        $awards = $post->getPostAwards();
+
+        $notFoundAwardName = 'Excited';
+        $missingAwardFound = false;
+        foreach ($awards as $award) {
+            if ($notFoundAwardName === $award->getAward()->getName()) {
+                $missingAwardFound = true;
+            }
+        }
+
+        $this->assertFalse($missingAwardFound);
+    }
+
+    /**
      * It has been found that if a Post had a Video Media Asset that was removed
      * by Reddit (for copyright reasons, for example), the Denormalization logic
      * will still attempt to reference the video, resulting in an error.

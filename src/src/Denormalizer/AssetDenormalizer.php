@@ -6,6 +6,10 @@ namespace App\Denormalizer;
 use App\Entity\Asset;
 use App\Service\Reddit\Manager\Assets;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class AssetDenormalizer implements DenormalizerInterface
 {
@@ -30,9 +34,13 @@ class AssetDenormalizer implements DenormalizerInterface
      *                                       A placeholder for the ID hash MUST be included.
      *                                       Example: %s_thumb
      *
-     * @return Asset
+     * @return Asset|null
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Asset
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Asset
     {
         $sourceUrl = $data;
 
@@ -49,9 +57,7 @@ class AssetDenormalizer implements DenormalizerInterface
             $asset->setAudioSourceUrl($context['audioSourceUrl']);
         }
 
-        $this->assetsManager->downloadAndProcessAsset($asset, $filenameFormat);
-
-        return $asset;
+        return $this->assetsManager->downloadAndProcessAsset($asset, $filenameFormat);
     }
 
     /**

@@ -54,7 +54,10 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
                 $targetSourceUrl = $context['gifSourceUrl'];
             }
 
-            $mediaAssets[] = $this->assetDenormalizer->denormalize($targetSourceUrl, Asset::class, null, $context);
+            $mediaAsset = $this->assetDenormalizer->denormalize($targetSourceUrl, Asset::class, null, $context);
+            if ($mediaAsset instanceof Asset) {
+                $mediaAssets[] = $mediaAsset;
+            }
         }
 
         if ($type->getName() === Type::CONTENT_TYPE_IMAGE_GALLERY || !empty($context['mediasMetadata'])) {
@@ -62,7 +65,10 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
         }
 
         if ($type->getName() === Type::CONTENT_TYPE_VIDEO && $context['isVideo'] === true) {
-            $mediaAssets[] = $this->redditVideoDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
+            $mediaAsset = $this->redditVideoDenormalizer->denormalize($sourceUrl, Asset::class, null, $context);
+            if ($mediaAsset instanceof Asset) {
+                $mediaAssets[] = $mediaAsset;
+            }
         }
 
         return $mediaAssets;

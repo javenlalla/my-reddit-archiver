@@ -165,15 +165,16 @@ class PostDenormalizer implements DenormalizerInterface
         if (!empty($postData['all_awardings'])) {
             foreach ($postData['all_awardings'] as $awarding) {
                 $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
+                if ($award instanceof Award) {
+                    $postAward = $this->postAwardRepository->findOneBy(['post' => $post, 'award' => $award]);
+                    if (empty($postAward)) {
+                        $postAward = new PostAward();
+                        $postAward->setAward($award);
+                    }
 
-                $postAward = $this->postAwardRepository->findOneBy(['post' => $post, 'award' => $award]);
-                if (empty($postAward)) {
-                    $postAward = new PostAward();
-                    $postAward->setAward($award);
+                    $postAward->setCount((int) $awarding['count']);
+                    $post->addPostAward($postAward);
                 }
-
-                $postAward->setCount((int) $awarding['count']);
-                $post->addPostAward($postAward);
             }
         }
 
@@ -241,7 +242,9 @@ class PostDenormalizer implements DenormalizerInterface
             && !empty($postData['thumbnail_height'])
         ) {
             $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, ['filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT]);
-            $post->setThumbnailAsset($thumbnailAsset);
+            if ($thumbnailAsset instanceof Asset) {
+                $post->setThumbnailAsset($thumbnailAsset);
+            }
         }
 
         return $post;

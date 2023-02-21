@@ -6,6 +6,10 @@ use App\Entity\Asset;
 use App\Entity\Award;
 use App\Repository\AwardRepository;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class AwardDenormalizer implements DenormalizerInterface
 {
@@ -31,9 +35,13 @@ class AwardDenormalizer implements DenormalizerInterface
      * @param  array{
      *     }  $context
      *
-     * @return Award
+     * @return Award|null
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Award
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Award
     {
         $awardData = $data;
 
@@ -49,7 +57,12 @@ class AwardDenormalizer implements DenormalizerInterface
         $award->setReferenceId(substr(md5($awardData['name']), 0, 10));
 
         $iconAsset = $this->assetDenormalizer->denormalize($awardData['icon_url'], Asset::class);
-        $award->setIconAsset($iconAsset);
+        if ($iconAsset instanceof Asset) {
+            $award->setIconAsset($iconAsset);
+        } else {
+            // @TODO: Replace returning null with a default icon asset. This has been added in the somewhat edge-case of an asset 404ing on Reddit's side.
+            return null;
+        }
 
         if (!empty($awardData['description'])) {
             $award->setDescription($awardData['description']);

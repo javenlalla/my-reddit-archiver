@@ -131,15 +131,16 @@ class CommentDenormalizer implements DenormalizerInterface
         if (!empty($commentData['all_awardings'])) {
             foreach ($commentData['all_awardings'] as $awarding) {
                 $award = $this->awardDenormalizer->denormalize($awarding, Award::class);
+                if ($award instanceof Award) {
+                    $commentAward = $this->commentAwardRepository->findOneBy(['comment' => $comment, 'award' => $award]);
+                    if (empty($commentAward)) {
+                        $commentAward = new CommentAward();
+                        $commentAward->setAward($award);
+                    }
 
-                $commentAward = $this->commentAwardRepository->findOneBy(['comment' => $comment, 'award' => $award]);
-                if (empty($commentAward)) {
-                    $commentAward = new CommentAward();
-                    $commentAward->setAward($award);
+                    $commentAward->setCount((int) $awarding['count']);
+                    $comment->addCommentAward($commentAward);
                 }
-
-                $commentAward->setCount((int) $awarding['count']);
-                $comment->addCommentAward($commentAward);
             }
         }
 

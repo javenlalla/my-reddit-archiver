@@ -35,17 +35,27 @@ class Assets
      * @param  Asset  $asset
      * @param  string|null  $filenameFormat
      *
-     * @return Asset
+     * @return Asset|null
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function downloadAndProcessAsset(Asset $asset, ?string $filenameFormat = null): Asset
+    public function downloadAndProcessAsset(Asset $asset, ?string $filenameFormat = null): ?Asset
     {
         $response = $this->httpClient->request('GET', $asset->getSourceUrl());
         if (200 !== $response->getStatusCode()) {
-            throw new Exception(sprintf('Unable to retrieve Asset from URL: %s. Response: %s', $asset->getSourceUrl(), $response->getContent()));
+            if ($response->getStatusCode() === 404) {
+                // @TODO: Logic in the downloading flow needs to account for URLs, especially assets, not being available anymore and 404ing. For now, return null to avoid persisting the incomplete Asset.
+                return null;
+            } else {
+                throw new Exception(sprintf(
+                    'Unable to retrieve Asset from URL: %s. Status Code: %d. Response Info: %s',
+                    $asset->getSourceUrl(),
+                    $response->getStatusCode(),
+                    var_export($response->getInfo(), true)
+                ));
+            }
         }
 
         $idHash = md5($asset->getSourceUrl());

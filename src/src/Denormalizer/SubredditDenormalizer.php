@@ -8,6 +8,7 @@ use App\Entity\Subreddit;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\SubredditRepository;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Manager\Assets;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -83,7 +84,9 @@ class SubredditDenormalizer implements DenormalizerInterface
 
         if (!empty($subredditData['icon_img'])) {
             $iconImageAsset = $this->assetDenormalizer->denormalize($subredditData['icon_img'], Asset::class);
-            $subreddit->setIconImageAsset($iconImageAsset);
+            if ($iconImageAsset instanceof Asset) {
+                $subreddit->setIconImageAsset($iconImageAsset);
+            }
         }
 
         if (!empty($subredditData['banner_background_image'])) {
@@ -92,12 +95,16 @@ class SubredditDenormalizer implements DenormalizerInterface
             // those parameters to get the base URL of the Asset.
             $bannerBackgroundImageUrlParts = explode('?', $subredditData['banner_background_image']);
             $bannerBackgroundAsset = $this->assetDenormalizer->denormalize($bannerBackgroundImageUrlParts[0], Asset::class);
-            $subreddit->setBannerBackgroundImageAsset($bannerBackgroundAsset);
+            if ($bannerBackgroundAsset instanceof Asset) {
+                $subreddit->setBannerBackgroundImageAsset($bannerBackgroundAsset);
+            }
         }
 
         if (!empty($subredditData['banner_img'])) {
             $bannerImageAsset = $this->assetDenormalizer->denormalize($subredditData['banner_img'], Asset::class);
-            $subreddit->setBannerImageAsset($bannerImageAsset);
+            if ($bannerImageAsset instanceof Asset) {
+                $subreddit->setBannerImageAsset($bannerImageAsset);
+            }
         }
 
         $this->subredditRepository->add($subreddit, true);

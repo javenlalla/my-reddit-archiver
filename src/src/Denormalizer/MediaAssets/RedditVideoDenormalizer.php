@@ -7,6 +7,9 @@ use App\Denormalizer\AssetDenormalizer;
 use App\Entity\Asset;
 use App\Entity\Post;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -34,10 +37,13 @@ class RedditVideoDenormalizer implements DenormalizerInterface
      *              videoSourceUrl: string,
      *     }  $context  'postResponseData' contains the original API Response Data for this Post.
      *
-     * @return Asset
+     * @return Asset|null
      * @throws TransportExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
      */
-    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Asset
+    public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Asset
     {
         $sourceUrl = $data;
         $videoSourceUrl = $context['videoSourceUrl'];
