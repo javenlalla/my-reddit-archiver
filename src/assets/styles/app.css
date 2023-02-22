@@ -35,6 +35,10 @@ body {
     font-size: 24px;
 }
 
+.font-size--18 {
+    font-size: 18px;
+}
+
 .font-size--14 {
     font-size: 14px;
 }

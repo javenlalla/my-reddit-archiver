@@ -38,7 +38,10 @@
 
                 <div class="row">
                     <div class="col">
-                        <span>{{ content.post.title }}</span>
+                        <h6 class="font-size--18 color--black mt-2">{{ content.post.title }}</h6>
+                        {% if content.post.latestPostAuthorText %}
+                            <span>{{ content.post.latestPostAuthorText.authorText.textHtml|raw }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
