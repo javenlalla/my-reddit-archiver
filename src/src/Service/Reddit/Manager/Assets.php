@@ -49,6 +49,18 @@ class Assets
         }
 
         $assetExtension = $this->getAssetExtensionFromContentTypeHeader($assetResponse);
+        // This logic here is to address an edge case in which a gifv URL renders
+        // an HTML page instead of the source media. If the header is HTML
+        // and the Source URL is an .gifv URL, update the destination to be
+        // the media's .mp4 file instead.
+        // See DownloaderTest::testVideoHtmlPage() for more information.
+        if ($assetExtension === 'html' && str_contains($asset->getSourceUrl(), '.gifv')) {
+            $sourceUrl = $asset->getSourceUrl();
+            $videoSourceUrl = str_replace('.gifv', '.mp4', $sourceUrl);
+            $asset->setSourceUrl($videoSourceUrl);
+            $assetExtension = 'mp4';
+        }
+
         $idHash = md5($asset->getSourceUrl());
         $filename = $idHash;
         if (!empty($filenameFormat)) {
@@ -122,6 +134,10 @@ class Assets
             case 'video/mp4':
             case 'image/gif':
                 return 'mp4';
+
+            case 'text/html':
+            case 'text/html;charset=UTF-8';
+                return 'html';
         }
 
         throw new Exception(sprintf('Unexpected Content Type in extension extraction: %s', $contentTypeValue));

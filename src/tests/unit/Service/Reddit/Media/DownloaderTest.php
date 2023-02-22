@@ -56,6 +56,14 @@ class DownloaderTest extends KernelTestCase
         'filesize' => 166418,
     ];
 
+    const HTML_VIDEO_ASSET = [
+        'sourceUrl' => 'https://i.imgur.com/nL4zkco.mp4',
+        'filename' => '5ad577eee5d00689e04643f6898c2d4e.mp4',
+        'dirOne' => '5',
+        'dirTwo' => 'ad',
+        'filesize' => 291523,
+    ];
+
     private Manager $manager;
 
     private EntityManager $entityManager;
@@ -70,6 +78,45 @@ class DownloaderTest extends KernelTestCase
         $this->entityManager = $container->get('doctrine')->getManager();
 
         $this->cleanupAssets();
+    }
+
+    /**
+     * In some cases, a .gifv URL renders an HTML page instead of a media source
+     * such as a .gifv, .gif, or .mp4 file. As a result, attempting to detect
+     * the correct MIME Type raises an error.
+     *
+     * The detection logic must be updated to include an HTML type, and in those
+     * cases, attempt to reference and download the source's .mp4 link instead.
+     *
+     * Example (NSFW):
+     *  - Reddit Post: https://www.reddit.com/r/Unexpected/comments/dvuois/people_are_so_immature/
+     *  - Media Link: https://i.imgur.com/nL4zkco.gifv
+     *
+     * @return void
+     */
+    public function testVideoHtmlPage(): void
+    {
+        $htmlVideoAssetPath = sprintf(self::BASE_PATH_FORMAT, self::HTML_VIDEO_ASSET['dirOne'], self::HTML_VIDEO_ASSET['dirTwo']) . self::HTML_VIDEO_ASSET['filename'];
+        $this->assertFileDoesNotExist($htmlVideoAssetPath);
+
+        $content = $this->manager->syncContentByUrl('/r/Unexpected/comments/dvuois/people_are_so_immature/');
+        $post = $content->getPost();
+        $this->assertEquals('https://i.imgur.com/nL4zkco.gifv', $post->getUrl());
+
+        $mediaAsset = $post->getMediaAssets()->first();
+        $this->assertInstanceOf(Asset::class, $mediaAsset);
+        $this->assertEquals(self::HTML_VIDEO_ASSET['sourceUrl'], $mediaAsset->getSourceUrl());
+        $this->assertEquals(self::HTML_VIDEO_ASSET['filename'], $mediaAsset->getFilename());
+        $this->assertEquals(self::HTML_VIDEO_ASSET['dirOne'], $mediaAsset->getDirOne());
+        $this->assertEquals(self::HTML_VIDEO_ASSET['dirTwo'], $mediaAsset->getDirTwo());
+        $this->assertFileExists($htmlVideoAssetPath);
+        $this->assertEquals(self::HTML_VIDEO_ASSET['filesize'], filesize($htmlVideoAssetPath));
+
+        // This is not a typical .mp4 download, so the audio should have already
+        // been included with the .mp4 file. The separate Audio file should not
+        // be set.
+        $this->assertEmpty($mediaAsset->getAudioFilename());
+        $this->assertEmpty($mediaAsset->getAudioSourceUrl());
     }
 
     /**
@@ -681,6 +728,7 @@ class DownloaderTest extends KernelTestCase
             self::SUBREDDIT_BANNER_IMAGE_ASSET,
             self::AWARD_SILVER_ICON_ASSET,
             self::AWARD_FACEPALM_ICON_ASSET,
+            self::HTML_VIDEO_ASSET,
         ];
 
         foreach ($additionalAssets as $asset) {
