@@ -238,8 +238,8 @@ class Api
     }
 
     /**
-     * This is an all-purpose call to retrieve information about any Reddit
-     * item (Post, Comment, Subreddit, etc.) using the full Reddit ID.
+     * This is a shortcut function to retrieve the details for a single Reddit
+     * item (Post, Comment, Subreddit, etc.) by its Reddit ID.
      *
      * @param  string  $redditId Ex: t5_2sdu8
      *
@@ -247,10 +247,25 @@ class Api
      */
     public function getRedditItemInfoById(string $redditId): array
     {
-        $cacheKey = md5('info-'.$redditId);
+        return $this->getRedditItemInfoByIds([$redditId]);
+    }
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId) {
-            $endpoint = sprintf(self::INFO_ENDPOINT, $redditId);
+    /**
+     * This is an all-purpose call to retrieve information about any Reddit
+     * items (Post, Comment, Subreddit, etc.) using their full Reddit IDs.
+     *
+     * @param  array  $redditIds Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    public function getRedditItemInfoByIds(array $redditIds): array
+    {
+        $redditIdsString = implode(',', $redditIds);
+        $cacheKey = md5('info-'.$redditIdsString);
+
+        return $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
+            $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
 
             return
                 $this->executeSimpleCall(self::METHOD_GET, $endpoint)
