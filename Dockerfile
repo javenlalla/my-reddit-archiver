@@ -1,8 +1,27 @@
+# Build the Reddit Go CLI tool.
+FROM golang:1.20.1-buster AS reddit-go-cli-build
+
+WORKDIR /app
+
+RUN git clone https://github.com/javenlalla/reddit-cli.git
+WORKDIR reddit-cli
+# COPY go.mod ./
+# COPY go.sum ./
+
+RUN go mod download
+
+# COPY *.go ./
+
+RUN go build -o /reddit-sync
+
+# Build the main image.
 FROM php:8.1.7-fpm-buster
 
 ENV APP_ENV=prod
 ENV APP_PUBLIC_PATH=/var/www/mra/public
 ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY --from=reddit-go-cli-build /reddit-sync /usr/bin/reddit-sync
 
 RUN apt update && apt install -y \
     curl \
