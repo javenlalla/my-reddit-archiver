@@ -5,6 +5,7 @@ namespace App\Service\Reddit\Manager;
 
 use App\Entity\Asset;
 use App\Entity\AssetInterface;
+use App\Service\Reddit\Manager\Assets\AssetResponse;
 use App\Service\Reddit\Media\Downloader;
 use Exception;
 use Symfony\Component\Filesystem\Filesystem;
@@ -12,7 +13,6 @@ use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class Assets
@@ -21,9 +21,9 @@ class Assets
 
     public function __construct(
         private readonly string $publicDirectoryAbsolutePath,
-        private readonly HttpClientInterface $httpClient,
         private readonly Downloader $downloaderService,
         private readonly Filesystem $filesystem,
+        private readonly AssetResponse $assetResponseService,
     ) {
     }
 
@@ -43,30 +43,19 @@ class Assets
      */
     public function downloadAndProcessAsset(Asset $asset, ?string $filenameFormat = null): ?Asset
     {
-        $response = $this->httpClient->request('GET', $asset->getSourceUrl());
-        if (200 !== $response->getStatusCode()) {
-            if ($response->getStatusCode() === 404) {
-                // @TODO: Logic in the downloading flow needs to account for URLs, especially assets, not being available anymore and 404ing. For now, return null to avoid persisting the incomplete Asset.
-                return null;
-            } else {
-                throw new Exception(sprintf(
-                    'Unable to retrieve Asset from URL: %s. Status Code: %d. Response Info: %s',
-                    $asset->getSourceUrl(),
-                    $response->getStatusCode(),
-                    var_export($response->getInfo(), true)
-                ));
-            }
+        $assetResponse = $this->assetResponseService->getAssetResponse($asset);
+        if (($assetResponse instanceof ResponseInterface) === false) {
+            return null;
         }
 
+        $assetExtension = $this->getAssetExtensionFromContentTypeHeader($assetResponse);
         $idHash = md5($asset->getSourceUrl());
         $filename = $idHash;
         if (!empty($filenameFormat)) {
             $filename = sprintf($filenameFormat, $idHash);
         }
 
-        $assetExtension = $this->getAssetExtensionFromContentTypeHeader($response);
         $filename .= '.' . $assetExtension;
-
         $asset->setFilename($filename);
         $asset->setDirOne(substr($idHash, 0, 1));
         $asset->setDirTwo(substr($idHash, 1, 2));
@@ -75,11 +64,7 @@ class Assets
         $this->downloaderService->downloadAsset($asset, $assetDirectoryPath);
 
         if (!empty($asset->getAudioSourceUrl())) {
-            $videoFile = $assetDirectoryPath . '/' . $asset->getFilename();
-            $audioFile = $assetDirectoryPath . '/' . $asset->getAudioFilename();
-            $this->downloaderService->downloadSourceToLocalFile($asset->getAudioSourceUrl(), $audioFile);
-
-            $this->mergeVideoAndAudioFiles($assetDirectoryPath, $videoFile, $audioFile);
+            $this->processAudioFile($asset, $assetDirectoryPath);
         }
 
         return $asset;
@@ -198,6 +183,25 @@ class Assets
     }
 
     /**
+     * Process the audio file associated to the provided Asset by downloading
+     * the file from its source URL and merging it with the video file locally.
+     *
+     * @param  Asset  $asset
+     * @param  string  $assetDirectoryPath
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function processAudioFile(Asset $asset, string $assetDirectoryPath): void
+    {
+        $videoFile = $assetDirectoryPath . '/' . $asset->getFilename();
+        $audioFile = $assetDirectoryPath . '/' . $asset->getAudioFilename();
+        $this->downloaderService->downloadSourceToLocalFile($asset->getAudioSourceUrl(), $audioFile);
+
+        $this->mergeVideoAndAudioFiles($assetDirectoryPath, $videoFile, $audioFile);
+    }
+
+    /**
      * Merge the provided Reddit Video and Audio files into one video file.
      *
      * Once merged, move the combined file to replace the original Video
@@ -217,7 +221,7 @@ class Assets
         $cmd = sprintf('ffmpeg -i %s  -i %s  -c:v copy -c:a aac %s -hide_banner -loglevel error', $videoFilePath, $audioFilePath, $combinedOutputPath);
         $cmdResult = exec($cmd, result_code: $resultCode);
 
-        if ($resultCode !== 0 || !empty($cmdResult)) {
+        if ($resultCode != 0 || !empty($cmdResult)) {
             throw new Exception(sprintf('Unexpected command output combining Reddit Video and Audio files. Command: %s. Output: %s. Result Code: %d', $cmd, $cmdResult, $resultCode));
         }
 
