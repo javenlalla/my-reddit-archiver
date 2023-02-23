@@ -273,7 +273,7 @@ class Api
 
         foreach ($redditIdsGroups as $redditIdsGroup) {
             $redditIdsString = implode(',', $redditIdsGroup);
-            $cacheKey = md5('info-'.$redditIdsString. uniqid());
+            $cacheKey = md5('info-'.$redditIdsString);
 
             $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
