@@ -58,7 +58,7 @@ class SubredditDenormalizer implements DenormalizerInterface
     private function initSubreddit(string $subredditId): Subreddit
     {
         $subredditRawData = $this->redditApi->getRedditItemInfoById($subredditId);
-        $subredditData = $subredditRawData['data']['children'][0]['data'];
+        $subredditData = $subredditRawData['data'];
 
         $subreddit = new Subreddit();
         $subreddit->setRedditId($subredditId);

@@ -6,12 +6,12 @@ namespace App\Tests\feature;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Type;
-use App\Service\Reddit\Manager;
+use App\Service\Reddit\Manager\BatchSync;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class BatchSyncTest extends KernelTestCase
 {
-    private Manager $manager;
+    private BatchSync $batchSyncManager;
 
     public function setUp(): void
     {
@@ -19,7 +19,7 @@ class BatchSyncTest extends KernelTestCase
         self::bootKernel();
 
         $container = static::getContainer();
-        $this->manager = $container->get(Manager::class);
+        $this->batchSyncManager = $container->get(BatchSync::class);
     }
 
     /**
@@ -37,7 +37,7 @@ class BatchSyncTest extends KernelTestCase
             't1_ia1smh6',
         ];
 
-        $contents = $this->manager->batchSyncByRedditIds($redditIds);
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($redditIds);
         $this->assertInstanceOf(Content::class, $contents[0]);
 
         foreach ($contents as $content) {

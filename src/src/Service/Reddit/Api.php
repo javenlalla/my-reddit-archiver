@@ -42,6 +42,8 @@ class Api
 
     const MORE_CHILDREN_BATCH_SIZE = 750;
 
+    const INFO_BATCH_SIZE = 100;
+
     const COMMENTS_SORT_NEW = 'new';
 
     const HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json?limit=%d';
@@ -241,13 +243,18 @@ class Api
      * This is a shortcut function to retrieve the details for a single Reddit
      * item (Post, Comment, Subreddit, etc.) by its Reddit ID.
      *
+     * Because this is a single ID, return first (and should be only) child
+     * in the response listing data.
+     *
      * @param  string  $redditId Ex: t5_2sdu8
      *
      * @return array
      */
     public function getRedditItemInfoById(string $redditId): array
     {
-        return $this->getRedditItemInfoByIds([$redditId]);
+        $childrenResponseData = $this->getRedditItemInfoByIds([$redditId]);
+
+        return $childrenResponseData[0];
     }
 
     /**
@@ -261,16 +268,26 @@ class Api
      */
     public function getRedditItemInfoByIds(array $redditIds): array
     {
-        $redditIdsString = implode(',', $redditIds);
-        $cacheKey = md5('info-'.$redditIdsString);
+        $redditIdsGroups = array_chunk($redditIds, self::INFO_BATCH_SIZE);
+        $allRetrievedItemsInfo = [];
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
-            $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
+        foreach ($redditIdsGroups as $redditIdsGroup) {
+            $redditIdsString = implode(',', $redditIdsGroup);
+            $cacheKey = md5('info-'.$redditIdsString. uniqid());
 
-            return
-                $this->executeSimpleCall(self::METHOD_GET, $endpoint)
+            $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
+                $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
+
+                $responseData = $this->executeSimpleCall(self::METHOD_GET, $endpoint)
                     ->toArray();
-        });
+
+                return $responseData['data']['children'];
+            });
+
+            $allRetrievedItemsInfo = [...$allRetrievedItemsInfo, ...$itemsInfo];
+        }
+
+        return $allRetrievedItemsInfo;
     }
 
     /**

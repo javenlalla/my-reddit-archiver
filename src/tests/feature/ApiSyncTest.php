@@ -8,6 +8,7 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Service\Reddit\Manager;
+use App\Service\Reddit\Manager\BatchSync;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -16,6 +17,8 @@ class ApiSyncTest extends KernelTestCase
 {
     private Manager $manager;
 
+    private BatchSync $batchSyncManager;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -23,6 +26,7 @@ class ApiSyncTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
+        $this->batchSyncManager = $container->get(BatchSync::class);
     }
 
     /**
@@ -51,6 +55,70 @@ class ApiSyncTest extends KernelTestCase
         $this->assertEquals($redditId, $post->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
+    }
+
+    /**
+     * @dataProvider getSyncPostsData()
+     *
+     * @param  string  $originalPostUrl
+     * @param  string  $redditId
+     * @param  string  $type
+     * @param  string  $contentType
+     * @param  string  $title
+     * @param  string  $subreddit
+     * @param  string  $url
+     * @param  string  $createdAt
+     * @param  string|null  $authorText
+     * @param  string|null  $authorTextRawHtml
+     * @param  string|null  $authorTextHtml
+     * @param  string|null  $redditPostUrl
+     * @param  string|null  $gifUrl
+     * @param  string|null  $commentRedditId
+     *
+     * @return void
+     */
+    public function testSyncContentsByBatch(
+        string $originalPostUrl,
+        string $redditId,
+        string $type,
+        string $contentType,
+        string $title,
+        string $subreddit,
+        string $url,
+        string $createdAt,
+        string $authorText = null,
+        string $authorTextRawHtml = null,
+        string $authorTextHtml = null,
+        string $redditPostUrl = null,
+        string $gifUrl = null,
+        string $commentRedditId = null,
+    ) {
+        $fullRedditId = $type . '_' . $redditId;
+        if (!empty($commentRedditId)) {
+            $fullRedditId = $type . '_' . $commentRedditId;
+        }
+
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds([$fullRedditId]);
+        $this->assertCount(1, $contents);
+
+        $this->validateContent(
+            true,
+            $contents[0],
+            $originalPostUrl,
+            $redditId,
+            $type,
+            $contentType,
+            $title,
+            $subreddit,
+            $url,
+            $createdAt,
+            $authorText,
+            $authorTextRawHtml,
+            $authorTextHtml,
+            $redditPostUrl,
+            $gifUrl,
+            $commentRedditId,
+        );
     }
 
     /**

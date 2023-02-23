@@ -14,7 +14,6 @@ use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
 use App\Service\Reddit\Media\Downloader;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -44,26 +43,7 @@ class Manager
         private readonly CommentsAndMoreDenormalizer $commentsAndMoreDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
-        private readonly Downloader $mediaDownloader,
     ) {
-    }
-
-    /**
-     * Execute a sync for each ID in the provided array of Reddit IDs.
-     *
-     * @param  array  $redditIds Reddit IDs formatted with kind.
-     *                           Example: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
-     *
-     * @return Content[]
-     */
-    public function batchSyncByRedditIds(array $redditIds): array
-    {
-        $contents = [];
-        foreach ($redditIds as $redditId) {
-            $contents[] = $this->syncContentFromApiByFullRedditId($redditId);
-        }
-
-        return $contents;
     }
 
     /**
@@ -102,7 +82,7 @@ class Manager
         // }
 
         $response = $this->api->getRedditItemInfoById($fullRedditId);
-        $contentUrl = $response['data']['children'][0]['data']['permalink'];
+        $contentUrl = $response['data']['permalink'];
 
         return $this->syncContentByUrl($contentUrl, $syncComments);
     }

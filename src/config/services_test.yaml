@@ -6,3 +6,6 @@ services:
 
     App\Service\Typesense\Search:
         public: true
+
+    App\Service\Reddit\Manager\BatchSync:
+        public: true
