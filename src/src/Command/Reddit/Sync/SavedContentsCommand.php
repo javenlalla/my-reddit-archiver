@@ -3,11 +3,9 @@ declare(strict_types=1);
 
 namespace App\Command\Reddit\Sync;
 
-use App\Entity\Content;
-use App\Repository\ContentRepository;
-use App\Service\Reddit\Manager;
+use App\Service\Reddit\Manager\BatchSync;
+use App\Service\Reddit\Manager\SavedContents;
 use App\Service\Reddit\SyncScheduler;
-use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -23,9 +21,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SavedContentsCommand extends Command
 {
     public function __construct(
-        private readonly Manager $manager,
-        private readonly Manager\SavedContents $savedContentsManager,
-        private readonly ContentRepository $contentRepository,
+        private readonly BatchSync $batchSyncManager,
+        private readonly SavedContents $savedContentsManager,
         private readonly SyncScheduler $syncScheduler,
     ) {
         parent::__construct();
@@ -86,35 +83,13 @@ class SavedContentsCommand extends Command
      */
     private function processedSavedContentsData(OutputInterface $output, array $savedContentsData): int
     {
-        $count = 0;
+        $redditIds = $this->extractRedditIdsFromSavedContentsData($savedContentsData);
         $output->writeln('<comment>Syncing `Saved` Contents to local.</comment>');
 
-        foreach ($savedContentsData as $savedContentData) {
-            try {
-                $content = $this->manager->syncContentByUrl($savedContentData['data']['permalink']);
-
-                if ($content->getPost()->isIsArchived() === false) {
-                    $this->syncScheduler->calculateAndSetNextSyncByContent($content);
-                }
-
-                $count++;
-                if (($count % 10) === 0) {
-                    $output->writeln(sprintf('<comment>%d `Saved` Contents processed.</comment>', $count));
-                }
-            } catch (Exception $e) {
-                $output->writeln(sprintf('<error>%s</error>', var_export($savedContentData ,true)), OutputInterface::VERBOSITY_VERBOSE);
-                $output->writeln([
-                    sprintf('<error>Error: %s', $e->getMessage()),
-                    sprintf('<error>Content: %s: %s</error>', $savedContentData['kind'], $savedContentData['data']['permalink']),
-                ]);
-
-                $this->purgeAttemptedContent($savedContentData);
-
-                if ($output->isVerbose()) {
-                    $output->writeln(sprintf('<error>Stack Trace: %s', $e->getTraceAsString()));
-                }
-
-                return Command::FAILURE;
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($redditIds);
+        foreach ($contents as $content) {
+            if ($content->getPost()->isIsArchived() === false) {
+                $this->syncScheduler->calculateAndSetNextSyncByContent($content);
             }
         }
 
@@ -122,19 +97,20 @@ class SavedContentsCommand extends Command
     }
 
     /**
-     * Purge attempted Content to ensure no partial records or relations are
-     * lingering in the database.
+     * Loop through the provided array of `Saved` Contents data and extract the
+     * Reddit ID for each item into an array.
      *
-     * @param  array  $savedContentData
+     * @param  array  $savedContentsData
      *
-     * @return void
+     * @return array
      */
-    private function purgeAttemptedContent(array $savedContentData): void
+    private function extractRedditIdsFromSavedContentsData(array $savedContentsData = []): array
     {
-        $localContent = $this->savedContentsManager->getLocalContentFromSavedContentData($savedContentData);
-
-        if ($localContent instanceof Content) {
-            $this->contentRepository->remove($localContent, true);
+        $redditIds = [];
+        foreach ($savedContentsData as $savedContentData) {
+            $redditIds[] = $savedContentData['data']['name'];
         }
+
+        return $redditIds;
     }
 }
