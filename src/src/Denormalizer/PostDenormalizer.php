@@ -31,6 +31,7 @@ class PostDenormalizer implements DenormalizerInterface
         'default',
         'nsfw',
         'self',
+        'spoiler',
     ];
 
     private const THUMBNAIL_FILENAME_FORMAT = '%s_thumb';
