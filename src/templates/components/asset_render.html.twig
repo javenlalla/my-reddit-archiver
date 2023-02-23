@@ -1,5 +1,9 @@
-{% if linkImage %}
-    <a href="{{ computed.path }}" target="_blank"><img class="img-fluid {{ this.customClass }}" src="{{ computed.path }}" /></a>
+{% if this.isVideo %}
+    <video controls autoplay loop class="{{ this.customClass }}" src="{{ this.path }}" poster="{{ this.videoPoster }}"></video>
 {% else %}
-    <img class="img-fluid {{ this.customClass }}" src="{{ this.path }}" />
+    {% if linkImage %}
+        <a href="{{ computed.path }}" target="_blank"><img class="img-fluid {{ this.customClass }}" src="{{ computed.path }}" /></a>
+    {% else %}
+        <img class="img-fluid {{ this.customClass }}" src="{{ this.path }}" />
+    {% endif %}
 {% endif %}

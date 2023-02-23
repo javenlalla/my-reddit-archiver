@@ -50,7 +50,8 @@
                         {% for mediaAsset in content.post.mediaAssets %}
                             {{ component('asset_render', {
                                 asset: mediaAsset,
-                                linkImage: true
+                                linkImage: true,
+                                thumbnailAsset: content.post.thumbnailAsset,
                             }) }}
                         {% endfor %}
                     </div>

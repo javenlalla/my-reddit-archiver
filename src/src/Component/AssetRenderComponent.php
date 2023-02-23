@@ -13,6 +13,8 @@ class AssetRenderComponent extends AbstractController
 {
     public AssetInterface $asset;
 
+    public ?AssetInterface $thumbnailAsset = null;
+
     public bool $linkImage = false;
 
     public string $customClass = '';
@@ -24,5 +26,19 @@ class AssetRenderComponent extends AbstractController
     public function getPath(): string
     {
         return $this->assetsManager->getAssetPath($this->asset);
+    }
+
+    public function getIsVideo(): bool
+    {
+        return str_contains($this->asset->getFilename(), '.mp4');
+    }
+
+    public function getVideoPoster(): string
+    {
+        if ($this->thumbnailAsset instanceof AssetInterface) {
+            return $this->assetsManager->getAssetPath($this->thumbnailAsset);
+        }
+
+        return '';
     }
 }
