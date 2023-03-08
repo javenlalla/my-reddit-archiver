@@ -38,11 +38,13 @@ class BatchSync
         foreach ($itemsInfo as $itemInfo) {
             $content = $this->getContentFromItemInfo($itemInfo, $parentItemsInfo);
             $this->entityManager->persist($content);
+            // Including the flush here may seem intensive, but it is
+            // intentional to avoid unique clause violations upon inserts into
+            // the database when the same Post is included more than once.
+            $this->entityManager->flush();
 
             $contents[] = $content;
         }
-
-        $this->entityManager->flush();
 
         return $contents;
     }
