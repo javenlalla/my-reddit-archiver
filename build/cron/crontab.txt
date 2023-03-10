@@ -1,2 +1,2 @@
 # Run the Saved contents full sync every 30 minutes.
-0,30 * * * * /cron-execution/full_sync_cron.sh >> /var/log/cron-execution.log
+0,30 * * * * /cron-execution/full_sync_cron.sh >> /var/log/cron-execution.log 2>&1

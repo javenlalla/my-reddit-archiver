@@ -23,9 +23,14 @@ DB_USERNAME=${DB_USERNAME:-my_archiver}
 DB_PASSWORD=${DB_PASSWORD:-my_archiver_password}
 DB_PORT=${DB_PORT:-3306}
 
-# Configure the .env variables.
-export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
+# Configure the .env file.
 > .env
+echo "APP_PUBLIC_PATH=${APP_PUBLIC_PATH}" >> .env
+echo "REDDIT_USERNAME=${REDDIT_USERNAME}" >> .env
+echo "REDDIT_PASSWORD=${REDDIT_PASSWORD}" >> .env
+echo "REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}" >> .env
+echo "REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}" >> .env
+export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
 
 if [[ $APP_ENV != "prod" ]]; then
