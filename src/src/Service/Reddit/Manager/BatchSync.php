@@ -10,6 +10,7 @@ use App\Service\Reddit\Api;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 
 class BatchSync
 {
@@ -17,6 +18,7 @@ class BatchSync
         private readonly Api $redditApi,
         private readonly ContentDenormalizer $contentDenormalizer,
         private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -33,8 +35,10 @@ class BatchSync
     {
         $contents = [];
         $itemsInfo = $this->redditApi->getRedditItemInfoByIds($redditIds);
-
         $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($itemsInfo);
+
+        $synced = 0;
+        $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemsInfo)));
         foreach ($itemsInfo as $itemInfo) {
             $content = $this->getContentFromItemInfo($itemInfo, $parentItemsInfo);
             $this->entityManager->persist($content);
@@ -44,7 +48,15 @@ class BatchSync
             $this->entityManager->flush();
 
             $contents[] = $content;
+
+
+            $synced++;
+            if (($synced % 10) === 0) {
+                $this->logger->info(sprintf('Synced %d Reddit items.', $synced));
+            }
         }
+
+        $this->logger->info('Completed batch sync.');
 
         return $contents;
     }
