@@ -6,7 +6,10 @@ namespace App\Service\Reddit\Manager;
 use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
+use App\Entity\SyncErrorLog;
+use App\Repository\SyncErrorLogRepository;
 use App\Service\Reddit\Api;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -35,24 +38,28 @@ class BatchSync
     {
         $contents = [];
         $itemsInfo = $this->redditApi->getRedditItemInfoByIds($redditIds);
+        $itemsCount = count($itemsInfo);
         $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($itemsInfo);
 
-        $synced = 0;
+        $processed = 0;
         $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemsInfo)));
         foreach ($itemsInfo as $itemInfo) {
-            $content = $this->getContentFromItemInfo($itemInfo, $parentItemsInfo);
-            $this->entityManager->persist($content);
-            // Including the flush here may seem intensive, but it is
-            // intentional to avoid unique clause violations upon inserts into
-            // the database when the same Post is included more than once.
-            $this->entityManager->flush();
+            try {
+                $content = $this->getContentFromItemInfo($itemInfo, $parentItemsInfo);
+                $this->entityManager->persist($content);
+                // Including the flush here may seem intensive, but it is
+                // intentional to avoid unique clause violations upon inserts into
+                // the database when the same Post is included more than once.
+                $this->entityManager->flush();
 
-            $contents[] = $content;
+                $contents[] = $content;
+            } catch (Exception $e) {
+                $this->handleSyncError($e, $itemsInfo);
+            }
 
-
-            $synced++;
-            if (($synced % 10) === 0) {
-                $this->logger->info(sprintf('Synced %d Reddit items.', $synced));
+            $processed++;
+            if (($processed % 10) === 0) {
+                $this->logger->info(sprintf('Processed %d out of %d Reddit items.', $processed, $itemsCount));
             }
         }
 
@@ -117,5 +124,27 @@ class BatchSync
         }
 
         return $content;
+    }
+
+    /**
+     * Parse the provided Exception and store in the Sync Error Log table.
+     *
+     * @param  Exception  $e
+     * @param  array  $itemsInfo
+     *
+     * @return void
+     */
+    private function handleSyncError(Exception $e, array $itemsInfo): void
+    {
+        $syncError = new SyncErrorLog();
+
+        $syncError->setError($e->getMessage());
+        $syncError->setErrorTrace($e->getTraceAsString());
+        $syncError->setContentJson(json_encode($itemsInfo));
+        $syncError->setCreatedAt(new DateTimeImmutable());
+
+        /** @var SyncErrorLogRepository $syncErrorRepository */
+        $syncErrorRepository = $this->entityManager->getRepository(SyncErrorLog::class);
+        $syncErrorRepository->add($syncError, true);
     }
 }

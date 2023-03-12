@@ -74,6 +74,9 @@ final class Version20221128202003 extends AbstractMigration
         /****more_comment****/
         $this->addSql('CREATE TABLE more_comment (id INT AUTO_INCREMENT NOT NULL, parent_comment_id INT DEFAULT NULL, parent_post_id INT DEFAULT NULL, reddit_id VARCHAR(10) NOT NULL, url LONGTEXT NOT NULL, INDEX IDX_6F523441BF2AF943 (parent_comment_id), INDEX IDX_6F52344139C1776A (parent_post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
+        /****sync_error_log****/
+        $this->addSql('CREATE TABLE sync_error_log (id INT AUTO_INCREMENT NOT NULL, url LONGTEXT DEFAULT NULL, content_json LONGTEXT DEFAULT NULL, error LONGTEXT DEFAULT NULL, error_trace LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -162,5 +165,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE subreddit');
         $this->addSql('DROP TABLE asset');
         $this->addSql('DROP TABLE more_comment');
+        $this->addSql('DROP TABLE sync_error_log');
     }
 }
