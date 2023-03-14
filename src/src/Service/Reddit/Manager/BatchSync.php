@@ -6,14 +6,13 @@ namespace App\Service\Reddit\Manager;
 use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
-use App\Entity\SyncErrorLog;
-use App\Repository\SyncErrorLogRepository;
+use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Api;
-use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class BatchSync
 {
@@ -22,6 +21,7 @@ class BatchSync
         private readonly ContentDenormalizer $contentDenormalizer,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -127,7 +127,7 @@ class BatchSync
     }
 
     /**
-     * Parse the provided Exception and store in the Sync Error Log table.
+     * Dispatch an error event to handle the provided Content sync Exception.
      *
      * @param  Exception  $e
      * @param  array  $itemsInfo
@@ -136,14 +136,14 @@ class BatchSync
      */
     private function handleSyncError(Exception $e, array $itemsInfo): void
     {
-        $syncError = new SyncErrorLog();
-
-        $syncError->setError($e->getMessage());
-        $syncError->setErrorTrace($e->getTraceAsString());
-        $syncError->setContentJson(json_encode($itemsInfo));
-        $syncError->setCreatedAt(new DateTimeImmutable());
-
-        $this->entityManager->persist($syncError);
-        $this->entityManager->flush();
+        $this->eventDispatcher->dispatch(
+            new SyncErrorEvent(
+                $e,
+                SyncErrorEvent::TYPE_CONTENT,
+                [
+                    'itemsInfo' => $itemsInfo,
+                ]
+            )
+        );
     }
 }
