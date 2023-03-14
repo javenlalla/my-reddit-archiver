@@ -143,8 +143,7 @@ class BatchSync
         $syncError->setContentJson(json_encode($itemsInfo));
         $syncError->setCreatedAt(new DateTimeImmutable());
 
-        /** @var SyncErrorLogRepository $syncErrorRepository */
-        $syncErrorRepository = $this->entityManager->getRepository(SyncErrorLog::class);
-        $syncErrorRepository->add($syncError, true);
+        $this->entityManager->persist($syncError);
+        $this->entityManager->flush();
     }
 }

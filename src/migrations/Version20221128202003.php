@@ -69,13 +69,16 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE subreddit (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, name VARCHAR(50) NOT NULL, title LONGTEXT DEFAULT NULL, description LONGTEXT DEFAULT NULL, description_raw_html LONGTEXT DEFAULT NULL, description_html LONGTEXT DEFAULT NULL, public_description LONGTEXT DEFAULT NULL, public_description_raw_html LONGTEXT DEFAULT NULL, public_description_html LONGTEXT DEFAULT NULL, icon_image_asset_id INT DEFAULT NULL, banner_background_image_asset_id INT DEFAULT NULL, banner_image_asset_id INT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', UNIQUE INDEX UNIQ_D84B1B124FAE0DCA (icon_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12B854E187 (banner_background_image_asset_id), UNIQUE INDEX UNIQ_D84B1B12D390D58E (banner_image_asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****asset****/
-        $this->addSql('CREATE TABLE asset (id INT AUTO_INCREMENT NOT NULL, filename VARCHAR(75) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url LONGTEXT NOT NULL, audio_filename VARCHAR(75) DEFAULT NULL, audio_source_url LONGTEXT DEFAULT NULL, post_id INT DEFAULT NULL, INDEX IDX_2AF5A5C4B89032C (post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE asset (id INT AUTO_INCREMENT NOT NULL, filename VARCHAR(75) NOT NULL, dir_one VARCHAR(5) NOT NULL, dir_two VARCHAR(5) NOT NULL, source_url LONGTEXT NOT NULL, audio_filename VARCHAR(75) DEFAULT NULL, audio_source_url LONGTEXT DEFAULT NULL, post_id INT DEFAULT NULL, is_downloaded TINYINT(1) DEFAULT 0 NOT NULL, INDEX IDX_2AF5A5C4B89032C (post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****more_comment****/
         $this->addSql('CREATE TABLE more_comment (id INT AUTO_INCREMENT NOT NULL, parent_comment_id INT DEFAULT NULL, parent_post_id INT DEFAULT NULL, reddit_id VARCHAR(10) NOT NULL, url LONGTEXT NOT NULL, INDEX IDX_6F523441BF2AF943 (parent_comment_id), INDEX IDX_6F52344139C1776A (parent_post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****sync_error_log****/
         $this->addSql('CREATE TABLE sync_error_log (id INT AUTO_INCREMENT NOT NULL, url LONGTEXT DEFAULT NULL, content_json LONGTEXT DEFAULT NULL, error LONGTEXT DEFAULT NULL, error_trace LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
+        /****asset_error_log****/
+        $this->addSql('CREATE TABLE asset_error_log (id INT AUTO_INCREMENT NOT NULL, asset_id INT NOT NULL, error LONGTEXT DEFAULT NULL, error_trace LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_11E5CF935DA1941 (asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
@@ -103,6 +106,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE award ADD CONSTRAINT FK_8A5B2EE718CF367E FOREIGN KEY (icon_asset_id) REFERENCES asset (id)');
         $this->addSql('ALTER TABLE more_comment ADD CONSTRAINT FK_6F523441BF2AF943 FOREIGN KEY (parent_comment_id) REFERENCES comment (id)');
         $this->addSql('ALTER TABLE more_comment ADD CONSTRAINT FK_6F52344139C1776A FOREIGN KEY (parent_post_id) REFERENCES post (id)');
+        $this->addSql('ALTER TABLE asset_error_log ADD CONSTRAINT FK_11E5CF935DA1941 FOREIGN KEY (asset_id) REFERENCES asset (id)');
 
         // Insert setup data.
         // Kinds.
@@ -148,6 +152,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE content_tag DROP FOREIGN KEY FK_B662E176BAD26311');
         $this->addSql('ALTER TABLE asset DROP FOREIGN KEY FK_2AF5A5C4B89032C');
         $this->addSql('ALTER TABLE award DROP FOREIGN KEY FK_8A5B2EE718CF367E');
+        $this->addSql('ALTER TABLE asset_error_log DROP FOREIGN KEY FK_11E5CF935DA1941');
         $this->addSql('DROP TABLE api_user');
         $this->addSql('DROP TABLE author_text');
         $this->addSql('DROP TABLE award');
@@ -166,5 +171,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE asset');
         $this->addSql('DROP TABLE more_comment');
         $this->addSql('DROP TABLE sync_error_log');
+        $this->addSql('DROP TABLE asset_error_log');
     }
 }

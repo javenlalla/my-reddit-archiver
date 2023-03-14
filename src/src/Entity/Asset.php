@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\AssetRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AssetRepository::class)]
@@ -34,6 +36,17 @@ class Asset implements AssetInterface
 
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'mediaAssets')]
     private $post;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private $isDownloaded;
+
+    #[ORM\OneToMany(mappedBy: 'asset', targetEntity: AssetErrorLog::class, orphanRemoval: true)]
+    private $errors;
+
+    public function __construct()
+    {
+        $this->errors = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -120,6 +133,48 @@ class Asset implements AssetInterface
     public function setPost(?Post $post): self
     {
         $this->post = $post;
+
+        return $this;
+    }
+
+    public function isIsDownloaded(): ?bool
+    {
+        return $this->isDownloaded;
+    }
+
+    public function setIsDownloaded(bool $isDownloaded): self
+    {
+        $this->isDownloaded = $isDownloaded;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AssetErrorLog>
+     */
+    public function getErrors(): Collection
+    {
+        return $this->errors;
+    }
+
+    public function addError(AssetErrorLog $error): self
+    {
+        if (!$this->errors->contains($error)) {
+            $this->errors[] = $error;
+            $error->setAsset($this);
+        }
+
+        return $this;
+    }
+
+    public function removeError(AssetErrorLog $error): self
+    {
+        if ($this->errors->removeElement($error)) {
+            // set the owning side to null (unless already changed)
+            if ($error->getAsset() === $this) {
+                $error->setAsset(null);
+            }
+        }
 
         return $this;
     }

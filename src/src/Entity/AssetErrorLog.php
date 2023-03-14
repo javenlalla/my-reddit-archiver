@@ -3,22 +3,16 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\SyncErrorLogRepository;
+use App\Repository\AssetErrorLogRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: SyncErrorLogRepository::class)]
-class SyncErrorLog
+#[ORM\Entity(repositoryClass: AssetErrorLogRepository::class)]
+class AssetErrorLog
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $url;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $contentJson;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private $error;
@@ -29,33 +23,13 @@ class SyncErrorLog
     #[ORM\Column(type: 'datetime_immutable')]
     private $createdAt;
 
+    #[ORM\ManyToOne(targetEntity: Asset::class, inversedBy: 'errors')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $asset;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(?string $url): self
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    public function getContentJson(): ?string
-    {
-        return $this->contentJson;
-    }
-
-    public function setContentJson(?string $contentJson): self
-    {
-        $this->contentJson = $contentJson;
-
-        return $this;
     }
 
     public function getError(): ?string
@@ -90,6 +64,18 @@ class SyncErrorLog
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getAsset(): ?Asset
+    {
+        return $this->asset;
+    }
+
+    public function setAsset(?Asset $asset): self
+    {
+        $this->asset = $asset;
 
         return $this;
     }

@@ -5,9 +5,11 @@ namespace App\Service\Reddit\Manager;
 
 use App\Entity\Asset;
 use App\Entity\AssetInterface;
+use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Manager\Assets\AssetResponse;
 use App\Service\Reddit\Media\Downloader;
 use Exception;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -24,6 +26,7 @@ class Assets
         private readonly Downloader $downloaderService,
         private readonly Filesystem $filesystem,
         private readonly AssetResponse $assetResponseService,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -71,12 +74,27 @@ class Assets
         $asset->setFilename($filename);
         $asset->setDirOne(substr($idHash, 0, 1));
         $asset->setDirTwo(substr($idHash, 1, 2));
+        $asset->setIsDownloaded(false);
 
         $assetDirectoryPath = $this->getAssetDirectoryPath($asset, true);
-        $this->downloaderService->downloadAsset($asset, $assetDirectoryPath);
+        try {
+            $this->downloaderService->downloadAsset($asset, $assetDirectoryPath);
 
-        if (!empty($asset->getAudioSourceUrl())) {
-            $this->processAudioFile($asset, $assetDirectoryPath);
+            if (!empty($asset->getAudioSourceUrl())) {
+                $this->processAudioFile($asset, $assetDirectoryPath);
+            }
+
+            $asset->setIsDownloaded(true);
+        } catch (Exception $e) {
+            $this->eventDispatcher->dispatch(
+                new SyncErrorEvent(
+                    $e,
+                    SyncErrorEvent::TYPE_ASSET,
+                    [
+                        'asset' => $asset,
+                    ]
+                )
+            );
         }
 
         return $asset;
