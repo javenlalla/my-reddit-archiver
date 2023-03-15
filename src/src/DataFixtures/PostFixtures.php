@@ -19,9 +19,14 @@ use App\Repository\TypeRepository;
 use App\Service\Reddit\Manager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 
-class PostFixtures extends Fixture
+class PostFixtures extends Fixture implements ContainerAwareInterface
 {
+    private string $currentEnvironment;
+
     public function __construct(
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
@@ -33,8 +38,18 @@ class PostFixtures extends Fixture
     ) {
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->container = $container;
+    }
+
     public function load(ObjectManager $manager): void
     {
+        $this->setCurrentEnvironment();
+
         // Create Subreddits.
         $subredditsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/subreddits.csv', 'r');
         while (($subredditRow = fgetcsv($subredditsDataFile)) !== FALSE) {
@@ -107,7 +122,12 @@ class PostFixtures extends Fixture
         }
         fclose($commentsDataFile);
 
-        $this->syncTestContents();
+        // Pre-populating test Contents causes conflicts and race conditions
+        // when running unit tests. Thus, do not populate in the `test`
+        // environment.
+        if ($this->currentEnvironment !== 'test') {
+            $this->syncTestContents();
+        }
     }
 
     /**
@@ -236,5 +256,19 @@ class PostFixtures extends Fixture
         foreach ($redditIds as $redditId) {
             $this->manager->syncContentFromApiByFullRedditId($redditId);
         }
+    }
+
+    /**
+     * Set the Environment (dev, test, etc.) the Fixture is currently
+     * being executed in.
+     *
+     * @return void
+     */
+    private function setCurrentEnvironment()
+    {
+        /** @var KernelInterface $kernel */
+        $kernel = $this->container->get('kernel');
+
+        $this->currentEnvironment = $kernel->getEnvironment();
     }
 }
