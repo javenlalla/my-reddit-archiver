@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Normalizer;
 
-use App\Entity\AssetInterface;
+use App\Entity\Asset;
 use App\Service\Reddit\Manager\Assets;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -15,7 +15,7 @@ class AssetNormalizer implements NormalizerInterface
     }
 
     /**
-     * @param  AssetInterface  $object
+     * @param  Asset  $object
      * @param  string|null  $format
      * @param  array  $context
      *
@@ -38,6 +38,6 @@ class AssetNormalizer implements NormalizerInterface
      */
     public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
     {
-        return $data instanceof AssetInterface;
+        return $data instanceof Asset;
     }
 }

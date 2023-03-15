@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Component;
 
-use App\Entity\AssetInterface;
+use App\Entity\Asset;
 use App\Service\Reddit\Manager\Assets;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
@@ -11,9 +11,9 @@ use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 #[AsTwigComponent('asset_render')]
 class AssetRenderComponent extends AbstractController
 {
-    public AssetInterface $asset;
+    public Asset $asset;
 
-    public ?AssetInterface $thumbnailAsset = null;
+    public ?Asset $thumbnailAsset = null;
 
     public bool $linkImage = false;
 
@@ -35,7 +35,7 @@ class AssetRenderComponent extends AbstractController
 
     public function getVideoPoster(): string
     {
-        if ($this->thumbnailAsset instanceof AssetInterface) {
+        if ($this->thumbnailAsset instanceof Asset) {
             return $this->assetsManager->getAssetPath($this->thumbnailAsset);
         }
 

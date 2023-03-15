@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Service\Reddit\Manager;
 
 use App\Entity\Asset;
-use App\Entity\AssetInterface;
 use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Manager\Assets\AssetResponse;
 use App\Service\Reddit\Media\Downloader;
@@ -103,12 +102,12 @@ class Assets
     /**
      * Get the public local path to the provided Asset.
      *
-     * @param  AssetInterface  $asset
+     * @param  Asset  $asset
      * @param  bool  $absolutePath
      *
      * @return string
      */
-    public function getAssetPath(AssetInterface $asset, bool $absolutePath = false): string
+    public function getAssetPath(Asset $asset, bool $absolutePath = false): string
     {
         return $this->getAssetDirectoryPath($asset, $absolutePath) . '/' . $asset->getFilename();
     }
@@ -117,12 +116,12 @@ class Assets
      * Get the public local path to the directory intended to house the
      * provided Asset.
      *
-     * @param  AssetInterface  $asset
+     * @param  Asset  $asset
      * @param  bool  $absolutePath
      *
      * @return string
      */
-    public function getAssetDirectoryPath(AssetInterface $asset, bool $absolutePath = false): string
+    public function getAssetDirectoryPath(Asset $asset, bool $absolutePath = false): string
     {
         return $this->getAssetBasePath($asset, $absolutePath);
     }
@@ -165,12 +164,12 @@ class Assets
      * Formulate and return the base path to the parent directory holding the
      * provided Asset.
      *
-     * @param  AssetInterface  $asset
+     * @param  Asset  $asset
      * @param  bool  $absolutePath
      *
      * @return string
      */
-    private function getAssetBasePath(AssetInterface $asset, bool $absolutePath = false): string
+    private function getAssetBasePath(Asset $asset, bool $absolutePath = false): string
     {
         return $this->getPublicAssetsDirectoryPath($absolutePath) . '/' . $asset->getDirOne() . '/' . $asset->getDirTwo();
     }
