@@ -95,6 +95,7 @@ class Search
             'flairText' => '',
             'tags' => [],
             'commentText' => '',
+            'createdAt' => (int) $post->getCreatedAt()->format('U'),
         ];
 
         $latestPostAuthorText = $post->getLatestPostAuthorText();

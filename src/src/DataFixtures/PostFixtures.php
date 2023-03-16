@@ -17,6 +17,7 @@ use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
 use App\Repository\TypeRepository;
 use App\Service\Reddit\Manager;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
@@ -58,7 +59,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
                 $subreddit = new Subreddit();
                 $subreddit->setRedditId($subredditRow[0]);
                 $subreddit->setName($subredditRow[1]);
-                $subreddit->setCreatedAt(new \DateTimeImmutable());
+                $subreddit->setCreatedAt(new DateTimeImmutable());
 
                 $manager->persist($subreddit);
             }
@@ -148,7 +149,6 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $post->setUrl($postRow[5]);
         $post->setAuthor($postRow[6]);
         $post->setRedditPostUrl($postRow[8]);
-        $post->setCreatedAt(new \DateTimeImmutable());
         $post->setFlairText($postRow[11] ?? null);
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
@@ -164,9 +164,15 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
             $authorText->setTextHtml($this->sanitizeHtmlHelper->sanitizeHtml($postRow[10]));
             $postAuthorText = new PostAuthorText();
             $postAuthorText->setAuthorText($authorText);
-            $postAuthorText->setCreatedAt(new \DateTimeImmutable());
+            $postAuthorText->setCreatedAt(new DateTimeImmutable());
 
             $post->addPostAuthorText($postAuthorText);
+        }
+
+        if (!empty($postRow[12])) {
+            $post->setCreatedAt(DateTimeImmutable::createFromFormat('Y-m-d H:i:s',$postRow[12]));
+        } else {
+            $post->setCreatedAt(new DateTimeImmutable());
         }
 
         return $post;

@@ -69,6 +69,31 @@ class SearchTest extends KernelTestCase
     }
 
     /**
+     * Verify Search results can be sorted by their Post's creation date.
+     *
+     * @return void
+     * @throws Exception
+     * @throws TypesenseClientError
+     */
+    public function testSearchWithSort()
+    {
+        $firstPostRedditId = 'x00002';
+        $secondPostRedditId = 'x00003';
+        $searchQuery = 'disclosure';
+
+        foreach ([$firstPostRedditId, $secondPostRedditId] as $postRedditId) {
+            $post = $this->postRepository->findOneBy(['redditId' => $postRedditId]);
+            $content = $post->getContent();
+            $this->searchService->indexContent($content);
+        }
+
+        $searchResults = $this->searchService->search($searchQuery);
+        $this->assertEquals(2, $searchResults->getTotal());
+
+        $this->assertEquals($secondPostRedditId, $searchResults->getResults()[0]->getPost()->getRedditId());
+    }
+
+    /**
      * Verify Search results can be filtered by Subreddit.
      *
      * @return void

@@ -85,6 +85,7 @@ class Api
             'query_by' =>implode(',', self::SEARCH_FIELDS),
             'per_page' => $perPage,
             'page' => $page,
+            'sort_by' => 'createdAt:desc',
         ];
 
         return $this->client->collections['contents']->documents->search($searchParams);

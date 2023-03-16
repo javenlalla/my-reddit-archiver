@@ -40,6 +40,10 @@ class Contents
             [
                 'name' => 'tags',
                 'type' => 'string[]',
+            ],
+            [
+                'name' => 'createdAt',
+                'type' => 'int64',
             ]
         ],
     ];
