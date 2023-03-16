@@ -137,7 +137,7 @@ class Asset
         return $this;
     }
 
-    public function isIsDownloaded(): ?bool
+    public function isDownloaded(): ?bool
     {
         return $this->isDownloaded;
     }

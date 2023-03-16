@@ -25,7 +25,11 @@ class AssetRenderComponent extends AbstractController
 
     public function getPath(): string
     {
-        return $this->assetsManager->getAssetPath($this->asset);
+        if ($this->asset->isDownloaded()) {
+            return $this->assetsManager->getAssetPath($this->asset);
+        }
+
+        return $this->asset->getSourceUrl();
     }
 
     public function getIsVideo(): bool
