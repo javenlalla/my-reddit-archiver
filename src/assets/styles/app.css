@@ -13,6 +13,11 @@ body {
     font-size: 10px;
 }
 
+.comments-thread__sync-button {
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
 .border-radius--top-25em {
     border-top-left-radius: 0.25em;
     border-top-right-radius: 0.25em;
