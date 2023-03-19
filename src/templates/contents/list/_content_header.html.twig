@@ -1,9 +1,29 @@
 <div class="row">
-    <div class="col-12 search-result-content__header mb-1">
+    <div class="col search-result-content__header mb-1">
         {% if content.isCommentContent %}
             r/{{ content.post.subreddit.name }} | {{ content.comment.author }} commented on <em>{{ content.post.title }}</em>
         {% else %}
             r/{{ content.post.subreddit.name }}
+        {% endif %}
+    </div>
+
+    <div class="col search-result-content__header mb-1 text-end">
+        {% if content.isCommentContent %}
+            {% for commentAward in content.comment.commentAwards %}
+                {{ component('asset_render', {
+                    asset: commentAward.award.iconAsset,
+                    customClass: "width--16px"
+                }) }}
+            {% endfor %}
+            <span class="font-size--8 badge bg-info">{{ content.comment.flairText }}</span>
+        {% else %}
+            {% for postAward in content.post.postAwards %}
+                {{ component('asset_render', {
+                    asset: postAward.award.iconAsset,
+                    customClass: "width--16px"
+                }) }}
+            {% endfor %}
+            <span class="font-size--8 badge bg-primary">{{ content.post.flairText }}</span>
         {% endif %}
     </div>
 </div>
