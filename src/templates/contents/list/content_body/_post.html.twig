@@ -1,3 +1,11 @@
+{% set postTextContent = "" %}
+{% if content.post.latestPostAuthorText %}
+    {% set postText = content.post.latestPostAuthorText.authorText.text %}
+    {% set postTextContent %}
+        <span class="overflow-auto d-block">{{ (postText|slice(0, 500) | raw ~ "...") | raw}}</span>
+    {% endset %}
+{% endif %}
+
 {% if content.post.thumbnailAsset %}
     <div class="row">
         <div class="col-4 col-lg-1">
@@ -8,6 +16,8 @@
         <div class="col-8 col-lg-11 font-size--14">
             <a class="color--black text-decoration-none" href="{{ path('contents_view_content', {id: content.id}) }}">
                 <h6>{{ content.post.title }}</h6>
+
+                {{ postTextContent }}
             </a>
         </div>
     </div>
@@ -16,6 +26,8 @@
         <div class="col font-size--14">
             <a class="color--black text-decoration-none" href="{{ path('contents_view_content', {id: content.id}) }}">
                 <h6>{{ content.post.title }}</h6>
+
+                {{ postTextContent }}
             </a>
         </div>
     </div>
