@@ -1,6 +1,16 @@
 <div {{ attributes }}>
     <div style="border-left: 2px solid #dedede; padding-left: 5px; margin-left: 10px;">
-        <span style="font-size: 10px; font-weight: bold; color: #1c1c1c"><span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}</span>
+        <span style="font-size: 10px; font-weight: bold; color: #1c1c1c">
+            <span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}
+        </span>
+        <span class="font-size--8 badge bg-info">{{ comment.flairText }}</span>
+        {% for commentAward in comment.commentAwards %}
+            {{ component('asset_render', {
+                asset: commentAward.award.iconAsset,
+                customClass: "width--16px"
+            }) }}
+        {% endfor %}
+
         <div style="font-size: 12px; color: #1c1c1c">{{ comment.latestCommentAuthorText.authorText.textHtml|raw }}</div>
 
         {{ include('contents/list/_content_footer.html.twig', {
