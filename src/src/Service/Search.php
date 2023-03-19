@@ -111,6 +111,7 @@ class Search
         if ($comment instanceof Comment) {
             $latestCommentAuthorText = $comment->getLatestCommentAuthorText();
             $document['commentText'] = $latestCommentAuthorText->getAuthorText()->getText();
+            $document['createdAt'] = (int) $comment->getLatestCommentAuthorText()->getCreatedAt()->format('U');
         }
 
         $tags = $content->getTags();
