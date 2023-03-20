@@ -1,5 +1,5 @@
 {% if this.isVideo %}
-    <video controls autoplay loop class="{{ this.customClass }}" src="{{ this.path }}" poster="{{ this.videoPoster }}"></video>
+    <video controls autoplay loop class="w-100 {{ this.customClass }}" src="{{ this.path }}" poster="{{ this.videoPoster }}"></video>
 {% else %}
     {% if linkImage %}
         <a href="{{ computed.path }}" target="_blank"><img class="img-fluid {{ this.customClass }}" src="{{ computed.path }}" /></a>
