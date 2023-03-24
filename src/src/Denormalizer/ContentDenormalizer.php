@@ -7,6 +7,7 @@ use App\Entity\Comment;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Content;
+use App\Helper\FullRedditIdHelper;
 use App\Repository\ContentRepository;
 use App\Repository\KindRepository;
 use Exception;
@@ -19,6 +20,7 @@ class ContentDenormalizer implements DenormalizerInterface
         private readonly KindRepository $kindRepository,
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly ContentRepository $contentRepository,
+        private readonly FullRedditIdHelper $fullRedditIdHelper,
     ) {
     }
 
@@ -102,6 +104,9 @@ class ContentDenormalizer implements DenormalizerInterface
         if ($comment instanceof Comment) {
             $content->setComment($comment);
         }
+
+        $fullRedditId = $this->fullRedditIdHelper->getFullRedditIdFromContent($content);
+        $content->setFullRedditId($fullRedditId);
 
         return $content;
     }

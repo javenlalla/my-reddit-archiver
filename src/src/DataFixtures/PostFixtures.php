@@ -10,6 +10,7 @@ use App\Entity\Post;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
 use App\Entity\Subreddit;
+use App\Helper\FullRedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
@@ -36,6 +37,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         private readonly SubredditRepository $subredditRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly Manager $manager,
+        private readonly FullRedditIdHelper $fullRedditIdHelper,
     ) {
     }
 
@@ -182,8 +184,16 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
     {
         $content = new Content();
 
+        $redditId = $contentRow[1];
+        if (!empty($contentRow[2])) {
+            $redditId = $contentRow[2];
+        }
+
         $kind = $this->kindRepository->findOneBy(['redditKindId' => $contentRow[0]]);
         $content->setKind($kind);
+
+        $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($contentRow[0], $redditId);
+        $content->setFullRedditId($fullRedditId);
 
         return $content;
     }

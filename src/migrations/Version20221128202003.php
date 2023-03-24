@@ -42,7 +42,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE comment_award (id INT AUTO_INCREMENT NOT NULL, comment_id INT NOT NULL, award_id INT NOT NULL, count INT DEFAULT 0 NOT NULL, INDEX IDX_23C1B616F8697D13 (comment_id), INDEX IDX_23C1B6163D5282CF (award_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****content****/
-        $this->addSql('CREATE TABLE content (id INT AUTO_INCREMENT NOT NULL, post_id INT NOT NULL, comment_id INT DEFAULT NULL, kind_id INT NOT NULL, next_sync_date DATETIME DEFAULT NULL, INDEX IDX_FEC530A94B89032C (post_id), UNIQUE INDEX UNIQ_FEC530A9F8697D13 (comment_id), INDEX IDX_FEC530A930602CA9 (kind_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE content (id INT AUTO_INCREMENT NOT NULL, full_reddit_id VARCHAR(15) NOT NULL, post_id INT NOT NULL, comment_id INT DEFAULT NULL, kind_id INT NOT NULL, next_sync_date DATETIME DEFAULT NULL, INDEX IDX_FEC530A94B89032C (post_id), UNIQUE INDEX UNIQ_FEC530A9F8697D13 (comment_id), INDEX IDX_FEC530A930602CA9 (kind_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****kind****/
         $this->addSql('CREATE TABLE kind (id INT AUTO_INCREMENT NOT NULL, reddit_kind_id VARCHAR(2) NOT NULL, name VARCHAR(20) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -80,6 +80,12 @@ final class Version20221128202003 extends AbstractMigration
         /****asset_error_log****/
         $this->addSql('CREATE TABLE asset_error_log (id INT AUTO_INCREMENT NOT NULL, asset_id INT NOT NULL, error LONGTEXT DEFAULT NULL, error_trace LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_11E5CF935DA1941 (asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
+        /****content_pending_sync****/
+        $this->addSql('CREATE TABLE content_pending_sync (id INT AUTO_INCREMENT NOT NULL, profile_content_group_id INT NOT NULL, full_reddit_id VARCHAR(15) NOT NULL, json_data LONGTEXT NOT NULL, INDEX IDX_2C554837735BCD0 (profile_content_group_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
+        /****profile_content_group****/
+        $this->addSql('CREATE TABLE profile_content_group (id INT AUTO_INCREMENT NOT NULL, group_name VARCHAR(50) NOT NULL, display_name VARCHAR(100) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -107,6 +113,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE more_comment ADD CONSTRAINT FK_6F523441BF2AF943 FOREIGN KEY (parent_comment_id) REFERENCES comment (id)');
         $this->addSql('ALTER TABLE more_comment ADD CONSTRAINT FK_6F52344139C1776A FOREIGN KEY (parent_post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE asset_error_log ADD CONSTRAINT FK_11E5CF935DA1941 FOREIGN KEY (asset_id) REFERENCES asset (id)');
+        $this->addSql('ALTER TABLE content_pending_sync ADD CONSTRAINT FK_2C554837735BCD0 FOREIGN KEY (profile_content_group_id) REFERENCES profile_content_group (id)');
 
         // Insert setup data.
         // Kinds.
@@ -123,6 +130,16 @@ final class Version20221128202003 extends AbstractMigration
             ("image_gallery", "Image Gallery"),
             ("gif", "GIF"),
             ("external_link", "External Link")
+        ');
+
+        // Profile Content Groups.
+        $this->addSql('INSERT INTO profile_content_group (group_name, display_name) VALUES
+            ("saved","Saved"),
+            ("submitted", "Submitted Posts"),
+            ("comments", "Comments"),
+            ("upvoted", "Upvoted Content"),
+            ("downvoted", "Downvoted Content"),
+            ("gilded", "Gilded")
         ');
     }
 
@@ -153,6 +170,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE asset DROP FOREIGN KEY FK_2AF5A5C4B89032C');
         $this->addSql('ALTER TABLE award DROP FOREIGN KEY FK_8A5B2EE718CF367E');
         $this->addSql('ALTER TABLE asset_error_log DROP FOREIGN KEY FK_11E5CF935DA1941');
+        $this->addSql('ALTER TABLE content_pending_sync DROP FOREIGN KEY FK_2C554837735BCD0');
         $this->addSql('DROP TABLE api_user');
         $this->addSql('DROP TABLE author_text');
         $this->addSql('DROP TABLE award');
@@ -172,5 +190,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE more_comment');
         $this->addSql('DROP TABLE sync_error_log');
         $this->addSql('DROP TABLE asset_error_log');
+        $this->addSql('DROP TABLE content_pending_sync');
+        $this->addSql('DROP TABLE profile_content_group');
     }
 }

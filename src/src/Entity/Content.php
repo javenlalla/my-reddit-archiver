@@ -33,6 +33,9 @@ class Content
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'contents')]
     private $tags;
 
+    #[ORM\Column(type: 'string', length: 15)]
+    private $fullRedditId;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -127,5 +130,17 @@ class Content
         }
 
         return false;
+    }
+
+    public function getFullRedditId(): ?string
+    {
+        return $this->fullRedditId;
+    }
+
+    public function setFullRedditId(string $fullRedditId): self
+    {
+        $this->fullRedditId = $fullRedditId;
+
+        return $this;
     }
 }

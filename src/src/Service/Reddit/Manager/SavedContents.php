@@ -5,11 +5,18 @@ namespace App\Service\Reddit\Manager;
 
 use App\Entity\Comment;
 use App\Entity\Content;
+use App\Entity\ContentPendingSync;
 use App\Entity\Kind;
 use App\Entity\Post;
+use App\Entity\ProfileContentGroup;
+use App\Helper\FullRedditIdHelper;
 use App\Repository\CommentRepository;
+use App\Repository\ContentPendingSyncRepository;
+use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Repository\ProfileContentGroupRepository;
 use App\Service\Reddit\Api;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
 class SavedContents
@@ -18,10 +25,17 @@ class SavedContents
 
     const BATCH_SIZE = 100;
 
+    const PERSISTENCE_BATCH_SIZE = 25;
+
     public function __construct(
         private readonly Api $redditApi,
+        private readonly EntityManagerInterface $entityManager,
         private readonly PostRepository $postRepository,
-        private readonly CommentRepository $commentRepository
+        private readonly CommentRepository $commentRepository,
+        private readonly ContentRepository $contentRepository,
+        private readonly ContentPendingSyncRepository $contentPendingSyncRepository,
+        private readonly ProfileContentGroupRepository $profileContentGroupRepository,
+        private readonly FullRedditIdHelper $fullRedditIdHelper,
     ) {
     }
 
@@ -56,6 +70,27 @@ class SavedContents
     }
 
     /**
+     * Get any Content Entities under the `Saved` group that are still pending
+     * a sync.
+     *
+     * @param  int  $limit
+     * @param  bool  $fetchPendingEntities
+     *
+     * @return ContentPendingSync[]
+     * @throws InvalidArgumentException
+     */
+    public function getContentsPendingSync(int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
+    {
+        if ($fetchPendingEntities) {
+            $this->getSavedContentsData();
+        }
+
+        $savedGroup = $this->profileContentGroupRepository->getGroupByName(ProfileContentGroup::PROFILE_GROUP_SAVED);
+
+        return $this->contentPendingSyncRepository->findBy(['profileContentGroup' => $savedGroup], null, $limit);
+    }
+
+    /**
      * Retrieve all `Saved` Contents data from the Reddit profile.
      *
      * @return array
@@ -80,6 +115,38 @@ class SavedContents
                 $contentsAvailable = false;
             }
         }
+
+        $persistedCount = 0;
+        foreach ($contents as $content) {
+            // Saved a full_reddit_id on the `content` table. Use that as a look-up to see if this `pending_sync` record should be saved
+            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($content['kind'], $content['data']['id']);
+
+            $syncedContent = $this->contentRepository->findOneBy(['fullRedditId' => $fullRedditId]);
+
+            if (empty($syncedContent)) {
+                $pendingSync = new ContentPendingSync();
+                $pendingSync->setJsonData(json_encode($content));
+                $pendingSync->setFullRedditId($fullRedditId);
+
+                $savedGroup = $this->profileContentGroupRepository->getGroupByName(ProfileContentGroup::PROFILE_GROUP_SAVED);
+                $pendingSync->setProfileContentGroup($savedGroup);
+
+                $this->entityManager->persist($pendingSync);
+
+                $persistedCount++;
+                if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
+                    $this->entityManager->flush();
+                    $persistedCount = 0;
+                }
+            }
+        }
+
+        // Flush any lingering persisted Entities.
+        if ($persistedCount > 0) {
+            $this->entityManager->flush();
+        }
+
+        // Return query finding all pending syncs (by category?) limited by provided limit param.
 
         return $contents;
     }
