@@ -87,6 +87,10 @@ class SavedContents
 
         $savedGroup = $this->profileContentGroupRepository->getGroupByName(ProfileContentGroup::PROFILE_GROUP_SAVED);
 
+        if ($limit < 1) {
+            $limit = null;
+        }
+
         return $this->contentPendingSyncRepository->findBy(['profileContentGroup' => $savedGroup], null, $limit);
     }
 
@@ -152,6 +156,52 @@ class SavedContents
     }
 
     /**
+     * Refresh the local list of Contents pending sync by comparing to the
+     * latest list of Content results on Reddit's side under all Profile
+     * Content Groups.
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function refreshAllPendingEntities(): void
+    {
+        $profileGroups = [
+            ProfileContentGroup::PROFILE_GROUP_SAVED,
+        ];
+
+        foreach ($profileGroups as $profileGroup) {
+            $this->refreshPendingEntitiesByProfileGroup($profileGroup);
+        }
+    }
+
+    /**
+     * Refresh the local list of Contents pending sync by comparing to the
+     * latest list of Content results on Reddit's side under the specified
+     * Profile Content Group.
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    public function refreshPendingEntitiesByProfileGroup(string $profileGroup): void
+    {
+        $moreContentsAvailable = true;
+        $after = '';
+        while ($moreContentsAvailable) {
+            $savedContents = $this->redditApi->getSavedContents(limit: self::BATCH_SIZE, after: $after);
+
+            if (!empty($savedContents['children'])) {
+                $this->addContentsToPendingSync($savedContents['children']);
+            }
+
+            if (!empty($savedContents['after'])) {
+                $after = $savedContents['after'];
+            } else {
+                $moreContentsAvailable = false;
+            }
+        }
+    }
+
+    /**
      * Based on the provided `Saved` Content data, find and return the locally
      * persisted Content Entity, if any.
      *
@@ -176,5 +226,47 @@ class SavedContents
         }
 
         return $localContent;
+    }
+
+    /**
+     * Persist the provided array of raw Contents data to the database.
+     *
+     * @param  array  $contentsData
+     *
+     * @return void
+     */
+    private function addContentsToPendingSync(array $contentsData)
+    {
+        $persistedCount = 0;
+        foreach ($contentsData as $contentData) {
+            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($contentData['kind'], $contentData['data']['id']);
+
+            $syncedContent = $this->contentRepository->findOneBy(['fullRedditId' => $fullRedditId]);
+            $existingPendingContent = $this->contentPendingSyncRepository->findOneBy(['fullRedditId' => $fullRedditId]);
+
+            if (empty($syncedContent) && empty($existingPendingContent)) {
+                $pendingSync = new ContentPendingSync();
+                $pendingSync->setJsonData(json_encode($contentData));
+                $pendingSync->setFullRedditId($fullRedditId);
+
+                $savedGroup = $this->profileContentGroupRepository->getGroupByName(ProfileContentGroup::PROFILE_GROUP_SAVED);
+                $pendingSync->setProfileContentGroup($savedGroup);
+
+                $this->entityManager->persist($pendingSync);
+
+                $persistedCount++;
+                if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
+                    $this->entityManager->flush();
+                    $persistedCount = 0;
+                }
+            }
+        }
+
+        // Flush any lingering persisted Entities.
+        if ($persistedCount > 0) {
+            $this->entityManager->flush();
+        }
+
+        $this->entityManager->clear();
     }
 }
