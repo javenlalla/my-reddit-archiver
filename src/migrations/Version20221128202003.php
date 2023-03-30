@@ -81,7 +81,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('CREATE TABLE asset_error_log (id INT AUTO_INCREMENT NOT NULL, asset_id INT NOT NULL, error LONGTEXT DEFAULT NULL, error_trace LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_11E5CF935DA1941 (asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****content_pending_sync****/
-        $this->addSql('CREATE TABLE content_pending_sync (id INT AUTO_INCREMENT NOT NULL, profile_content_group_id INT NOT NULL, full_reddit_id VARCHAR(15) NOT NULL, json_data LONGTEXT NOT NULL, INDEX IDX_2C554837735BCD0 (profile_content_group_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE content_pending_sync (id INT AUTO_INCREMENT NOT NULL, profile_content_group_id INT NOT NULL, full_reddit_id VARCHAR(15) NOT NULL, json_data LONGTEXT NOT NULL, parent_json_data LONGTEXT DEFAULT NULL, INDEX IDX_2C554837735BCD0 (profile_content_group_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****profile_content_group****/
         $this->addSql('CREATE TABLE profile_content_group (id INT AUTO_INCREMENT NOT NULL, group_name VARCHAR(50) NOT NULL, display_name VARCHAR(100) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');

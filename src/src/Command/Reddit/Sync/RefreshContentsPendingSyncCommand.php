@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Command\Reddit\Sync;
 
+use App\Entity\ProfileContentGroup;
 use App\Service\Reddit\Manager\BatchSync;
 use App\Service\Reddit\Manager\SavedContents;
 use App\Service\Reddit\SyncScheduler;
@@ -41,7 +42,7 @@ class RefreshContentsPendingSyncCommand extends Command
     {
         $this->savedContentsManager->refreshAllPendingEntities();
 
-        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(-1);
+        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(ProfileContentGroup::PROFILE_GROUP_SAVED,-1);
         $output->writeln([sprintf('%d total Contents pending sync.', count($contentsPendingSync))]);
 
         if ($output->isVerbose()) {

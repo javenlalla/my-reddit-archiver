@@ -23,6 +23,9 @@ class ContentPendingSync
     #[ORM\Column(type: 'string', length: 15)]
     private $fullRedditId;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private $parentJsonData;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +63,18 @@ class ContentPendingSync
     public function setFullRedditId(string $fullRedditId): self
     {
         $this->fullRedditId = $fullRedditId;
+
+        return $this;
+    }
+
+    public function getParentJsonData(): ?string
+    {
+        return $this->parentJsonData;
+    }
+
+    public function setParentJsonData(?string $parentJsonData): self
+    {
+        $this->parentJsonData = $parentJsonData;
 
         return $this;
     }

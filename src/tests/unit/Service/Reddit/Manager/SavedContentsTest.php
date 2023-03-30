@@ -5,6 +5,7 @@ namespace App\Tests\unit\Service\Reddit\Manager;
 
 use App\Entity\Content;
 use App\Entity\ContentPendingSync;
+use App\Entity\ProfileContentGroup;
 use App\Service\Reddit\Manager\BatchSync;
 use App\Service\Reddit\Manager\SavedContents;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -33,10 +34,10 @@ class SavedContentsTest extends KernelTestCase
      */
     public function testPendingSyncPersistence(): void
     {
-        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(10);
+        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(ProfileContentGroup::PROFILE_GROUP_SAVED, 10);
         $this->assertEmpty($contentsPendingSync);
 
-        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(10, true);
+        $contentsPendingSync = $this->savedContentsManager->getContentsPendingSync(ProfileContentGroup::PROFILE_GROUP_SAVED, 10, true);
         $this->assertCount(10, $contentsPendingSync);
         $this->assertInstanceOf(ContentPendingSync::class, $contentsPendingSync[0]);
 

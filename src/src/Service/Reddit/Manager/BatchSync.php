@@ -54,7 +54,7 @@ class BatchSync
 
                 $contents[] = $content;
             } catch (Exception $e) {
-                $this->handleSyncError($e, $itemsInfo);
+                $this->handleSyncError($e, $itemInfo);
             }
 
             $processed++;

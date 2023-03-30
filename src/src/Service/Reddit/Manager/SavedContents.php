@@ -70,28 +70,33 @@ class SavedContents
     }
 
     /**
-     * Get any Content Entities under the `Saved` group that are still pending
+     * Get any Content Entities under the targeted group that are still pending
      * a sync.
      *
+     * @param  string|null  $profileGroupName
      * @param  int  $limit
      * @param  bool  $fetchPendingEntities
      *
      * @return ContentPendingSync[]
      * @throws InvalidArgumentException
      */
-    public function getContentsPendingSync(int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
+    public function getContentsPendingSync(?string $profileGroupName = null, int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
     {
         if ($fetchPendingEntities) {
             $this->getSavedContentsData();
         }
 
-        $savedGroup = $this->profileContentGroupRepository->getGroupByName(ProfileContentGroup::PROFILE_GROUP_SAVED);
-
         if ($limit < 1) {
             $limit = null;
         }
 
-        return $this->contentPendingSyncRepository->findBy(['profileContentGroup' => $savedGroup], null, $limit);
+        $profileContentGroupClause = [];
+        if (!empty($profileGroupName)) {
+            $group = $this->profileContentGroupRepository->getGroupByName($profileGroupName);
+            $profileContentGroupClause = ['profileContentGroup' => $group];
+        }
+
+        return $this->contentPendingSyncRepository->findBy($profileContentGroupClause, null, $limit);
     }
 
     /**
@@ -167,6 +172,11 @@ class SavedContents
     {
         $profileGroups = [
             ProfileContentGroup::PROFILE_GROUP_SAVED,
+            ProfileContentGroup::PROFILE_GROUP_COMMENTS,
+            ProfileContentGroup::PROFILE_GROUP_UPVOTED,
+            ProfileContentGroup::PROFILE_GROUP_DOWNVOTED,
+            ProfileContentGroup::PROFILE_GROUP_SUBMITTED,
+            ProfileContentGroup::PROFILE_GROUP_GILDED,
         ];
 
         foreach ($profileGroups as $profileGroup) {
@@ -235,11 +245,13 @@ class SavedContents
      *
      * @return void
      */
-    private function addContentsToPendingSync(array $contentsData)
+    private function addContentsToPendingSync(array $contentsData): void
     {
+        $pendingSyncParents = [];
         $persistedCount = 0;
         foreach ($contentsData as $contentData) {
-            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($contentData['kind'], $contentData['data']['id']);
+            $kind = $contentData['kind'];
+            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($kind, $contentData['data']['id']);
 
             $syncedContent = $this->contentRepository->findOneBy(['fullRedditId' => $fullRedditId]);
             $existingPendingContent = $this->contentPendingSyncRepository->findOneBy(['fullRedditId' => $fullRedditId]);
@@ -254,6 +266,10 @@ class SavedContents
 
                 $this->entityManager->persist($pendingSync);
 
+                if ($kind === Kind::KIND_COMMENT) {
+                    $pendingSyncParents[$contentData['data']['link_id']] = $fullRedditId;
+                }
+
                 $persistedCount++;
                 if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
                     $this->entityManager->flush();
@@ -262,7 +278,48 @@ class SavedContents
             }
         }
 
-        // Flush any lingering persisted Entities.
+        if ($persistedCount > 0) {
+            $this->entityManager->flush();
+        }
+        $this->entityManager->clear();
+
+        $this->appendPendingSyncParents($pendingSyncParents);
+    }
+
+    /**
+     * Loop through the provided array of parent Reddit IDs, retrieve their
+     * Content data, and append to their respective pending sync Entity.
+     *
+     * @param  array  $pendingSyncParents
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function appendPendingSyncParents(array $pendingSyncParents = []): void
+    {
+        if (empty($pendingSyncParents)) {
+            return;
+        }
+
+        $parentRedditIds = array_keys($pendingSyncParents);
+
+        $parentItemsInfo = $this->redditApi->getRedditItemInfoByIds($parentRedditIds);
+
+        $persistedCount = 0;
+        foreach ($parentItemsInfo as $parentItemInfo) {
+            $redditId = $pendingSyncParents[$parentItemInfo['data']['name']];
+            $pendingSync = $this->contentPendingSyncRepository->findOneBy(['fullRedditId' => $redditId]);
+
+            $pendingSync->setParentJsonData(json_encode($parentItemInfo));
+            $this->entityManager->persist($pendingSync);
+
+            $persistedCount++;
+            if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
+                $this->entityManager->flush();
+                $persistedCount = 0;
+            }
+        }
+
         if ($persistedCount > 0) {
             $this->entityManager->flush();
         }

@@ -18,12 +18,16 @@ use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
 use App\Repository\TypeRepository;
 use App\Service\Reddit\Manager;
+use App\Service\Typesense\Collection\Contents;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
+use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Typesense\Client;
 
 class PostFixtures extends Fixture implements ContainerAwareInterface
 {
@@ -38,6 +42,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly Manager $manager,
         private readonly FullRedditIdHelper $fullRedditIdHelper,
+        private readonly ContainerBagInterface $params,
     ) {
     }
 
@@ -52,6 +57,8 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
     public function load(ObjectManager $manager): void
     {
         $this->setCurrentEnvironment();
+        $this->clearGlobalCache();
+        $this->clearSearchIndex();
 
         // Create Subreddits.
         $subredditsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/subreddits.csv', 'r');
@@ -131,6 +138,8 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         if ($this->currentEnvironment !== 'test') {
             $this->syncTestContents();
         }
+
+        $this->clearGlobalCache();
     }
 
     /**
@@ -286,5 +295,42 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $kernel = $this->container->get('kernel');
 
         $this->currentEnvironment = $kernel->getEnvironment();
+    }
+
+    /**
+     * Clear the Search index.
+     *
+     * @return void
+     */
+    private function clearSearchIndex()
+    {
+        $apiKey = $this->params->get('app.typesense.api_key');
+
+        $client = new Client(
+            [
+                'api_key' => $apiKey,
+                'nodes' => [
+                    [
+                        'host' => 'localhost',
+                        'port' => '8108',
+                        'protocol' => 'http',
+                    ],
+                ],
+                'client' => new HttplugClient(),
+            ]
+        );
+
+        $client->collections['contents']->delete();
+        $client->collections->create(Contents::SCHEMA);
+    }
+
+    /**
+     * Run the Symfony global cache clearer.
+     *
+     * @return void
+     */
+    private function clearGlobalCache()
+    {
+        exec("php /var/www/mra/bin/console cache:pool:clear cache.global_clearer");
     }
 }
