@@ -68,6 +68,8 @@ class DownloaderTest extends KernelTestCase
 
     private EntityManager $entityManager;
 
+    private Manager\Assets $assetsManager;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -76,6 +78,7 @@ class DownloaderTest extends KernelTestCase
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
         $this->entityManager = $container->get('doctrine')->getManager();
+        $this->assetsManager = $container->get(Manager\Assets::class);
 
         $this->cleanupAssets();
     }
@@ -104,6 +107,10 @@ class DownloaderTest extends KernelTestCase
         $this->assertEquals('https://i.imgur.com/nL4zkco.gifv', $post->getUrl());
 
         $mediaAsset = $post->getMediaAssets()->first();
+        $this->assertFalse($mediaAsset->isDownloaded());
+        $mediaAsset = $this->assetsManager->downloadAsset($mediaAsset);
+        $this->assertTrue($mediaAsset->isDownloaded());
+
         $this->assertInstanceOf(Asset::class, $mediaAsset);
         $this->assertEquals(self::HTML_VIDEO_ASSET['sourceUrl'], $mediaAsset->getSourceUrl());
         $this->assertEquals(self::HTML_VIDEO_ASSET['filename'], $mediaAsset->getFilename());
@@ -124,7 +131,7 @@ class DownloaderTest extends KernelTestCase
      * 404s on Reddit's side, causing the Award asset download logic to error
      * out.
      *
-     * To address, add graceful degradation logic to avoid erroring out on a 404
+     * To address, add graceful degradation logic to avoid error-ing out on a 404
      * and to avoid persisting incomplete Award and Asset Entities.
      *
      * https://www.reddit.com/r/ketorecipes/comments/jcc799/keto_gummies_made_with_koolaid/
@@ -199,6 +206,9 @@ class DownloaderTest extends KernelTestCase
         foreach ($commentAwards as $commentAward) {
             $award = $commentAward->getAward();
             $iconAsset = $award->getIconAsset();
+            $this->assertFalse($iconAsset->isDownloaded());
+            $iconAsset = $this->assetsManager->downloadAsset($iconAsset);
+            $this->assertTrue($iconAsset->isDownloaded());
 
             $expectedAsset = self::AWARD_FACEPALM_ICON_ASSET;
             if ($award->getRedditId() === 'gid_1') {
@@ -243,6 +253,10 @@ class DownloaderTest extends KernelTestCase
 
         // Icon Image Asset.
         $iconImageAsset = $subreddit->getIconImageAsset();
+        $this->assertFalse($iconImageAsset->isDownloaded());
+        $iconImageAsset = $this->assetsManager->downloadAsset($iconImageAsset);
+        $this->assertTrue($iconImageAsset->isDownloaded());
+
         $this->assertInstanceOf(Asset::class, $iconImageAsset);
         $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['sourceUrl'], $iconImageAsset->getSourceUrl());
         $this->assertEquals(self::SUBREDDIT_ICON_IMAGE_ASSET['filename'], $iconImageAsset->getFilename());
@@ -253,6 +267,10 @@ class DownloaderTest extends KernelTestCase
 
         // Banner Background Image Asset.
         $bannerBackgroundImageAsset = $subreddit->getBannerBackgroundImageAsset();
+        $this->assertFalse($bannerBackgroundImageAsset->isDownloaded());
+        $bannerBackgroundImageAsset = $this->assetsManager->downloadAsset($bannerBackgroundImageAsset);
+        $this->assertTrue($bannerBackgroundImageAsset->isDownloaded());
+
         $this->assertInstanceOf(Asset::class, $bannerBackgroundImageAsset);
         $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['sourceUrl'], $bannerBackgroundImageAsset->getSourceUrl());
         $this->assertEquals(self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['filename'], $bannerBackgroundImageAsset->getFilename());
@@ -263,6 +281,10 @@ class DownloaderTest extends KernelTestCase
 
         // Banner Image Asset.
         $bannerImageAsset = $subreddit->getBannerImageAsset();
+        $this->assertFalse($bannerImageAsset->isDownloaded());
+        $bannerImageAsset = $this->assetsManager->downloadAsset($bannerImageAsset);
+        $this->assertTrue($bannerImageAsset->isDownloaded());
+
         $this->assertInstanceOf(Asset::class, $bannerImageAsset);
         $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['sourceUrl'], $bannerImageAsset->getSourceUrl());
         $this->assertEquals(self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'], $bannerImageAsset->getFilename());
@@ -293,7 +315,7 @@ class DownloaderTest extends KernelTestCase
     ) {
         $this->verifyPreDownloadAssertions($assets, $thumbAsset);
 
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId, downloadAssets: true);
         $this->verifyContentsDownloads($content, $assets, $thumbAsset);
     }
 
@@ -318,7 +340,7 @@ class DownloaderTest extends KernelTestCase
     ) {
         $this->verifyPreDownloadAssertions($assets, $thumbAsset);
 
-        $content = $this->manager->syncContentByUrl($contentUrl);
+        $content = $this->manager->syncContentByUrl($contentUrl, downloadAssets: true);
         $this->verifyContentsDownloads($content, $assets, $thumbAsset);
     }
 

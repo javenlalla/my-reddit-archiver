@@ -47,6 +47,7 @@ class ContentDenormalizer implements DenormalizerInterface
      * @param  array{
      *          parentPostData: array,
      *          commentData: array,
+     *          downloadAssets: bool,
      *          }  $context
      *
      * @return Content

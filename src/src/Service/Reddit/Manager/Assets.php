@@ -30,8 +30,7 @@ class Assets
     }
 
     /**
-     * Download the asset file associated to the provided Asset Entity and update
-     * the Entity properties with the local file's metadata including its
+     * Update the Entity properties with the local file's metadata including its
      * filename and directory level names.
      *
      * @param  Asset  $asset
@@ -43,7 +42,7 @@ class Assets
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function downloadAndProcessAsset(Asset $asset, ?string $filenameFormat = null): ?Asset
+    public function processAsset(Asset $asset, ?string $filenameFormat = null, bool $executeDownload = false): ?Asset
     {
         $assetResponse = $this->assetResponseService->getAssetResponse($asset);
         if (($assetResponse instanceof ResponseInterface) === false) {
@@ -75,7 +74,25 @@ class Assets
         $asset->setDirTwo(substr($idHash, 1, 2));
         $asset->setIsDownloaded(false);
 
+        if ($executeDownload === true) {
+            return $this->downloadAsset($asset);
+        }
+
+        return $asset;
+    }
+
+    /**
+     * Download the provided Asset. If the Asset contains an Audio Source URL,
+     * download and merge its audio file as well.
+     *
+     * @param  Asset  $asset
+     *
+     * @return Asset
+     */
+    public function downloadAsset(Asset $asset): Asset
+    {
         $assetDirectoryPath = $this->getAssetDirectoryPath($asset, true);
+
         try {
             $this->downloaderService->downloadAsset($asset, $assetDirectoryPath);
 

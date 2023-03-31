@@ -93,6 +93,7 @@ class PostDenormalizer implements DenormalizerInterface
     private function initNewPost(string $kindRedditId, array $postData, array $context): Post
     {
         $post = new Post();
+        $downloadAssets = $context['downloadAssets'] ?? false;
 
         $post->setRedditId($postData['id']);
         $post->setAuthor($postData['author']);
@@ -111,7 +112,7 @@ class PostDenormalizer implements DenormalizerInterface
         }
         $post->setType($type);
 
-        $post = $this->processAssets($post, $type, $postData);
+        $post = $this->processAssets($post, $type, $postData, $downloadAssets);
 
         return $post;
     }
@@ -189,10 +190,11 @@ class PostDenormalizer implements DenormalizerInterface
      * @param  Post  $post
      * @param  Type  $type
      * @param  array  $postData
+     * @param  bool  $downloadAssets
      *
      * @return Post
      */
-    private function processAssets(Post $post, Type $type, array $postData): Post
+    private function processAssets(Post $post, Type $type, array $postData, bool $downloadAssets = false): Post
     {
         $mediasMetadata = [];
         if (!empty($postData['media_metadata'])) {
@@ -226,6 +228,7 @@ class PostDenormalizer implements DenormalizerInterface
             'isGif' => $isGif,
             'gifSourceUrl' => $gifSourceUrl,
             'postType' => $type,
+            'downloadAssets' => $downloadAssets,
         ];
 
         $sourceUrl = $postData['url'];
@@ -242,7 +245,11 @@ class PostDenormalizer implements DenormalizerInterface
             && !in_array($postData['thumbnail'], self::THUMBNAIL_DEFAULT_IMAGE_NAMES)
             && !empty($postData['thumbnail_height'])
         ) {
-            $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, ['filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT]);
+            $thumbnailAsset = $this->assetDenormalizer->denormalize($postData['thumbnail'], Asset::class, null, [
+                'filenameFormat' => self::THUMBNAIL_FILENAME_FORMAT,
+                'downloadAssets' => $downloadAssets,
+            ]);
+
             if ($thumbnailAsset instanceof Asset) {
                 $post->setThumbnailAsset($thumbnailAsset);
             }

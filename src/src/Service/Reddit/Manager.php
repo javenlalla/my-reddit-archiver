@@ -70,21 +70,17 @@ class Manager
      *
      * @param  string  $fullRedditId
      * @param  bool  $syncComments
+     * @param  bool  $downloadAssets
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromApiByFullRedditId(string $fullRedditId, bool $syncComments = false): Content
+    public function syncContentFromApiByFullRedditId(string $fullRedditId, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        // $idParts = explode('_', $fullRedditId);
-        // if (count($idParts) !== 2) {
-        //     throw new Exception(sprintf('Invalid full Reddit ID provided. Expected format t#_abcdef. Received `%s`.', $fullRedditId));
-        // }
-
         $response = $this->api->getRedditItemInfoById($fullRedditId);
         $contentUrl = $response['data']['permalink'];
 
-        return $this->syncContentByUrl($contentUrl, $syncComments);
+        return $this->syncContentByUrl($contentUrl, $syncComments, $downloadAssets);
     }
 
     /**
@@ -114,11 +110,12 @@ class Manager
      *
      * @param  string  $type
      * @param  array  $response
+     * @param  bool  $downloadAssets
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function hydrateContentFromResponseData(string $type, array $response): Content
+    public function hydrateContentFromResponseData(string $type, array $response, bool $downloadAssets = false): Content
     {
         $parentPostResponse = [];
 
@@ -128,7 +125,7 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        return $this->contentDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse]);
+        return $this->contentDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
     public function getPostByRedditId(string $redditId): ?Post
@@ -186,11 +183,12 @@ class Manager
      *
      * @param  string  $url
      * @param  bool  $syncComments
+     * @param  bool  $downloadAssets
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentByUrl(string $url, bool $syncComments = false): Content
+    public function syncContentByUrl(string $url, bool $syncComments = false, bool $downloadAssets = false): Content
     {
         $kind = Kind::KIND_LINK;
 
@@ -199,7 +197,7 @@ class Manager
             $kind = Kind::KIND_COMMENT;
         }
 
-        return $this->syncContentFromJsonUrl($kind, $url, $syncComments);
+        return $this->syncContentFromJsonUrl($kind, $url, $syncComments, $downloadAssets);
     }
 
     /**
@@ -212,11 +210,12 @@ class Manager
      * @param  string  $kind
      * @param  string  $postLink
      * @param  bool  $syncComments
+     * @param  bool  $downloadAssets
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromJsonUrl(string $kind, string $postLink, bool $syncComments = false): Content
+    public function syncContentFromJsonUrl(string $kind, string $postLink, bool $syncComments = false, bool $downloadAssets = false): Content
     {
         $jsonData = $this->getRawDataFromJsonUrl($postLink);
 
@@ -224,7 +223,7 @@ class Manager
             return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData'], $syncComments);
+        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
     }
 
     /**
@@ -382,12 +381,15 @@ class Manager
      *
      * @param  array  $postData
      * @param  array  $commentsData
+     * @param  bool  $syncComments
+     * @param  bool  $downloadAssets
      *
      * @return Content
+     * @throws InvalidArgumentException
      */
-    private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false): Content
+    private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $content = $this->hydrateContentFromResponseData($postData['kind'], $postData);
+        $content = $this->hydrateContentFromResponseData($postData['kind'], $postData, $downloadAssets);
         $content = $this->executePreAddContentHooks($content);
 
         $this->contentRepository->add($content, true);

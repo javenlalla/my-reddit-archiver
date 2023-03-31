@@ -29,6 +29,7 @@ class AssetDenormalizer implements DenormalizerInterface
      *              filenameFormat: string,
      *              audioFilename: string,
      *              audioSourceUrl: string,
+     *              downloadAssets: bool,
      *          }  $context  filenameFormat  Optional. Provide a custom format for the filename.
      *                                       Extension MUST be excluded.
      *                                       A placeholder for the ID hash MUST be included.
@@ -43,6 +44,7 @@ class AssetDenormalizer implements DenormalizerInterface
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Asset
     {
         $sourceUrl = $data;
+        $downloadAssets = $context['downloadAssets'] ?? false;
 
         $asset = new Asset();
         $asset->setSourceUrl($sourceUrl);
@@ -57,7 +59,7 @@ class AssetDenormalizer implements DenormalizerInterface
             $asset->setAudioSourceUrl($context['audioSourceUrl']);
         }
 
-        return $this->assetsManager->downloadAndProcessAsset($asset, $filenameFormat);
+        return $this->assetsManager->processAsset($asset, $filenameFormat, $downloadAssets);
     }
 
     /**
