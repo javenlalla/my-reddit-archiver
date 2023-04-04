@@ -39,6 +39,21 @@ class ContentPendingSyncRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * Find any Content Pending Syncs by the provided array of Reddit IDs.
+     *
+    * @return ContentPendingSync[] Returns an array of ContentPendingSync objects
+    */
+    public function findPendingSyncsByRedditIds(array $redditIds = []): array
+    {
+       return $this->createQueryBuilder('c')
+           ->andWhere('c.fullRedditId IN (:redditIds)')
+           ->setParameter('redditIds', $redditIds)
+           ->getQuery()
+           ->getResult()
+       ;
+    }
+
 //    /**
 //     * @return ContentPendingSync[] Returns an array of ContentPendingSync objects
 //     */

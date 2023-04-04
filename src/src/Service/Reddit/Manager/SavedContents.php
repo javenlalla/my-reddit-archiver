@@ -267,7 +267,11 @@ class SavedContents
                 $this->entityManager->persist($pendingSync);
 
                 if ($kind === Kind::KIND_COMMENT) {
-                    $pendingSyncParents[$contentData['data']['link_id']] = $fullRedditId;
+                    if (!isset($pendingSyncParents[$contentData['data']['link_id']])) {
+                        $pendingSyncParents[$contentData['data']['link_id']] = [];
+                    }
+
+                    $pendingSyncParents[$contentData['data']['link_id']][] = $fullRedditId;
                 }
 
                 $persistedCount++;
@@ -307,16 +311,19 @@ class SavedContents
 
         $persistedCount = 0;
         foreach ($parentItemsInfo as $parentItemInfo) {
-            $redditId = $pendingSyncParents[$parentItemInfo['data']['name']];
-            $pendingSync = $this->contentPendingSyncRepository->findOneBy(['fullRedditId' => $redditId]);
+            $redditIds = $pendingSyncParents[$parentItemInfo['data']['name']];
+            $pendingSyncEntities = $this->contentPendingSyncRepository->findPendingSyncsByRedditIds($redditIds);
+            $encodedItemInfo = json_encode($parentItemInfo);
 
-            $pendingSync->setParentJsonData(json_encode($parentItemInfo));
-            $this->entityManager->persist($pendingSync);
+            foreach ($pendingSyncEntities as $pendingSync) {
+                $pendingSync->setParentJsonData($encodedItemInfo);
+                $this->entityManager->persist($pendingSync);
 
-            $persistedCount++;
-            if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
-                $this->entityManager->flush();
-                $persistedCount = 0;
+                $persistedCount++;
+                if (($persistedCount % self::PERSISTENCE_BATCH_SIZE) === 0) {
+                    $this->entityManager->flush();
+                    $persistedCount = 0;
+                }
             }
         }
 
