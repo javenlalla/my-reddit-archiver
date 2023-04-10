@@ -47,6 +47,14 @@
 
                 <div class="row">
                     <div class="col text-center">
+                        {{ component('youtube_video_render', {
+                            content: content,
+                        }) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col text-center">
                         {% for mediaAsset in content.post.mediaAssets %}
                             {{ component('asset_render', {
                                 asset: mediaAsset,
