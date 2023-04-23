@@ -109,7 +109,8 @@ class Assets
                     [
                         'asset' => $asset,
                     ]
-                )
+                ),
+                SyncErrorEvent::NAME,
             );
         }
 

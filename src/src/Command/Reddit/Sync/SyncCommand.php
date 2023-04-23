@@ -173,7 +173,8 @@ class SyncCommand extends Command
                 [
                     'itemsInfo' => $itemsInfo,
                 ]
-            )
+            ),
+            SyncErrorEvent::NAME,
         );
     }
 

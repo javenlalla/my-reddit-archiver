@@ -48,16 +48,16 @@ class SyncErrorLoggerSubscriber implements EventSubscriberInterface
         $errorLogEntity = null;
         switch ($event->getSyncType()) {
             case SyncErrorEvent::TYPE_CONTENT:
-                $errorLog = $this->handleContentSyncError($event);
+                $errorLogEntity = $this->handleContentSyncError($event);
                 break;
 
             case SyncErrorEvent::TYPE_ASSET:
-                $errorLog = $this->handleAssetSyncError($event);
+                $errorLogEntity = $this->handleAssetSyncError($event);
                 break;
         }
 
         if (!empty($errorLogEntity)) {
-            $this->em->persist($errorLog);
+            $this->em->persist($errorLogEntity);
             $this->em->flush();
         }
     }

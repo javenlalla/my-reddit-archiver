@@ -143,7 +143,8 @@ class BatchSync
                 [
                     'itemsInfo' => $itemsInfo,
                 ]
-            )
+            ),
+            SyncErrorEvent::NAME,
         );
     }
 }
