@@ -1,0 +1,36 @@
+<tr {{ attributes }}>
+
+    <th scope="row">{{ errorLog.id }}</th>
+    <td>{{ errorLog.createdAt| date('Y-m-d H:i:s') }}</td>
+    <td>{{ errorLog.url }}</td>
+    <td>{{ errorLog.error|u.truncate(50, '...') }} <div class="d-none" data-sync-error-row-target="extra">delta</div>
+        {{ include('helpers/modal_with_cta.html.twig', {
+            id: "error-#{errorLog.id}-error-more",
+            title: "Error",
+            body: "<p>#{errorLog.error}</p>",
+            ctaLabel: "More",
+            ctaStyle: "font-size--8 color--light-gray",
+        }) }}
+    </td>
+    <td>
+        {{ include('helpers/modal_with_cta.html.twig', {
+            id: "error-#{errorLog.id}-json",
+            title: "Content JSON",
+            body: "<p>#{errorLog.contentJSON}</p>",
+            ctaLabel: "Content JSON",
+            ctaStyle: "btn btn-sm btn-secondary",
+        }) }}
+
+        {{ include('helpers/modal_with_cta.html.twig', {
+            id: "error-#{errorLog.id}-trace",
+            title: "Stack Trace",
+            body: "<p>#{errorLog.errorTrace}</p>",
+            ctaLabel: "Stack Trace",
+            ctaStyle: "btn btn-sm btn-secondary",
+        }) }}
+    </td>
+    <td>
+        <button class="btn btn-primary btn-sm" data-action="live#action" data-action-name="resync"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <button class="btn btn-danger btn-sm" data-action="live#action" data-action-name="delete"><i class="fa-solid fa-trash-can"></i></button>
+    </td>
+</tr>
