@@ -3,9 +3,7 @@ version: '3.9'
 services:
   mra:
     container_name: mra
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: javenlalla/mra
     volumes:
       - ./data/r-media:/var/www/mra/public/r-media
     env_file: .env
