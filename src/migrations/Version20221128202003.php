@@ -24,7 +24,7 @@ final class Version20221128202003 extends AbstractMigration
         /********Tables********/
 
         /****api_user****/
-        $this->addSql('CREATE TABLE api_user (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(100) NOT NULL, access_token VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE api_user (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(100) NOT NULL, access_token LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****author_text****/
         $this->addSql('CREATE TABLE author_text (id INT AUTO_INCREMENT NOT NULL, text LONGTEXT NOT NULL, text_raw_html LONGTEXT NOT NULL, text_html LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');

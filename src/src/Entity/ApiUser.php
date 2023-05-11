@@ -16,7 +16,7 @@ class ApiUser
     #[ORM\Column(type: 'string', length: 100)]
     private $username;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private $accessToken;
 
     public function getId(): ?int
