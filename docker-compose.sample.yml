@@ -8,7 +8,7 @@ services:
       - ./data/r-media:/var/www/mra/public/r-media
     env_file: .env
     ports:
-      - "2080:80" # Adjust port as needed.
+      - "3580:80" # Adjust port as needed.
 
   # If desired to use this database, uncomment below and ensure the designated environment values are configured here or within the .env file.
   # mra-db:

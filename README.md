@@ -11,14 +11,16 @@ Archive Saved posts under your Reddit account.
         - [2FA](#2fa)
   - [Setup](#setup)
     - [Environment Variables](#environment-variables)
-    - [Dockerfile](#dockerfile)
+    - [docker run](#docker-run)
+      - [Initialize Database (Optional)](#initialize-database-optional)
     - [docker-compose](#docker-compose)
   - [Execute Sync](#execute-sync)
   - [Logging](#logging)
     - [Container Logs](#container-logs)
     - [Cron Logs](#cron-logs)
-  - [Upgrading](#upgrading)
-    - [Upgrading | Dockerfile](#upgrading--dockerfile)
+  - [Updating](#updating)
+    - [Update | docker run](#update--docker-run)
+    - [Update | docker-compose](#update--docker-compose)
   - [Development](#development)
 
 ## Prerequisites
@@ -45,11 +47,11 @@ The application requires your Reddit `Password` to be provided in the configurat
 
 ## Setup
 
-The application can be configured to run via `docker-compose` or using the `Dockerfile` directly with `docker run`. See the following sections on how to set up the application with either of these methods.
+The application can be configured to run via `docker-compose` or `docker run`. See the following sections on how to spin up the application with either of these methods.
 
 ### Environment Variables
 
-Before working with the Docker image or `docker-compose`, the required `Environment` variables file must be set.
+The first step is to set the `Environment Variables` required by the application. See the table below for an overview of the required variables.
 
 | Environment Variable  | Default              | Description                                      |
 | --------------------- | -------------------- | ------------------------------------------------ |
@@ -62,66 +64,78 @@ Before working with the Docker image or `docker-compose`, the required `Environm
 | DB_USERNAME           | my_archiver          | Database username.                               |
 | DB_PASSWORD           | my_archiver_password | Database password.                               |
 
-The `Environment` variables can be provided in-line if using the `docker run` command, configured in the `docker-compose.yml` file once created, or placed within an `.env` file (a sample `.env.sample` is included in the repo) to be referrenced in either method.
+For convenience, an `.env.sample` file is provided in the root of this repository. Copy that file to `.env` and update the placeholder values to real values.
 
-### Dockerfile
+### docker run
 
-1. Build the image:
+If the `docker run` method is preferred for running the application, proceed with this section. If the `docker-compose` method is preferred, skip to [docker-compose(#docker-compose)].
+
+Once the `.env` file has been created and configured, start the application with the following command.
+
+```bash
+  docker run -d \
+  --name mra \
+  --env-file=.env \
+  --volume ./data/r-media:/var/www/mra/public/r-media # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
+  -p 3580:80 \
+  javenlalla/mra
+```
+
+Notes:
+
+- Update the host port as necessary
+- If a new database is needed (because an existing one is not available, for example), see the following section on initializing a database and connecting it to the application
+
+#### Initialize Database (Optional)
+
+1. Create a network first to allow communication between the application and the database.
 
     ```bash
-    docker build --tag=mra .
+    docker network create mra_net
     ```
 
-2. Initialize database (skip this step if using an existing database):
+1. Initialize the database. Modify the database `Environment Variables` as desired.
 
     ```bash
-    # Create a network first to allow communication
-    # between the application and the database.
-    docker network create mra_net
-
-    # Initialize Database
-    docker run -d --net mra_net  \
+    docker run -d \
+    --net mra_net \
     -e MYSQL_ROOT_PASSWORD=my_archiver_secure_root_pw \
     -e MYSQL_DATABASE=archive_db \
     -e MYSQL_USER=my_archiver \
     -e MYSQL_PASSWORD=my_archiver_password \
-    --volume ./data/db:/var/lib/mysql \
+    --volume ./data/db:/var/lib/mysql \ # Needed for backup/persistent storage of database.
     --name="mra-db" \
-    mariadb:10.8.6
+    mariadb:10
     ```
 
-3. Configure environment variables and start the application:
+1. Update the `.env` file accordingly with the database values used in the previous command.
+
+    - Note: `DB_HOST` will be `mra-db` or whatever value was provided to the `--name` parameter of the previous command.
+
+1. Spin up the application connected to the database.
 
     ```bash
-    docker run --rm \
+    docker run -d \
+    --net mra_net \
+    --env-file=.env \
+    --volume ./data/r-media:/var/www/mra/public/r-media
+    -p 3580:80 \
     --name mra \
-    --net mra_net \ # Exclude if using an existing database and/or different network.
-    -e REDDIT_USERNAME="MyRedditUserName" \
-    -e REDDIT_PASSWORD="MyRedditPassword" \
-    -e REDDIT_CLIENT_ID="ClientId" \
-    -e REDDIT_CLIENT_SECRET="ClientSecret" \
-    -e DB_HOST=mra-db \
-    -e DB_DATABASE=archive_db \
-    -e DB_USERNAME=my_archiver \
-    -e DB_PASSWORD=my_archiver_password \
-    --volume ./data/assets:/var/www/mra/public/assets # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
-    -p 8080:80 \
     mra
     ```
 
 ### docker-compose
 
-1. If using an `.env` file as described above, ensure it is created and configured first.
-2. Create a `docker-compose.yml` file:
+If the `docker-compose` method is preferred for running the application, proceed with the following steps.
+
+1. Ensure the `.env` file has been created and configured ([Environment Variables(#environment-variables)]).
+1. Create a `docker-compose.yml` file and modify as needed.
 
     ```bash
     cp docker-compose.sample.yml docker-compose.yml
     ```
 
-3. Modify as needed.
-    - **If using an `.env` file** based on the provided `.env.sample` file, no other changes should be needed.
-    - **If not using an `.env` file**, ensure the expected environment variable references within the `docker-compose.yml` have been configured with real values.
-4. Start application:
+1. Start application.
 
     ```bash
     docker-compose up -d
@@ -153,23 +167,43 @@ The cron logs can be viewed using the following command:
 docker exec -it mra sh -c "tail -f /var/log/cron-execution.log"
 ```
 
-## Upgrading
+## Updating
 
-### Upgrading | Dockerfile
+### Update | docker run
 
-```bash
-# Stop and remove current container.
-docker stop mra
-docker rm mra
+1. Stop current container.
 
-# Pull latest release of code.
-git pull
+    ```bash
+    docker stop mra
+    ```
 
-# Rebuild local Dockerfile image.
-docker build --tag=mra .
+1. Pull latest image.
 
-# Execute `run` command.
-```
+    ```bash
+    docker pull javenlalla/mra
+    ```
+
+1. Start application as previously set up with this method. See [docker run](#docker-run) for more information.
+
+### Update | docker-compose
+
+1. Stop current container.
+
+    ```bash
+    docker stop mra
+    ```
+
+1. Pull latest image.
+
+    ```bash
+    docker pull javenlalla/mra
+    ```
+
+1. Remove the current container and start it again with the latest image.
+
+    ```bash
+    docker-compose up -d --force-recreate --build
+    ```
 
 ## Development
 
