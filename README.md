@@ -76,7 +76,8 @@ Once the `.env` file has been created and configured, start the application with
   docker run -d \
   --name mra \
   --env-file=.env \
-  --volume ./data/r-media:/var/www/mra/public/r-media # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
+  # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
+  --volume </path/to/media>:/var/www/mra/public/r-media \
   -p 3580:80 \
   javenlalla/mra
 ```
@@ -103,7 +104,8 @@ Notes:
     -e MYSQL_DATABASE=archive_db \
     -e MYSQL_USER=my_archiver \
     -e MYSQL_PASSWORD=my_archiver_password \
-    --volume ./data/db:/var/lib/mysql \ # Needed for backup/persistent storage of database.
+    # Needed for backup/persistent storage of database.
+    --volume </path/to/db>:/var/lib/mysql \
     --name="mra-db" \
     mariadb:10
     ```
@@ -118,7 +120,7 @@ Notes:
     docker run -d \
     --net mra_net \
     --env-file=.env \
-    --volume ./data/r-media:/var/www/mra/public/r-media
+    --volume </path/to/media>:/var/www/mra/public/r-media \
     -p 3580:80 \
     --name mra \
     mra
@@ -129,13 +131,8 @@ Notes:
 If the `docker-compose` method is preferred for running the application, proceed with the following steps.
 
 1. Ensure the `.env` file has been created and configured ([Environment Variables(#environment-variables)]).
-1. Create a `docker-compose.yml` file and modify as needed.
-
-    ```bash
-    cp docker-compose.sample.yml docker-compose.yml
-    ```
-
-1. Start application.
+2. Download or copy the  `docker-compose.sample.yml` file from this repository's root and modify as needed.
+3. Start application.
 
     ```bash
     docker-compose up -d
