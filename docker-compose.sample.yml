@@ -5,15 +5,15 @@ services:
     container_name: mra
     image: javenlalla/mra
     volumes:
-      - ./data/r-media:/var/www/mra/public/r-media
+      - </path/to/media>:/var/www/mra/public/r-media
     env_file: .env
     ports:
       - "3580:80" # Adjust port as needed.
 
-  # If desired to use this database, uncomment below and ensure the designated environment values are configured here or within the .env file.
+  # If desired to use this database, uncomment below and ensure the designated environment values are configured within the .env file.
   # mra-db:
   #   container_name: mra-db
-  #   image: mariadb:10.8.6
+  #   image: mariadb:10
   #   env_file: .env
   #   environment:
   #     MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -21,4 +21,4 @@ services:
   #     MARIADB_PASSWORD: ${DB_PASSWORD}
   #     MARIADB_DATABASE: ${DB_DATABASE}
   #   volumes:
-  #     - ./data/db:/var/lib/mysql
+  #     - </path/to/db>:/var/lib/mysql
