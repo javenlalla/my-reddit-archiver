@@ -71,14 +71,16 @@ For convenience, an `.env.sample` file is provided in the root of this repositor
 If the `docker run` method is preferred for running the application, proceed with this section. If the `docker-compose` method is preferred, skip to [docker-compose(#docker-compose)].
 
 Once the `.env` file has been created and configured, start the application with the following command.
+If there is no existing database available for use, see [Initialize Database](#initialize-database-optional) first, prior to spinning up the application.
+
+Note: The volume mount is needed for backup/persistent storage of downloaded media assets from Reddit Posts.
 
 ```bash
   docker run -d \
-  --name mra \
   --env-file=.env \
-  # Needed for backup/persistent storage of downloaded media assets from Reddit Posts.
   --volume </path/to/media>:/var/www/mra/public/r-media \
   -p 3580:80 \
+  --name mra \
   javenlalla/mra
 ```
 
@@ -96,6 +98,7 @@ Notes:
     ```
 
 1. Initialize the database. Modify the database `Environment Variables` as desired.
+     - Note: The volume mount is recommended for backup/persistent storage of database.
 
     ```bash
     docker run -d \
@@ -104,17 +107,16 @@ Notes:
     -e MYSQL_DATABASE=archive_db \
     -e MYSQL_USER=my_archiver \
     -e MYSQL_PASSWORD=my_archiver_password \
-    # Needed for backup/persistent storage of database.
     --volume </path/to/db>:/var/lib/mysql \
     --name="mra-db" \
     mariadb:10
     ```
 
-1. Update the `.env` file accordingly with the database values used in the previous command.
+2. Update the `.env` file accordingly with the database values used in the previous command.
 
     - Note: `DB_HOST` will be `mra-db` or whatever value was provided to the `--name` parameter of the previous command.
 
-1. Spin up the application connected to the database.
+3. Spin up the application connected to the database.
 
     ```bash
     docker run -d \
@@ -123,7 +125,7 @@ Notes:
     --volume </path/to/media>:/var/www/mra/public/r-media \
     -p 3580:80 \
     --name mra \
-    mra
+    javenlalla/mra
     ```
 
 ### docker-compose
