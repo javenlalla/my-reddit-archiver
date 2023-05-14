@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Feature;
+namespace App\Tests\feature;
 
 use App\Entity\Comment;
 use App\Entity\Content;
@@ -235,6 +235,11 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals(Type::CONTENT_TYPE_TEXT, $type->getName());
     }
 
+    /**
+     * Verify a basic sync via the logic of syncing a Post's JSON URL.
+     *
+     * @return void
+     */
     public function testBasicCommentContentJsonUrlSync()
     {
         $originalPostUrl =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
@@ -281,5 +286,34 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertEquals("I’d be glad to offer any advice.", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
         $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
+    }
+
+    /**
+     * A Post which has been cross-posted and thus has a Crosspost parent fails
+     * to sync if the Crosspost parent has an Image Gallery because that data
+     * is contained only within the Crosspost data, not within the target Post.
+     * As a result, the current logic fails to detect a `Type` for the Post.
+     *
+     * Fix by pulling in the necessary Image Gallery data from the Crosspost
+     * into the target Post.
+     *
+     * Verify the Post can then be synced successfully.
+     *
+     * @return void
+     */
+    public function testParentCrosspostHasImageGallery()
+    {
+        $content = $this->manager->syncContentFromApiByFullRedditId('t3_jjpv7n');
+
+        $post = $content->getPost();
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals('jjpv7n', $post->getRedditId());
+        $this->assertEquals('Campaign/Awareness', $post->getFlairText());
+        $this->assertCount(0, $post->getComments());
+
+        // Verify the 8 Image Gallery assets from the Crosspost parent were
+        // pulled in successfully.
+        $this->assertCount(8, $post->getMediaAssets());
     }
 }

@@ -69,7 +69,7 @@ class PostDenormalizer implements DenormalizerInterface
         $kindRedditId = $context['kind']->getRedditKindId();
 
         //@TODO: Create array validator using: https://symfony.com/doc/current/validation/raw_values.html
-        $postData = $data;
+        $postData = $this->preprocessPostData($data, $context);
         $redditId = $postData['id'];
 
         $post = $this->postRepository->findOneBy(['redditId' => $redditId]);
@@ -256,5 +256,59 @@ class PostDenormalizer implements DenormalizerInterface
         }
 
         return $post;
+    }
+
+    /**
+     * Execute any logic needed prior to denormalizing the provided Post data.
+     *
+     * @param  array  $postData
+     * @param  array  $context
+     *
+     * @return array
+     */
+    private function preprocessPostData(array $postData, array $context = []): array
+    {
+        if (!empty($context['crosspost']['data'])) {
+            $postData = $this->mergeDataFromCrosspost($postData, $context['crosspost']['data']);
+        }
+
+        return $postData;
+    }
+
+    /**
+     * Merge relevant and/or required data from the provided parent Crosspost to
+     * the current Post data.
+     *
+     * @param  array  $postData
+     * @param  array  $crosspostData
+     *
+     * @return array
+     */
+    private function mergeDataFromCrosspost(array $postData, array $crosspostData): array
+    {
+        $postHasGalleryData = $this->hasGalleryData($postData);
+        $crosspostHasGalleryData = $this->hasGalleryData($crosspostData);
+
+        if ($postHasGalleryData === false && $crosspostHasGalleryData === true) {
+            $postData['gallery_data'] = $crosspostData['gallery_data'];
+            $postData['media_metadata'] = $crosspostData['media_metadata'];
+        }
+
+        return $postData;
+    }
+
+    /**
+     * Verify if the provided Post data array contains the relevant Image
+     * Gallery properties `gallery_data` and `media_metadata`.
+     *
+     * @param  array  $postData
+     *
+     * @return bool
+     */
+    private function hasGalleryData(array $postData): bool
+    {
+        return isset($postData['gallery_data'] )
+            && isset($postData['media_metadata'])
+        ;
     }
 }

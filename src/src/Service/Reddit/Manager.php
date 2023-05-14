@@ -13,6 +13,7 @@ use App\Entity\Post;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Service\Reddit\Manager\Contents;
 use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -35,6 +36,7 @@ class Manager
 
     public function __construct(
         private readonly Api $api,
+        private readonly Contents $contentsManager,
         private readonly PostRepository $postRepository,
         private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
@@ -125,7 +127,7 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        return $this->contentDenormalizer->denormalize($response, Post::class, null, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
+        return $this->contentsManager->parseAndDenormalizeContent($response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
     public function getPostByRedditId(string $redditId): ?Post
