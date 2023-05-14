@@ -41,7 +41,6 @@ class Manager
         private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ContentDenormalizer $contentDenormalizer,
         private readonly CommentsAndMoreDenormalizer $commentsAndMoreDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
