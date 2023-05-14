@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit\Manager;
 
-use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Event\SyncErrorEvent;
@@ -18,7 +17,7 @@ class BatchSync
 {
     public function __construct(
         private readonly Api $redditApi,
-        private readonly ContentDenormalizer $contentDenormalizer,
+        private readonly Contents $contentsManager,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -118,9 +117,9 @@ class BatchSync
     private function getContentFromItemInfo(array $itemInfo, array $parentItemsInfo = []): Content
     {
         if ($itemInfo['kind'] === Kind::KIND_COMMENT) {
-            $content = $this->contentDenormalizer->denormalize($parentItemsInfo[$itemInfo['data']['link_id']], Content::class, null, ['commentData' => $itemInfo['data']]);
+            $content = $this->contentsManager->parseAndDenormalizeContent($parentItemsInfo[$itemInfo['data']['link_id']], ['commentData' => $itemInfo['data']]);
         } else {
-            $content = $this->contentDenormalizer->denormalize($itemInfo, Content::class);
+            $content = $this->contentsManager->parseAndDenormalizeContent($itemInfo);
         }
 
         return $content;

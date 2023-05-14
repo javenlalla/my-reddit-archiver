@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace App\Command\Reddit\Sync;
 
-use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\ProfileContentGroup;
 use App\Entity\SyncErrorLog;
 use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Manager\BatchSync;
+use App\Service\Reddit\Manager\Contents;
 use App\Service\Reddit\Manager\SavedContents;
 use App\Service\Reddit\SyncScheduler;
 use App\Trait\Debug\MemoryUsageTrait;
@@ -39,7 +39,7 @@ class SyncCommand extends Command
         private readonly BatchSync $batchSyncManager,
         private readonly SavedContents $savedContentsManager,
         private readonly SyncScheduler $syncScheduler,
-        private readonly ContentDenormalizer $contentDenormalizer,
+        private readonly Contents $contentsManager,
         private readonly EntityManagerInterface $entityManager,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
@@ -122,10 +122,10 @@ class SyncCommand extends Command
                         continue;
                     } else {
                         $parentRawData = json_decode($pendingContent->getParentJsonData(), true);
-                        $content = $this->contentDenormalizer->denormalize($parentRawData, Content::class, null, ['commentData' => $contentRawData['data']]);
+                        $content = $this->contentsManager->parseAndDenormalizeContent($parentRawData, ['commentData' => $contentRawData['data']]);
                     }
                 } else {
-                    $content = $this->contentDenormalizer->denormalize($contentRawData, Content::class);
+                    $content = $this->contentsManager->parseAndDenormalizeContent($contentRawData);
                 }
 
                 if ($content instanceof Content) {

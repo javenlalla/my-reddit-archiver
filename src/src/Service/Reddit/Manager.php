@@ -417,7 +417,7 @@ class Manager
     private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Content
     {
         $targetComment = $commentsData[0]['data'];
-        $content = $this->contentDenormalizer->denormalize($postData, Post::class, null, ['commentData' => $targetComment]);
+        $content = $this->contentsManager->parseAndDenormalizeContent($postData, ['commentData' => $targetComment]);
         $content = $this->executePreAddContentHooks($content);
 
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
