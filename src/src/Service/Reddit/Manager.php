@@ -1,23 +1,19 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
 use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\CommentDenormalizer;
 use App\Denormalizer\CommentsAndMoreDenormalizer;
-use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
-use App\Repository\PostRepository;
 use App\Service\Reddit\Manager\Contents;
-use App\Service\Reddit\Media\Downloader;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 
@@ -37,7 +33,6 @@ class Manager
     public function __construct(
         private readonly Api $api,
         private readonly Contents $contentsManager,
-        private readonly PostRepository $postRepository,
         private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
@@ -45,22 +40,6 @@ class Manager
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
     ) {
-    }
-
-    /**
-     * Retrieve a Content from the API hydrated with the response data.
-     *
-     * @param  string  $type
-     * @param  string  $redditId
-     *
-     * @return Content
-     * @throws InvalidArgumentException
-     */
-    public function getContentFromApiByRedditId(string $type, string $redditId): Content
-    {
-        $response = $this->api->getPostByRedditId($type, $redditId);
-
-        return $this->hydrateContentFromResponseData($type, $response);
     }
 
     /**
@@ -82,101 +61,6 @@ class Manager
         $contentUrl = $response['data']['permalink'];
 
         return $this->syncContentByUrl($contentUrl, $syncComments, $downloadAssets);
-    }
-
-    /**
-     * Core function to sync a Reddit Content directly from the Reddit API and
-     * persist it to the local database while also downloading any associated
-     * media.
-     *
-     * @param  string  $kind
-     * @param  string  $redditId
-     *
-     * @return Content
-     * @throws InvalidArgumentException
-     */
-    public function syncContentFromApiByRedditId(string $kind, string $redditId): Content
-    {
-        $response = $this->api->getPostByRedditId($kind, $redditId);
-        $contentUrl = $response['data']['children'][0]['data']['permalink'];
-
-        return $this->syncContentByUrl($contentUrl);
-    }
-
-    /**
-     * Instantiate and hydrate a Content Entity based on the provided Response data.
-     *
-     * Additionally, retrieve the parent Post from the API if the provided
-     * Response is of Comment `kind`.
-     *
-     * @param  string  $type
-     * @param  array  $response
-     * @param  bool  $downloadAssets
-     *
-     * @return Content
-     * @throws InvalidArgumentException
-     */
-    public function hydrateContentFromResponseData(string $type, array $response, bool $downloadAssets = false): Content
-    {
-        $parentPostResponse = [];
-
-        if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
-        } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
-        }
-
-        return $this->contentsManager->parseAndDenormalizeContent($response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
-    }
-
-    public function getPostByRedditId(string $redditId): ?Post
-    {
-        return $this->postRepository->findOneBy(['redditId' => $redditId]);
-    }
-
-    /**
-     * Persist the following Post Entity to the database and download any media
-     * that may be associated to the post.
-     *
-     * @param  Post  $post
-     *
-     * @return Post
-     * @throws Exception
-     */
-    public function savePost(Post $post): Post
-    {
-        $existingPost = $this->getPostByRedditId($post->getRedditId());
-
-        if ($existingPost instanceof Post) {
-            return $existingPost;
-        }
-
-        $this->postRepository->save($post);
-        // foreach ($post->getMediaAssets() as $mediaAsset) {
-        //     $this->mediaDownloader->downloadMediaAsset($mediaAsset);
-        // }
-
-        return $this->postRepository->find($post->getId());
-    }
-
-    /**
-     * Wrapper function to execute a complete sync of a Post, its media, and
-     * its Comments down to local.
-     *
-     * @param  array  $fullPostResponse
-     *
-     * @return Post
-     * @throws InvalidArgumentException
-     */
-    public function syncPost(array $fullPostResponse): Post
-    {
-        $content = $this->hydrateContentFromResponseData($fullPostResponse['kind'], $fullPostResponse);
-        $this->contentRepository->add($content, true);
-
-        $post = $this->savePost($content->getPost());
-        $comments = $this->syncCommentsFromApiByPost($post);
-
-        return $post;
     }
 
     /**
@@ -228,60 +112,29 @@ class Manager
     }
 
     /**
-     * Retrieve all Comments for the provided Post from the API and persist them
-     * locally to the database.
+     * Instantiate and hydrate a Content Entity based on the provided Response data.
      *
-     * @param  Post  $post
+     * Additionally, retrieve the parent Post from the API if the provided
+     * Response is of Comment `kind`.
      *
-     * @return array
+     * @param  string  $type
+     * @param  array  $response
+     * @param  bool  $downloadAssets
+     *
+     * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncCommentsFromApiByPost(Post $post): array
+    public function hydrateContentFromResponseData(string $type, array $response, bool $downloadAssets = false): Content
     {
-        $commentsRawData = $this->api->getPostCommentsByRedditId($post->getRedditId());
+        $parentPostResponse = [];
 
-        $comments = $this->commentsAndMoreDenormalizer->denormalize($commentsRawData, 'array', null, ['post' => $post]);
-        foreach ($comments as $comment) {
-            $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
-
-            if (empty($existingComment)) {
-                $this->entityManager->persist($comment);
-
-                $post->addComment($comment);
-                $this->entityManager->persist($post);
-            }
+        if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
+        } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
+            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        $this->entityManager->flush();
-
-        return $comments;
-    }
-
-    /**
-     * Get the count of all Comments, including Replies, attached to the provided
-     * Post.
-     *
-     * @param  Post  $post
-     *
-     * @return int
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     */
-    public function getAllCommentsCountFromPost(Post $post): int
-    {
-        return $this->commentRepository->getTotalPostCount($post);
-    }
-
-    /**
-     * Retrieve a Comment locally by its Reddit ID.
-     *
-     * @param  string  $redditId
-     *
-     * @return Comment|null
-     */
-    public function getCommentByRedditId(string $redditId): ?Comment
-    {
-        return $this->commentRepository->findOneBy(['redditId' => $redditId]);
+        return $this->contentsManager->parseAndDenormalizeContent($response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
     private function syncCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
@@ -391,7 +244,6 @@ class Manager
     private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
     {
         $content = $this->hydrateContentFromResponseData($postData['kind'], $postData, $downloadAssets);
-        $content = $this->executePreAddContentHooks($content);
 
         $this->contentRepository->add($content, true);
 
@@ -411,13 +263,12 @@ class Manager
      * @param  array  $postData
      * @param  array  $commentsData
      *
-     * @return Post
+     * @return Content
      */
     private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Content
     {
         $targetComment = $commentsData[0]['data'];
         $content = $this->contentsManager->parseAndDenormalizeContent($postData, ['commentData' => $targetComment]);
-        $content = $this->executePreAddContentHooks($content);
 
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
         if ($existingContent instanceof Content) {
@@ -445,7 +296,7 @@ class Manager
      *
      * @return void
      */
-    private function processJsonCommentsData(Content $content, array $commentsData, Comment $originalComment = null)
+    private function processJsonCommentsData(Content $content, array $commentsData, Comment $originalComment = null): void
     {
         $rootParentComment = null;
         if (!empty($originalComment)) {
@@ -522,28 +373,5 @@ class Manager
         }
 
         return $comment;
-    }
-
-    /**
-     * Execute any necessary logic before persisting a Content to the database
-     * such as downloading related Media Assets.
-     *
-     * @param  Content  $content
-     *
-     * @return Content
-     * @throws Exception
-     */
-    private function executePreAddContentHooks(Content $content): Content
-    {
-        // $post = $content->getPost();
-        // foreach ($post->getMediaAssets() as $mediaAsset) {
-        //     $this->mediaDownloader->downloadMediaAsset($mediaAsset);
-        // }
-
-        // if (!empty($post->getThumbnailAsset())) {
-        //     $this->mediaDownloader->downloadThumbnail($post->getThumbnailAsset());
-        // }
-
-        return $content;
     }
 }

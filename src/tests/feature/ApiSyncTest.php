@@ -30,16 +30,16 @@ class ApiSyncTest extends KernelTestCase
     }
 
     /**
+     * Verify a basic, single Post sync from the Reddit API.
+     *
      * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
      *
      * @return void
-     * @throws ExceptionInterface
-     * @throws InvalidArgumentException
      */
     public function testBasicSyncFromApi()
     {
-        $redditId = 'vepbt0';
-        $content = $this->manager->getContentFromApiByRedditId(Kind::KIND_LINK, $redditId);
+        $redditId = 't3_vepbt0';
+        $content = $this->manager->syncContentFromApiByFullRedditId($redditId);
 
         $this->assertInstanceOf(Content::class, $content);
 
@@ -52,7 +52,7 @@ class ApiSyncTest extends KernelTestCase
         $this->assertEquals(Type::CONTENT_TYPE_IMAGE, $contentType->getName());
 
         $post = $content->getPost();
-        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals('vepbt0', $post->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $post->getTitle());
         $this->assertEquals('https://i.imgur.com/ThRMZx5.jpg', $post->getUrl());
     }

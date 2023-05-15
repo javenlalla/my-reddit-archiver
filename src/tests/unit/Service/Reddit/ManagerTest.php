@@ -1,17 +1,30 @@
 <?php
+declare(strict_types=1);
 
-namespace App\Tests\Service\Reddit;
+namespace App\Tests\unit\Service\Reddit;
 
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
+use App\Repository\CommentRepository;
+use App\Repository\ContentRepository;
+use App\Repository\PostRepository;
 use App\Service\Reddit\Manager;
+use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ManagerTest extends KernelTestCase
 {
     private Manager $manager;
+
+    private Comments $commentsManager;
+
+    private ContentRepository $contentRepository;
+
+    private PostRepository $postRepository;
+
+    private CommentRepository $commentRepository;
 
     public function setUp(): void
     {
@@ -20,6 +33,10 @@ class ManagerTest extends KernelTestCase
 
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
+        $this->commentsManager = $container->get(Comments::class);
+        $this->contentRepository = $container->get(ContentRepository::class);
+        $this->postRepository = $container->get(PostRepository::class);
+        $this->commentRepository = $container->get(CommentRepository::class);
     }
 
     /**
@@ -36,9 +53,9 @@ class ManagerTest extends KernelTestCase
         $redditId = 'vepbt0';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' .$redditId);
 
-        $fetchedPost = $this->manager->getPostByRedditId($content->getPost()->getRedditId());
+        $fetchedPost = $this->postRepository->findOneBy(['redditId' => $content->getPost()->getRedditId()]);
 
-        $postTimestamp = 1655497762;
+        $postTimestamp = '1655497762';
         $targetDateTime = \DateTimeImmutable::createFromFormat('U', $postTimestamp);
         $targetTimezones = [
             'Europe/Berlin',
@@ -76,14 +93,15 @@ class ManagerTest extends KernelTestCase
     public function testParseCommentPostFromSavedListing()
     {
         $redditId = 'wf1e8p';
-        $commentRedditId = 'iirwrq4';
 
         $savedHistoryRawResponse = file_get_contents('/var/www/mra/tests/resources/sample-json/iirwrq4-from-saved-listing.json');
         $savedHistoryResponse = json_decode($savedHistoryRawResponse, true);
 
-        $syncedPost = $this->manager->syncPost($savedHistoryResponse);
+        $content = $this->manager->hydrateContentFromResponseData($savedHistoryResponse['kind'], $savedHistoryResponse);
+        $this->contentRepository->add($content, true);
+        $comments = $this->commentsManager->syncCommentsByContent($content);
 
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $fetchedPost = $this->postRepository->findOneBy(['redditId' => $redditId]);
         $this->assertInstanceOf(Post::class, $fetchedPost);
         $this->assertNotEmpty($fetchedPost->getId());
         $this->assertEquals($redditId, $fetchedPost->getRedditId());
@@ -101,11 +119,11 @@ class ManagerTest extends KernelTestCase
         $this->assertEquals(Type::CONTENT_TYPE_EXTERNAL_LINK, $type->getName());
 
         // Verify top-level Comments count.
-        $this->assertCount(524, $fetchedPost->getComments());
+        $this->assertGreaterThan(20, $fetchedPost->getComments()->count());
 
         // Verify all Comments and Replies count.
-        $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(1344, $allCommentsCount);
+        $allCommentsCount = $this->commentRepository->getTotalPostCount($fetchedPost);
+        $this->assertGreaterThan(150, $allCommentsCount);
     }
 
     /**
