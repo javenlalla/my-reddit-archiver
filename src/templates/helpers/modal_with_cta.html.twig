@@ -1,4 +1,8 @@
-<button data-bs-toggle="modal" data-bs-target="#{{ id }}" class="btn btn-sm {{ ctaStyle|default('') }}">{{ ctaLabel }}</button>
+{% if button %}
+    <button data-bs-toggle="modal" data-bs-target="#{{ id }}" class="{{ ctaStyle|default('') }}">{{ ctaLabel }}</button>
+{% else %}
+    <span role="button" data-bs-toggle="modal" data-bs-target="#{{ id }}" class="{{ ctaStyle|default('') }}">{{ ctaLabel }}</span>
+{% endif %}
 
 <div id="{{ id }}" class="modal" tabindex="-1" data-sync-error-row-target="modal">
     <div class="modal-dialog modal-lg">

@@ -10,6 +10,7 @@
             body: "<p>#{errorLog.error}</p>",
             ctaLabel: "More",
             ctaStyle: "font-size--8 color--light-gray",
+            button: false,
         }) }}
     </td>
     <td>
@@ -19,6 +20,7 @@
             body: "<p>#{errorLog.contentJSON}</p>",
             ctaLabel: "Content JSON",
             ctaStyle: "btn btn-sm btn-secondary",
+            button: true,
         }) }}
 
         {{ include('helpers/modal_with_cta.html.twig', {
@@ -27,10 +29,28 @@
             body: "<p>#{errorLog.errorTrace}</p>",
             ctaLabel: "Stack Trace",
             ctaStyle: "btn btn-sm btn-secondary",
+            button: true,
         }) }}
     </td>
     <td>
         <button class="btn btn-primary btn-sm" data-action="live#action" data-action-name="resync"><i class="fa-solid fa-arrows-rotate"></i></button>
         <button class="btn btn-danger btn-sm" data-action="live#action" data-action-name="delete"><i class="fa-solid fa-trash-can"></i></button>
+
+        {% if reSyncError %}
+            <br/>
+            <span class="font-size--8 text-danger">{{ reSyncError|u.truncate(50, '...') }}</span>
+            <br/>
+            {% set body = "<span class=\"text-danger\">#{reSyncError}</span>" %}
+            <div class="font-size--12">
+                {{ include('helpers/modal_with_cta.html.twig', {
+                    id: "error-#{errorLog.id}-resync-error",
+                    title: "Re-Sync Error",
+                    body: body,
+                    ctaLabel: "More",
+                    ctaStyle: "font-size--8 color--light-gray",
+                    button: false,
+                }) }}
+            </div>
+        {% endif %}
     </td>
 </tr>

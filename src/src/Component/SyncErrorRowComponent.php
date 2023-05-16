@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace App\Component;
 
 use App\Entity\SyncErrorLog;
+use App\Service\Reddit\Manager;
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -18,15 +21,53 @@ class SyncErrorRowComponent extends AbstractController
     #[LiveProp(writable: true)]
     public SyncErrorLog $errorLog;
 
-    #[LiveAction]
-    public function resync()
-    {
-        // @TODO: Implement logic.
+    #[LiveProp(writable: true)]
+    public string $reSyncError = '';
+
+    public function __construct(
+        private readonly Manager $manager,
+        private readonly EntityManagerInterface $entityManager,
+    ) {
     }
 
+    /**
+     * Attempt a re-sync of the Content associated to this Sync Error Log.
+     *
+     * @return void
+     */
     #[LiveAction]
-    public function delete()
+    public function resync(): void
     {
-        // @TODO: Implement logic.
+        // Clear any existing re-sync error prior to re-sync attempt.
+        $this->reSyncError = '';
+
+        try {
+            $url = $this->errorLog->getUrl();
+            if (empty($url)) {
+                $contentJson = json_decode($this->errorLog->getContentJson(), true);
+
+                $url = $contentJson['data']['permalink'];
+            }
+
+            $content = $this->manager->syncContentByUrl($url);
+            // Content was synced successfully, therefore the Sync Error Log
+            // can be deleted.
+            $this->delete();
+        } catch (Exception $e) {
+            $this->reSyncError = $e->getMessage();
+        }
     }
+
+    /**
+     * Dispatch the event to delete this Sync Error.
+     *
+     * @return void
+     */
+    #[LiveAction]
+    public function delete(): void
+    {
+        // @TODO: Implement delete logic.
+    }
+
+
 }
