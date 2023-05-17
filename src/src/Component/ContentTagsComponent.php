@@ -26,6 +26,9 @@ class ContentTagsComponent extends AbstractController
     #[LiveProp(writable: true)]
     public array $tags = [];
 
+    #[LiveProp(writable: true)]
+    public bool $editMode = false;
+
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {
     }
@@ -75,6 +78,12 @@ class ContentTagsComponent extends AbstractController
 
         $this->entityManager->persist($this->content);
         $this->entityManager->flush();
+    }
+
+    #[LiveAction]
+    public function toggleEditMode(): void
+    {
+        $this->editMode = !$this->editMode;
     }
 
     public function getContentTagsForm(): FormView

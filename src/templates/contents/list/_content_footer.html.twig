@@ -1,7 +1,10 @@
 <div class="row">
     <div class="col font-size--10">
         {% if content is defined %}
-            {{ component('content_tags', {content: content}) }}
+            {{ component('content_tags', {
+                content: content,
+                key: content.id,
+            }) }}
         {% endif %}
     </div>
 

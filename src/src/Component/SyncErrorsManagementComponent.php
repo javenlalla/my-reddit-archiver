@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Component;
 
+use App\Entity\SyncErrorLog;
 use App\Repository\SyncErrorLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,7 +17,10 @@ class SyncErrorsManagementComponent extends AbstractController
 {
     use DefaultActionTrait;
 
-    #[LiveProp]
+    /**
+     * @var $errorLogs SyncErrorLog[]
+     */
+    #[LiveProp(useSerializerForHydration: true)]
     public array $errorLogs = [];
 
     public function __construct(

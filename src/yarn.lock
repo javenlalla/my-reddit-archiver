@@ -1450,22 +1450,22 @@ __metadata:
 
 "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
-  resolution: "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=880946&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=ec122b&locator=root-workspace-0b6124%40workspace%3A."
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
     tom-select: ^2.2.2
-  checksum: 11d8f98c49ee5fafe675a05eb2ea31b2445faa8a8f8e5932f5e409714cd2ed42518e596b323e51aff4dc11ffd0f450b2ba25db1fb8ef24dfd9a8bf8e8b47a166
+  checksum: 6dc482842efffcc870e9c12f50119f2dade693a9e25ea6adfcd4583af064a879be72f86138026deab75d5ccd49a0573ed6b437a119b0efee764dc5c182ce0905
   languageName: node
   linkType: hard
 
 "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
-  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=e9919d&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=c878f2&locator=root-workspace-0b6124%40workspace%3A."
   dependencies:
     morphdom: ^2.6.1
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
-  checksum: c9cd8971979d8afcbd806b6eb6e4ce014aa9f5f228624963879e46982eba923161d3ff1a7d687c8c89bef2d7642a08e3d8af538d2bbb745a342aec7a2e1ad3f7
+  checksum: 519a24da968b37428287872b7cc8eeaffba8ffe5785e1041b30389173cb5bc8a565fd3579322c4e77d1c4dfcd58c6aa514aece03bc216f7816fef038715af235
   languageName: node
   linkType: hard
 

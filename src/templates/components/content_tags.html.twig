@@ -1,39 +1,43 @@
-<div {{ attributes.add(stimulus_controller('footer-tags')) }}>
+<div {{ attributes }}>
     {% for tag in content.tags %}
-        <span class="badge rounded-pill bg-info" data-footer-tags-target="displayMode">{{ tag.name }}</span>
+        <span class="badge rounded-pill bg-info">{{ tag.name }}</span>
     {% endfor %}
 
-    <span role="button" class="color--light-gray pointer-event" data-action="click->footer-tags#edit" data-footer-tags-target="displayMode"><i class="fa-solid fa-tags"></i></span>
+    {% if not editMode %}
+        <button class="btn--no-style" data-action-name="toggleEditMode" data-action="live#action"><i class="color--light-gray fa-solid fa-tags"></i></button>
+    {% endif %}
 
-    <div class="row d-none mt-2 mb-2" data-footer-tags-target="editMode">
-        <div class="col-lg-4">
-            <div>
-                {{ form_start(computed.contentTagsForm) }}
-                <div class="my-custom-class-for-errors">
-                    {{ form_errors(computed.contentTagsForm) }}
+    {% if editMode %}
+        <div class="row mt-2 mb-2">
+            <div class="col-lg-4">
+                <div>
+                    {{ form_start(computed.contentTagsForm) }}
+                    <div class="my-custom-class-for-errors">
+                        {{ form_errors(computed.contentTagsForm) }}
+                    </div>
+
+                    {{ form_widget(computed.contentTagsForm.tags) }}
+
+                    <small>{{ form_help(computed.contentTagsForm.tags) }}</small>
+
+                    <div class="form-error">
+                        {{ form_errors(computed.contentTagsForm.tags) }}
+                    </div>
+                    {{ form_end(computed.contentTagsForm) }}
                 </div>
 
-                {{ form_widget(computed.contentTagsForm.tags) }}
-
-                <small>{{ form_help(computed.contentTagsForm.tags) }}</small>
-
-                <div class="form-error">
-                    {{ form_errors(computed.contentTagsForm.tags) }}
-                </div>
-                {{ form_end(computed.contentTagsForm) }}
-            </div>
-
-            <div class="row justify-center">
-                <div class="col">
-                    <span role="button" class="text-danger font-size--24" data-action="click->footer-tags#close"><i class="fa-regular fa-rectangle-xmark"></i></span>
-                </div>
-                <div class="col text-end">
-                    <span role="button" class="text-success font-size--24" data-action="click->live#action" data-action-name="saveTags" data-loading="action(saveTags)|hide"><i class="fa-regular fa-square-check"></i></span>
-                    <span class="text-info font-size--24" data-loading="action(saveTags)|show">
-                        {{ include('icons/loading_icon.html.twig') }}
-                    </span>
+                <div class="row justify-center">
+                    <div class="col">
+                        <button class="btn--no-style mt-1" data-action="live#action" data-action-name="toggleEditMode"><i class="text-danger font-size--24 fa-regular fa-rectangle-xmark"></i></button>
+                    </div>
+                    <div class="col text-end">
+                        <button class="btn--no-style mt-1" data-action="live#action" data-action-name="saveTags" data-loading="action(saveTags)|hide"><i class="text-success font-size--24 fa-regular fa-square-check"></i></button>
+                        <span style="display: none" data-loading="action(saveTags)|show" class="text-info font-size--24">
+                            {{ include('icons/loading_icon.html.twig') }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% endif %}
 </div>
