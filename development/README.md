@@ -7,6 +7,8 @@
     - [Configure Test Database](#configure-test-database)
     - [Run Tests](#run-tests)
   - [Database Changes](#database-changes)
+  - [Updating Dependencies](#updating-dependencies)
+    - [UX Components](#ux-components)
   - [Frontend Development](#frontend-development)
     - [yarn](#yarn)
   - [ffmpeg](#ffmpeg)
@@ -44,7 +46,7 @@
 6. Build the frontend UI:
 
     ```bash
-    docker exec -it mra-dev-fe yarn warn
+    docker exec -it mra-dev-fe yarn watch
     ```
 
 ### Hook Into Containers
@@ -82,7 +84,7 @@ Run tests with either of the following approaches:
 
 ```bash
 # Hook into container first, then run the tests.
-docker exec -it mra-dev sh
+docker exec -it mra-dev bash
 php bin/phpunit
 
 # Run tests directly.
@@ -102,6 +104,18 @@ php bin/console --env=test doctrine:database:create
 php bin/console --env=test doctrine:schema:create
 php bin/console --env=test doctrine:fixtures:load
 ```
+
+## Updating Dependencies
+
+### UX Components
+
+When updating the Symfony UX components, such as `symfony/ux-live-component` or `symfony/ux-twig-component`, and any component related to those, be sure to install/update the relevant frontend dependencies with:
+
+```bash
+yarn install
+```
+
+Not updating correctly can result in UI interaction errors such as "Missing @checksum. key".
 
 ## Frontend Development
 
