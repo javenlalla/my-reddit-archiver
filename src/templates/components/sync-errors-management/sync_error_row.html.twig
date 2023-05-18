@@ -33,8 +33,11 @@
         }) }}
     </td>
     <td>
-        <button class="btn btn-primary btn-sm" data-action="live#action" data-action-name="resync"><i class="fa-solid fa-arrows-rotate"></i></button>
-        <button class="btn btn-danger btn-sm" data-action="live#action" data-action-name="delete"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="btn btn-primary btn-sm" data-action="live#action" data-action-name="resync" data-loading="hide"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <button class="btn btn-danger btn-sm" data-action="live#action" data-action-name="delete" data-loading="hide"><i class="fa-solid fa-trash-can"></i></button>
+        <span data-loading="show" class="text-info font-size--20">
+            {{ include('icons/loading_icon.html.twig') }}
+        </span>
 
         {% if reSyncError %}
             <br/>
