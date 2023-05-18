@@ -79,6 +79,10 @@ RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | bash && \
     apt install -y symfony-cli
 
+# Cron setup.
+ADD build/cron/crontab.txt /crontab.txt
+RUN crontab /crontab.txt
+
 # Configure Nginx.
 COPY build/nginx-site.conf /etc/nginx/sites-enabled/default
 

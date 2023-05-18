@@ -1,2 +1,3 @@
-# Run the Saved contents full sync every 30 minutes.
-0,30 * * * * /cron-execution/full_sync_cron.sh >> /var/log/cron-execution.log 2>&1
+# Sync the Reddit Profile's Contents every half hour.
+# Redirect output to Docker logs.
+0,30 * * * * /usr/local/bin/php /var/www/mra/bin/console reddit:sync > /proc/1/fd/1 2>&1

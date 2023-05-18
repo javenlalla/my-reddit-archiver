@@ -80,10 +80,6 @@ WORKDIR /var/www/mra
 RUN rm -rf var
 
 # Cron setup.
-RUN mkdir /cron-execution
-RUN touch /var/log/cron-execution.log
-COPY build/cron/full_sync_cron.sh /cron-execution/full_sync_cron.sh
-RUN chmod 755 /cron-execution/full_sync_cron.sh
 ADD build/cron/crontab.txt /crontab.txt
 RUN crontab /crontab.txt
 
