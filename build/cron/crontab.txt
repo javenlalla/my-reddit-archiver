@@ -1,3 +1,6 @@
 # Sync the Reddit Profile's Contents every half hour.
 # Redirect output to Docker logs.
 0,30 * * * * /usr/local/bin/php /var/www/mra/bin/console reddit:sync > /proc/1/fd/1 2>&1
+
+# Download Assets.
+10,40 * * * * /usr/local/bin/php /var/www/mra/bin/console reddit:download-assets --limit=5 > /proc/1/fd/1 2>&1
