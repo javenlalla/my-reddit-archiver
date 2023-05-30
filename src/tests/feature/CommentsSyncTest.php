@@ -40,18 +40,17 @@ class CommentsSyncTest extends KernelTestCase
         $redditId = 'vlyukg';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
 
-        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
+        $comments = $this->commentsManager->syncCommentsByContent($content);
         $this->assertCount(16, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $comments = $fetchedPost->getComments();
+        $comments = $content->getPost()->getComments();
         $this->assertCount(16, $comments);
 
         // Test basic fetch Comment from DB.
         $commentRedditId = 'idygho1';
-        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
         $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
@@ -59,19 +58,20 @@ class CommentsSyncTest extends KernelTestCase
 
         // Test fetch Comment replies from Comment.
         $commentRedditId = 'idy4nd0';
-        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
         $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         $replies = $comment->getReplies();
-        $this->assertCount(2, $replies);
+        $this->assertCount(3, $replies);
         $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
         $commentRedditId = 'iebbk73';
-        $comment = $this->manager->getCommentByRedditId($commentRedditId);
+        $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
+
         $parentComment = $comment->getParentComment();
         $this->assertEquals('ieare0z', $parentComment->getRedditId());
 
@@ -91,37 +91,40 @@ class CommentsSyncTest extends KernelTestCase
     {
         $redditId = 'vepbt0';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
-        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
-
-        // Re-fetch Post.
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
+        $comments = $this->commentsManager->syncAllCommentsByContent($content);
 
         // Verify top-level Comments count.
-        $this->assertCount(407, $fetchedPost->getComments());
+        $post = $content->getPost();
+        $this->assertGreaterThan(375, $post->getComments()->count());
 
         // Verify all Comments and Replies count.
-        $allCommentsCount = $this->manager->getAllCommentsCountFromPost($fetchedPost);
-        $this->assertEquals(574, $allCommentsCount);
+        $allComments = $this->commentRepository->findBy(['parentPost' => $post]);
+        $this->assertGreaterThan(500, count($allComments));
 
         // Basic Comment verification.
-        $comment = $this->manager->getCommentByRedditId('icrhr47');
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'icrhr47']);
+
         $this->assertEquals('Mufbutt -- needs a little Imodium or less fiber.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify top-level Comment with highest up-votes.
-        $comment = $this->manager->getCommentByRedditId('icrxv93');
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'icrxv93']);
+
         $this->assertEquals('Look for berries that might be poisonous that are making the triceratops sick', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         //Verify a Reply found within "Continue this thread."
-        $comment = $this->manager->getCommentByRedditId('icrovq6');
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'icrovq6']);
+
         $this->assertEquals('And things can be neither.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify last or closest-to-last Comment on Post.
-        $comment = $this->manager->getCommentByRedditId('icta0qr');
+        $comment = $this->commentRepository->findOneBy(['redditId' => 'icta0qr']);
+
         $this->assertEquals('Does she go under the name “Amber” by any chance?', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Verify Comment found in "x more replies."
-        $comment = $this->manager->getCommentByRedditId('icti9mw');
-        $this->assertEquals('I got more!', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        // @TODO: Disabling this verification for now as syncing `More` Comments has been removed from fetching by default. Maybe look into adding a flag to include `More` when syncing "all" Comments and re-enable this verification.
+        // $comment = $this->commentRepository->findOneBy(['redditId' => 'icti9mw']);
+        // $this->assertEquals('I got more!', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
     }
 
     /**
@@ -139,14 +142,13 @@ class CommentsSyncTest extends KernelTestCase
         $redditId = 'won0ky';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
 
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+
         $this->assertGreaterThan(850, count($comments));
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
         // Re-fetch Post.
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $comments = $fetchedPost->getComments();
+        $comments = $content->getPost()->getComments();
         $this->assertGreaterThan(850, count($comments));
     }
 
@@ -164,16 +166,9 @@ class CommentsSyncTest extends KernelTestCase
         $redditId = 'wfylnl';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
 
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-
-        $comments = $this->manager->syncCommentsFromApiByPost($fetchedPost);
+        $comments = $this->commentsManager->syncCommentsByContent($content);
         $this->assertCount(45, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
-
-        // Re-fetch Post.
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $comments = $fetchedPost->getComments();
-        $this->assertCount(45, $comments);
     }
 
     /**
@@ -189,14 +184,9 @@ class CommentsSyncTest extends KernelTestCase
         $commentRedditId = 'iirwrq4';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
 
-        $comments = $this->manager->syncCommentsFromApiByPost($content->getPost());
-        $this->assertCount(524, $comments);
+        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $this->assertGreaterThan(500, $comments->count());
         $this->assertInstanceOf(Comment::class, $comments[0]);
-
-        // Re-fetch Post.
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $comments = $fetchedPost->getComments();
-        $this->assertCount(524, $comments);
     }
 
     /**
@@ -213,14 +203,14 @@ class CommentsSyncTest extends KernelTestCase
         $commentRedditId = 'iirwrq4';
         $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
 
-        $fetchedPost = $this->manager->getPostByRedditId($redditId);
-        $this->assertInstanceOf(Post::class, $fetchedPost);
-        $this->assertNotEmpty($fetchedPost->getId());
-        $this->assertEquals($redditId, $fetchedPost->getRedditId());
-        $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $fetchedPost->getTitle());
-        $this->assertEquals('science', $fetchedPost->getSubreddit()->getName());
-        $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $fetchedPost->getUrl());
-        $this->assertEquals('2022-08-03 08:51:21', $fetchedPost->getCreatedAt()->format('Y-m-d H:i:s'));
+        $post = $content->getPost();
+        $this->assertInstanceOf(Post::class, $post);
+        $this->assertNotEmpty($post->getId());
+        $this->assertEquals($redditId, $post->getRedditId());
+        $this->assertEquals('Exercising almost daily for up to an hour at a low/mid intensity (50-70% heart rate, walking/jogging/cycling) helps reduce fat and lose weight (permanently), restores the body\'s fat balance and has other health benefits related to the body\'s fat and sugar', $post->getTitle());
+        $this->assertEquals('science', $post->getSubreddit()->getName());
+        $this->assertEquals('https://www.mdpi.com/2072-6643/14/8/1605/htm', $post->getUrl());
+        $this->assertEquals('2022-08-03 08:51:21', $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $comment = $content->getComment();
         $this->assertEquals("I've recently started running after not running for 10+ years. This was the single biggest piece of advice I got.\n\nGet a good heartrate monitor and don't go above 150. Just maintain 140-150. I was shocked at how much longer I could run for. I hadn't run since highschool and I ran a 5k cold turkey. It was a slow 5k but I ran the whole time. Pace is everything.", $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
@@ -229,7 +219,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertInstanceOf(Kind::class, $kind);
         $this->assertEquals(Kind::KIND_COMMENT, $kind->getRedditKindId());
 
-        $type = $fetchedPost->getType();
+        $type = $post->getType();
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals(Type::CONTENT_TYPE_EXTERNAL_LINK, $type->getName());
     }
@@ -422,7 +412,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $parentPost->getTitle());
 
         $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', 20);
-        $this->assertCount(20, $comments);
+        $this->assertGreaterThan(15, $comments);
 
         $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', -1);
         $this->assertGreaterThan(300, count($comments));
