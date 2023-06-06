@@ -86,6 +86,9 @@ final class Version20221128202003 extends AbstractMigration
         /****profile_content_group****/
         $this->addSql('CREATE TABLE profile_content_group (id INT AUTO_INCREMENT NOT NULL, group_name VARCHAR(50) NOT NULL, display_name VARCHAR(100) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
+        /****api_call_log****/
+        $this->addSql('CREATE TABLE api_call_log (id INT AUTO_INCREMENT NOT NULL, endpoint LONGTEXT NOT NULL, method VARCHAR(10) NOT NULL, call_data LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', response LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -192,5 +195,6 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('DROP TABLE asset_error_log');
         $this->addSql('DROP TABLE content_pending_sync');
         $this->addSql('DROP TABLE profile_content_group');
+        $this->addSql('DROP TABLE api_call_log');
     }
 }
