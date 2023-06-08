@@ -63,3 +63,7 @@ services:
     App\Service\Reddit\Manager\Assets:
         arguments:
             $publicDirectoryAbsolutePath: '%app.path.public%'
+
+    App\EventSubscriber\RateLimiterSubscriber:
+        arguments:
+            $redditUsername: '%app.reddit.username%'

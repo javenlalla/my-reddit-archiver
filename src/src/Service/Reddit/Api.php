@@ -273,7 +273,7 @@ class Api
 
         foreach ($redditIdsGroups as $redditIdsGroup) {
             $redditIdsString = implode(',', $redditIdsGroup);
-            $cacheKey = md5('info-'.$redditIdsString);
+            $cacheKey = md5('info-'.$redditIdsString) . uniqid();
 
             $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
@@ -316,7 +316,7 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 401 && $retry === false) {
             $this->refreshToken();
@@ -364,6 +364,8 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
+
         if ($response->getStatusCode() !== 200) {
             throw new Exception(sprintf(
                 'API call failed. Response: %s. Status Code: %d. Endpoint: %s. Options: %s',
@@ -433,7 +435,7 @@ class Api
         ];
 
         $response = $this->client->request(self::METHOD_POST, self::OAUTH_ENDPOINT, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent(self::METHOD_POST, self::OAUTH_ENDPOINT, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 200) {
             $responseData = $response->toArray();
