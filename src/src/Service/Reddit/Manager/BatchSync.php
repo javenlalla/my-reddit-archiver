@@ -7,6 +7,7 @@ use App\Entity\Content;
 use App\Entity\Kind;
 use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -33,10 +34,10 @@ class BatchSync
      * @return Content[]
      * @throws InvalidArgumentException
      */
-    public function batchSyncContentsByRedditIds(array $redditIds): array
+    public function batchSyncContentsByRedditIds(Context $context, array $redditIds): array
     {
         $contents = [];
-        $itemsInfo = $this->redditApi->getRedditItemInfoByIds($redditIds);
+        $itemsInfo = $this->redditApi->getRedditItemInfoByIds($context, $redditIds);
         $itemsCount = count($itemsInfo);
         $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($itemsInfo);
 

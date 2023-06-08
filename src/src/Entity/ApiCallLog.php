@@ -29,6 +29,9 @@ class ApiCallLog
     #[ORM\Column(type: 'text')]
     private $response;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    private $context;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -90,6 +93,18 @@ class ApiCallLog
     public function setResponse(string $response): self
     {
         $this->response = $response;
+
+        return $this;
+    }
+
+    public function getContext(): ?string
+    {
+        return $this->context;
+    }
+
+    public function setContext(string $context): self
+    {
+        $this->context = $context;
 
         return $this;
     }

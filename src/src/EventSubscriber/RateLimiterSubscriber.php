@@ -68,6 +68,9 @@ class RateLimiterSubscriber implements EventSubscriberInterface
             $callLog->setCreatedAt(new DateTimeImmutable());
             $callLog->setResponse(json_encode($event->getResponse()->toArray()));
 
+            $context = json_encode($event->getContext());
+            $callLog->setContext($context);
+
             $this->apiCallLogRepository->add($callLog, true);
         } catch (Exception $e) {
             $this->logger->error(sprintf('Error persisting new API call log: %s' ,$e->getMessage()));

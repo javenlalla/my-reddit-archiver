@@ -6,6 +6,7 @@ namespace App\Service\Reddit;
 use App\Entity\Post;
 use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
+use App\Service\Reddit\Api\Context;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -246,13 +247,15 @@ class Api
      * Because this is a single ID, return first (and should be only) child
      * in the response listing data.
      *
-     * @param  string  $redditId Ex: t5_2sdu8
+     * @param  Context  $context
+     * @param  string  $redditId  Ex: t5_2sdu8
      *
      * @return array
+     * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoById(string $redditId): array
+    public function getRedditItemInfoById(Context $context, string $redditId): array
     {
-        $childrenResponseData = $this->getRedditItemInfoByIds([$redditId]);
+        $childrenResponseData = $this->getRedditItemInfoByIds($context, [$redditId]);
 
         return $childrenResponseData[0];
     }
@@ -266,7 +269,7 @@ class Api
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoByIds(array $redditIds): array
+    public function getRedditItemInfoByIds(Context $context, array $redditIds): array
     {
         $redditIdsGroups = array_chunk($redditIds, self::INFO_BATCH_SIZE);
         $allRetrievedItemsInfo = [];
@@ -275,10 +278,10 @@ class Api
             $redditIdsString = implode(',', $redditIdsGroup);
             $cacheKey = md5('info-'.$redditIdsString) . uniqid();
 
-            $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
+            $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
 
-                $responseData = $this->executeSimpleCall(self::METHOD_GET, $endpoint)
+                $responseData = $this->executeSimpleCall($context,self::METHOD_GET, $endpoint)
                     ->toArray();
 
                 return $responseData['data']['children'];
@@ -293,15 +296,15 @@ class Api
     /**
      * Core function which executes a call to the Reddit API.
      *
+     * @param  Context  $context
      * @param  string  $method
      * @param  string  $endpoint
      * @param  array  $options
      * @param  bool  $retry
      *
      * @return ResponseInterface
-     * @throws TransportExceptionInterface
      */
-    private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
+    private function executeCall(Context $context, string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
     {
         if (isset($this->accessToken)) {
             $options['auth_bearer'] = $this->accessToken;
@@ -316,11 +319,11 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 401 && $retry === false) {
             $this->refreshToken();
-            return $this->executeCall($method, $endpoint, $options, true);
+            return $this->executeCall($context, $method, $endpoint, $options, true);
         } else if ($response->getStatusCode() === 401 && $retry === true) {
             throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
         }
@@ -344,6 +347,7 @@ class Api
      *
      * No auth or retry functionality is included in this logic.
      *
+     * @param  Context  $context
      * @param  string  $method
      * @param  string  $endpoint
      * @param  array  $options
@@ -355,7 +359,7 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function executeSimpleCall(string $method, string $endpoint, array $options = []): ResponseInterface
+    private function executeSimpleCall(Context $context, string $method, string $endpoint, array $options = []): ResponseInterface
     {
         if (empty($options['headers'])) {
             $options['headers'] = [];
@@ -364,7 +368,7 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() !== 200) {
             throw new Exception(sprintf(

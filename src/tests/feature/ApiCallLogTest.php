@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Tests\feature;
 
 use App\Entity\ApiCallLog;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\BatchSync;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -37,7 +38,8 @@ class ApiCallLogTest extends KernelTestCase
             't3_won0ky',
         ];
 
-        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($targetRedditIds);
+        $context = new Context('ApiCallLogTest:testApiCallLogging');
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($context, $targetRedditIds);
 
         foreach ($targetRedditIds as $targetRedditId) {
             $searchString = '%' . $targetRedditId . '%';

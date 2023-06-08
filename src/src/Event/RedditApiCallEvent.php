@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Event;
 
+use App\Service\Reddit\Api\Context;
 use Symfony\Contracts\EventDispatcher\Event;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -10,20 +11,13 @@ class RedditApiCallEvent extends Event
 {
     public const NAME = 'reddit_api.call';
 
-    private ResponseInterface $response;
-
-    private string $method;
-
-    private string $endpoint;
-
-    private array $options = [];
-
-    public function __construct(string $method, string $endpoint, ResponseInterface $response, array $options = [])
-    {
-        $this->method = $method;
-        $this->endpoint = $endpoint;
-        $this->response = $response;
-        $this->options = $options;
+    public function __construct(
+        private readonly Context $context,
+        private readonly string $method,
+        private readonly string $endpoint,
+        private readonly ResponseInterface $response,
+        private readonly array $options = [],
+    ) {
     }
 
     /**
@@ -56,5 +50,13 @@ class RedditApiCallEvent extends Event
     public function getOptions(): array
     {
         return $this->options;
+    }
+
+    /**
+     * @return Context
+     */
+    public function getContext(): Context
+    {
+        return $this->context;
     }
 }
