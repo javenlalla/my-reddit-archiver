@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
-use App\Entity\Post;
 use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
 use App\Service\Reddit\Api\Context;
@@ -69,20 +68,6 @@ class Api
     }
 
     /**
-     * Retrieve a Post from the API by its type and ID.
-     *
-     * @param  string  $type
-     * @param  string  $id
-     *
-     * @return array
-     * @throws InvalidArgumentException
-     */
-    public function getPostByRedditId(string $type, string $id): array
-    {
-        return $this->getPostByFullRedditId(sprintf(Post::FULL_REDDIT_ID_FORMAT, $type, $id));
-    }
-
-    /**
      * Retrieve a Post from the API by its Reddit "fullName" ID.
      * Example: t1_vlyukg
      *
@@ -107,13 +92,14 @@ class Api
      * Retrieve the Saved Posts under the current user's (as configured in the
      * application) Reddit Profile.
      *
+     * @param  Context  $context
      * @param  int  $limit
      * @param  string  $after
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getSavedContents(int $limit = 100, string $after = ''): array
+    public function getSavedContents(Context $context, int $limit = 100, string $after = ''): array
     {
         $endpoint = sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
         $endpoint = $endpoint . sprintf('?limit=%d', $limit);
@@ -123,8 +109,8 @@ class Api
 
         $cacheKey = md5($endpoint);
 
-        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($endpoint) {
-            $response = $this->executeCall(self::METHOD_GET, $endpoint)->toArray();
+        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($context, $endpoint) {
+            $response = $this->executeCall($context, self::METHOD_GET, $endpoint)->toArray();
 
             return $response['data'];
         });
@@ -133,6 +119,7 @@ class Api
     /**
      * Retrieve Comments under a Post by the Post's Reddit ID.
      *
+     * @param  Context  $context
      * @param  string  $redditId
      * @param  string  $sort
      * @param  int  $limit
@@ -140,11 +127,11 @@ class Api
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostCommentsByRedditId(string $redditId, string $sort = '', int $limit = -1): array
+    public function getPostCommentsByRedditId(Context $context, string $redditId, string $sort = '', int $limit = -1): array
     {
         $cacheKey = md5('comments-'.$redditId.'-'.$sort.'-'.$limit);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId, $sort, $limit) {
+        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditId, $sort, $limit) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
 
             if (!empty($sort)) {
@@ -155,7 +142,7 @@ class Api
                 $commentsUrl .= '&limit=' . $limit;
             }
 
-            $response = $this->executeSimpleCall(self::METHOD_GET, $commentsUrl);
+            $response = $this->executeSimpleCall($context, self::METHOD_GET, $commentsUrl);
             $responseData = $response->toArray();
 
             if (!empty($responseData[1]['data']['children'])) {
@@ -173,13 +160,14 @@ class Api
      * The More Children data is batched in order to avoid a `414` error
      * returned from Reddit due to the URI being too long.
      *
+     * @param  Context  $context
      * @param  string  $postRedditId
      * @param  array  $moreChildrenData
      *
      * @return mixed
      * @throws InvalidArgumentException
      */
-    public function getMoreChildren(string $postRedditId, array $moreChildrenData): array
+    public function getMoreChildren(Context $context, string $postRedditId, array $moreChildrenData): array
     {
         $childrenDataGroups = array_chunk($moreChildrenData['children'], self::MORE_CHILDREN_BATCH_SIZE);
         $allRetrievedChildren = [];
@@ -188,8 +176,8 @@ class Api
             $url = $this->buildMoreChildrenUrl($postRedditId, $childrenData);
             $cacheKey = md5('more-children-'. $url);
 
-            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($url) {
-                $response = $this->executeSimpleCall(self::METHOD_GET, $url);
+            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $url) {
+                $response = $this->executeSimpleCall($context, self::METHOD_GET, $url);
 
                 return $response->toArray();
             });
@@ -204,25 +192,29 @@ class Api
      * Retrieve the JSON response data for the provided Post URL using its
      * `.json` equivalent endpoint.
      *
+     * @param  Context  $context
      * @param  string  $postLink
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostFromJsonUrl(string $postLink): array
+    public function getPostFromJsonUrl(Context $context, string $postLink): array
     {
         $jsonUrl = $this->sanitizePostLinkToJsonFormat($postLink);
         $cacheKey = md5('link-'.$jsonUrl);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($jsonUrl) {
+        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $jsonUrl) {
             return
-                $this->executeSimpleCall(self::METHOD_GET, $jsonUrl)
+                $this->executeSimpleCall($context, self::METHOD_GET, $jsonUrl)
                 ->toArray();
         });
     }
 
     /**
      * Retrieve the JSON response for the currently trending Hot Posts.
+     *
+     * @param  Context  $context
+     * @param  int  $limit
      *
      * @return array
      * @throws ClientExceptionInterface
@@ -231,12 +223,12 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getHotPosts(int $limit = self::DEFAULT_HOT_LIMIT): array
+    public function getHotPosts(Context $context,int $limit = self::DEFAULT_HOT_LIMIT): array
     {
         $url = sprintf(self::HOT_CONTENTS_JSON_URL, $limit);
 
         return
-            $this->executeSimpleCall(self::METHOD_GET, $url)
+            $this->executeSimpleCall($context,self::METHOD_GET, $url)
                 ->toArray();
     }
 

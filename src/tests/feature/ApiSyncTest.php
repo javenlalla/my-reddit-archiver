@@ -7,6 +7,7 @@ use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\BatchSync;
 use Psr\Cache\InvalidArgumentException;
@@ -38,8 +39,9 @@ class ApiSyncTest extends KernelTestCase
      */
     public function testBasicSyncFromApi()
     {
+        $context = new Context('ApiSyncText:testBasicSyncFromApi');
         $redditId = 't3_vepbt0';
-        $content = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         $this->assertInstanceOf(Content::class, $content);
 
@@ -98,7 +100,8 @@ class ApiSyncTest extends KernelTestCase
             $fullRedditId = $type . '_' . $commentRedditId;
         }
 
-        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds([$fullRedditId]);
+        $context = new Context('ApiSyncText:testSyncContentsByBatch');
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($context, [$fullRedditId]);
         $this->assertCount(1, $contents);
 
         $this->validateContent(
@@ -164,9 +167,11 @@ class ApiSyncTest extends KernelTestCase
             $fullRedditId = $type . '_' . $commentRedditId;
         }
 
+        $context = new Context('ApiSyncText:testSyncPostsFromApi');
+
         $this->validateContent(
             false,
-            $this->manager->syncContentFromApiByFullRedditId($fullRedditId),
+            $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId),
             $originalPostUrl,
             $redditId,
             $type,
@@ -221,9 +226,11 @@ class ApiSyncTest extends KernelTestCase
         string $gifUrl = null,
         string $commentRedditId = null,
     ) {
+        $context = new Context('ApiSyncText:testSyncPostsFromJsonUrls');
+
         $this->validateContent(
             true,
-            $this->manager->syncContentFromJsonUrl($type, $originalPostUrl),
+            $this->manager->syncContentFromJsonUrl($context, $type, $originalPostUrl),
             $originalPostUrl,
             $redditId,
             $type,
