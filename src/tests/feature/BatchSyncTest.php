@@ -6,6 +6,7 @@ namespace App\Tests\feature;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Type;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\BatchSync;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -31,13 +32,14 @@ class BatchSyncTest extends KernelTestCase
      */
     public function testBatchSync(array $expectedContents = [])
     {
+        $context = new Context('BatchSyncTest:testBatchSync');
         $redditIds = [
             't3_vepbt0',
             't3_vlyukg',
             't1_ia1smh6',
         ];
 
-        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($redditIds);
+        $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($context, $redditIds);
         $this->assertInstanceOf(Content::class, $contents[0]);
 
         foreach ($contents as $content) {
