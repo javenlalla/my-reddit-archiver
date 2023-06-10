@@ -112,7 +112,7 @@ class Manager
             return $this->persistCommentPostJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
+        return $this->persistLinkContentJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
     }
 
     /**
@@ -121,6 +121,7 @@ class Manager
      * Additionally, retrieve the parent Post from the API if the provided
      * Response is of Comment `kind`.
      *
+     * @param  Context  $context
      * @param  string  $type
      * @param  array  $response
      * @param  bool  $downloadAssets
@@ -128,7 +129,7 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function hydrateContentFromResponseData(string $type, array $response, bool $downloadAssets = false): Content
+    public function hydrateContentFromResponseData(Context $context, string $type, array $response, bool $downloadAssets = false): Content
     {
         $parentPostResponse = [];
 
@@ -138,7 +139,7 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        return $this->contentsManager->parseAndDenormalizeContent($response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
+        return $this->contentsManager->parseAndDenormalizeContent($context, $response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
     private function syncCommentTreeBranch(Context $context, Content $content, array $postData, array $commentData): Comment
@@ -237,6 +238,7 @@ class Manager
      * Persist the following Post and Comment data for a Link Post as
      * retrieved from the Post's JSON URL.
      *
+     * @param  Context  $context
      * @param  array  $postData
      * @param  array  $commentsData
      * @param  bool  $syncComments
@@ -245,9 +247,9 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
+    private function persistLinkContentJsonUrlData(Context $context, array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $content = $this->hydrateContentFromResponseData($postData['kind'], $postData, $downloadAssets);
+        $content = $this->hydrateContentFromResponseData($context, $postData['kind'], $postData, $downloadAssets);
 
         $this->contentRepository->add($content, true);
 
@@ -274,7 +276,7 @@ class Manager
     private function persistCommentPostJsonUrlData(Context $context, array $postData, array $commentsData): Content
     {
         $targetComment = $commentsData[0]['data'];
-        $content = $this->contentsManager->parseAndDenormalizeContent($postData, ['commentData' => $targetComment]);
+        $content = $this->contentsManager->parseAndDenormalizeContent($context, $postData, ['commentData' => $targetComment]);
 
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
         if ($existingContent instanceof Content) {

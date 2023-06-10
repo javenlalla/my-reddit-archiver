@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Tests\feature;
 
 use App\Repository\CommentRepository;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -29,11 +31,13 @@ class UniqueSyncRecordsTest extends KernelTestCase
      */
     public function testUniqueContentPost()
     {
+        $context = new Context('UniqueSyncRecordsTest:testUniqueContentPost');
+
         $redditId = 't3_vepbt0';
-        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $firstContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Sync again.
-        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $secondContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Verify the second Content return is the same as the first Content.
         // I.E: a second Content record was not created.
@@ -48,11 +52,13 @@ class UniqueSyncRecordsTest extends KernelTestCase
      */
     public function testUniqueContentTextPost()
     {
+        $context = new Context('UniqueSyncRecordsTest:testUniqueContentTextPost');
+
         $redditId = 't3_vlyukg';
-        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $firstContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Sync again.
-        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $secondContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Verify the second Content return is the same as the first Content.
         // I.E: a second Content record was not created.
@@ -74,11 +80,13 @@ class UniqueSyncRecordsTest extends KernelTestCase
      */
     public function testUniqueContentComment()
     {
+        $context = new Context('UniqueSyncRecordsTest:testUniqueContentComment');
+
         $redditId = 't1_ia1smh6';
-        $firstContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $firstContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Sync again.
-        $secondContent = $this->manager->syncContentFromApiByFullRedditId($redditId);
+        $secondContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Verify the second Content return is the same as the first Content.
         // I.E: a second Content record was not created.
