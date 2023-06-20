@@ -256,7 +256,8 @@ class Api
      * This is an all-purpose call to retrieve information about any Reddit
      * items (Post, Comment, Subreddit, etc.) using their full Reddit IDs.
      *
-     * @param  array  $redditIds Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
+     * @param  Context  $context
+     * @param  array  $redditIds  Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
      *
      * @return array
      * @throws InvalidArgumentException
@@ -301,7 +302,7 @@ class Api
         if (isset($this->accessToken)) {
             $options['auth_bearer'] = $this->accessToken;
         } else {
-            $options['auth_bearer'] = $this->getAccessToken();
+            $options['auth_bearer'] = $this->getAccessToken($context);
         }
 
         if (empty($options['headers'])) {
@@ -314,7 +315,7 @@ class Api
         $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 401 && $retry === false) {
-            $this->refreshToken();
+            $this->refreshToken($context);
             return $this->executeCall($context, $method, $endpoint, $options, true);
         } else if ($response->getStatusCode() === 401 && $retry === true) {
             throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
@@ -381,6 +382,8 @@ class Api
      * First, attempt to retrieve the token from the database. If no token
      * found, generate a new one from the Reddit API.
      *
+     * @param  Context  $context
+     *
      * @return string
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -388,13 +391,13 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function getAccessToken(): string
+    private function getAccessToken(Context $context): string
     {
         if (!isset($this->accessToken) || empty($this->accessToken)) {
             $this->accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
 
             if (empty($this->accessToken)) {
-                return $this->refreshToken();
+                return $this->refreshToken($context);
             }
         }
 
@@ -405,6 +408,8 @@ class Api
      * Generate a fresh Access Token from the Reddit API for the current user.
      * Also, persist the new token to the database once generated.
      *
+     * @param  Context  $context
+     *
      * @return string
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -412,7 +417,7 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function refreshToken()
+    private function refreshToken(Context $context)
     {
         if (empty($this->userAgent)) {
             $this->setUserAgent();
@@ -431,7 +436,7 @@ class Api
         ];
 
         $response = $this->client->request(self::METHOD_POST, self::OAUTH_ENDPOINT, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent(self::METHOD_POST, self::OAUTH_ENDPOINT, $response, $options), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context,self::METHOD_POST, self::OAUTH_ENDPOINT, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 200) {
             $responseData = $response->toArray();

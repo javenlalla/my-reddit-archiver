@@ -8,6 +8,7 @@ use App\Entity\Kind;
 use App\Entity\ProfileContentGroup;
 use App\Entity\SyncErrorLog;
 use App\Event\SyncErrorEvent;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\BatchSync;
 use App\Service\Reddit\Manager\Contents;
 use App\Service\Reddit\Manager\SavedContents;
@@ -88,13 +89,14 @@ class SyncCommand extends Command
             return Command::FAILURE;
         }
 
+        $context = new Context('SyncCommand:execute');
         $time = time();
         if ($group !== self::PROFILE_GROUP_ALL) {
             $output->writeln('<info>Updating list of Contents pending sync.</info>');
-            $this->savedContentsManager->refreshPendingEntitiesByProfileGroup($group);
+            $this->savedContentsManager->refreshPendingEntitiesByProfileGroup($context, $group);
         } else {
             $output->writeln(sprintf('<info>Updating list of %s Contents pending sync.</info>', ucfirst($group)));
-            $this->savedContentsManager->refreshAllPendingEntities();
+            $this->savedContentsManager->refreshAllPendingEntities($context);
         }
         $output->writeln(sprintf('<info>Updated pending list in %d seconds.</info>', (time() - $time)));
 
@@ -125,7 +127,7 @@ class SyncCommand extends Command
                         $content = $this->contentsManager->parseAndDenormalizeContent($parentRawData, ['commentData' => $contentRawData['data']]);
                     }
                 } else {
-                    $content = $this->contentsManager->parseAndDenormalizeContent($contentRawData);
+                    $content = $this->contentsManager->parseAndDenormalizeContent($context, $contentRawData);
                 }
 
                 if ($content instanceof Content) {

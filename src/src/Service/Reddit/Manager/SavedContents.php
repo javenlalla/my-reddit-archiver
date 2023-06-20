@@ -16,6 +16,7 @@ use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
 use App\Repository\ProfileContentGroupRepository;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
@@ -165,10 +166,12 @@ class SavedContents
      * latest list of Content results on Reddit's side under all Profile
      * Content Groups.
      *
+     * @param  Context  $context
+     *
      * @return void
      * @throws InvalidArgumentException
      */
-    public function refreshAllPendingEntities(): void
+    public function refreshAllPendingEntities(Context $context): void
     {
         $profileGroups = [
             ProfileContentGroup::PROFILE_GROUP_SAVED,
@@ -180,7 +183,7 @@ class SavedContents
         ];
 
         foreach ($profileGroups as $profileGroup) {
-            $this->refreshPendingEntitiesByProfileGroup($profileGroup);
+            $this->refreshPendingEntitiesByProfileGroup($context, $profileGroup);
         }
     }
 
@@ -189,18 +192,21 @@ class SavedContents
      * latest list of Content results on Reddit's side under the specified
      * Profile Content Group.
      *
+     * @param  Context  $context
+     * @param  string  $profileGroup
+     *
      * @return void
      * @throws InvalidArgumentException
      */
-    public function refreshPendingEntitiesByProfileGroup(string $profileGroup): void
+    public function refreshPendingEntitiesByProfileGroup(Context $context, string $profileGroup): void
     {
         $moreContentsAvailable = true;
         $after = '';
         while ($moreContentsAvailable) {
-            $savedContents = $this->redditApi->getSavedContents(limit: self::BATCH_SIZE, after: $after);
+            $savedContents = $this->redditApi->getSavedContents($context, limit: self::BATCH_SIZE, after: $after);
 
             if (!empty($savedContents['children'])) {
-                $this->addContentsToPendingSync($savedContents['children']);
+                $this->addContentsToPendingSync($context, $savedContents['children']);
             }
 
             if (!empty($savedContents['after'])) {
@@ -241,11 +247,13 @@ class SavedContents
     /**
      * Persist the provided array of raw Contents data to the database.
      *
+     * @param  Context  $context
      * @param  array  $contentsData
      *
      * @return void
+     * @throws InvalidArgumentException
      */
-    private function addContentsToPendingSync(array $contentsData): void
+    private function addContentsToPendingSync(Context $context, array $contentsData): void
     {
         $pendingSyncParents = [];
         $persistedCount = 0;
@@ -287,19 +295,20 @@ class SavedContents
         }
         $this->entityManager->clear();
 
-        $this->appendPendingSyncParents($pendingSyncParents);
+        $this->appendPendingSyncParents($context, $pendingSyncParents);
     }
 
     /**
      * Loop through the provided array of parent Reddit IDs, retrieve their
      * Content data, and append to their respective pending sync Entity.
      *
+     * @param  Context  $context
      * @param  array  $pendingSyncParents
      *
      * @return void
      * @throws InvalidArgumentException
      */
-    private function appendPendingSyncParents(array $pendingSyncParents = []): void
+    private function appendPendingSyncParents(Context $context, array $pendingSyncParents = []): void
     {
         if (empty($pendingSyncParents)) {
             return;
@@ -307,7 +316,7 @@ class SavedContents
 
         $parentRedditIds = array_keys($pendingSyncParents);
 
-        $parentItemsInfo = $this->redditApi->getRedditItemInfoByIds($parentRedditIds);
+        $parentItemsInfo = $this->redditApi->getRedditItemInfoByIds($context, $parentRedditIds);
 
         $persistedCount = 0;
         foreach ($parentItemsInfo as $parentItemInfo) {
