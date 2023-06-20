@@ -241,13 +241,14 @@ class Api
      *
      * @param  Context  $context
      * @param  string  $redditId  Ex: t5_2sdu8
+     * @param  bool  $noCache
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoById(Context $context, string $redditId): array
+    public function getRedditItemInfoById(Context $context, string $redditId, bool $noCache = false): array
     {
-        $childrenResponseData = $this->getRedditItemInfoByIds($context, [$redditId]);
+        $childrenResponseData = $this->getRedditItemInfoByIds($context, [$redditId], $noCache);
 
         return $childrenResponseData[0];
     }
@@ -258,18 +259,24 @@ class Api
      *
      * @param  Context  $context
      * @param  array  $redditIds  Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
+     * @param  bool  $noCache
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoByIds(Context $context, array $redditIds): array
+    public function getRedditItemInfoByIds(Context $context, array $redditIds, bool $noCache = false): array
     {
         $redditIdsGroups = array_chunk($redditIds, self::INFO_BATCH_SIZE);
         $allRetrievedItemsInfo = [];
 
         foreach ($redditIdsGroups as $redditIdsGroup) {
             $redditIdsString = implode(',', $redditIdsGroup);
-            $cacheKey = md5('info-'.$redditIdsString) . uniqid();
+
+            if ($noCache === true) {
+                $cacheKey = md5('info-'.$redditIdsString) . uniqid();
+            } else {
+                $cacheKey = md5('info-'.$redditIdsString);
+            }
 
             $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
