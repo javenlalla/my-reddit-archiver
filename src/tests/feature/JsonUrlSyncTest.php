@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Tests\feature;
 
@@ -8,6 +9,7 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -37,12 +39,14 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testSyncCommentPostMultipleLevelsDeepFromJsonUrl()
     {
+        $context = new Context('JsonUrlSyncTest:testSyncCommentPostMultipleLevelsDeepFromJsonUrl');
+
         $postRedditId = 'xj8f7g';
         $commentRedditId = 'ip7pedq';
         $kind = Kind::KIND_COMMENT;
         $postLink = 'https://www.reddit.com/r/gaming/comments/xj8f7g/comment/ip7pedq/';
 
-        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $postLink);
 
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
@@ -160,12 +164,14 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testSyncCommentPostMultipleLevelsDeepWithNoReplies()
     {
+        $context = new Context('JsonUrlSyncTest:testSyncCommentPostMultipleLevelsDeepWithNoReplies');
+
         $redditId = 'xj50gl';
         $commentRedditId = 'ip95ter';
         $kind = Kind::KIND_COMMENT;
         $postLink = '/r/ProgrammerHumor/comments/xj50gl/microscopic/ip95ter/';
 
-        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $postLink);
         $this->assertInstanceOf(Content::class, $content);
 
         $post = $content->getPost();
@@ -197,18 +203,19 @@ class JsonUrlSyncTest extends KernelTestCase
      * constraint violations are thrown.
      *
      * @return void
-     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function testMultpleSavedCommentsFromSamePost()
+    public function testMultipleSavedCommentsFromSamePost()
     {
+        $context = new Context('JsonUrlSyncTest:testMultipleSavedCommentsFromSamePost');
+
         $redditId = 'dyu2uy';
         $kind = Kind::KIND_COMMENT;
         $contentLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83v7ro/';
-        $content = $this->manager->syncContentFromJsonUrl($kind, $contentLink);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $contentLink);
 
         $kind = Kind::KIND_COMMENT;
         $contentLink = '/r/AskReddit/comments/dyu2uy/joke_lovers_of_reddit_whats_a_great_joke/f83nvbg/';
-        $content = $this->manager->syncContentFromJsonUrl($kind, $contentLink);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $contentLink);
 
         $firstComment = $this->commentRepository->findOneBy(['redditId' => 'f83v7ro']);
         $secondComment = $this->commentRepository->findOneBy(['redditId' => 'f83nvbg']);
@@ -242,6 +249,8 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testBasicCommentContentJsonUrlSync()
     {
+        $context = new Context('JsonUrlSyncTest:testBasicCommentContentJsonUrlSync');
+
         $originalPostUrl =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
         $redditId =  'ia1smh6';
         $type =  Kind::KIND_COMMENT;
@@ -254,7 +263,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;\n&lt;/div&gt;";
         $authorTextHtml = "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>\n</div>";
 
-        $content = $this->manager->syncContentFromJsonUrl($type, $originalPostUrl);
+        $content = $this->manager->syncContentFromJsonUrl($context, $type, $originalPostUrl);
 
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
@@ -303,7 +312,9 @@ class JsonUrlSyncTest extends KernelTestCase
      */
     public function testParentCrosspostHasImageGallery()
     {
-        $content = $this->manager->syncContentFromApiByFullRedditId('t3_jjpv7n');
+        $context = new Context('JsonUrlSyncTest:testParentCrosspostHasImageGallery');
+
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, 't3_jjpv7n');
 
         $post = $content->getPost();
         $this->assertInstanceOf(Post::class, $post);

@@ -14,6 +14,7 @@ use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -66,16 +67,17 @@ class Comments
      * will instead be persisted as More Comment Entities for syncing at a
      * later time.
      *
+     * @param  Context  $context
      * @param  Content  $content
      *
      * @return ArrayCollection
      * @throws InvalidArgumentException
      */
-    public function syncCommentsByContent(Content $content): ArrayCollection
+    public function syncCommentsByContent(Context $context, Content $content): ArrayCollection
     {
         $post = $content->getPost();
         $postRedditId = $post->getRedditId();
-        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($postRedditId);
+        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($context, $postRedditId);
 
         foreach ($commentsRawData as $commentRawData) {
             if ($commentRawData['kind'] !== 'more') {
@@ -114,13 +116,14 @@ class Comments
      * Fetch all related More Comment Entities first, by Comment or Post, and
      * then sync each Entity.
      *
+     * @param  Context  $context
      * @param  string  $redditId
      * @param  int  $limit
      *
      * @return Comment[]
      * @throws InvalidArgumentException
      */
-    public function syncMoreCommentAndRelatedByRedditId(string $redditId, int $limit = MoreCommentRepository::DEFAULT_LIMIT): array
+    public function syncMoreCommentAndRelatedByRedditId(Context $context, string $redditId, int $limit = MoreCommentRepository::DEFAULT_LIMIT): array
     {
         $initialMoreComment = $this->moreCommentRepository->findOneBy(['redditId' => $redditId]);
         if (empty($initialMoreComment)) {
@@ -139,7 +142,7 @@ class Comments
 
         $comments = [];
         foreach ($allMoreComments as $moreComment) {
-            $moreCommentResponseData = $this->redditApi->getPostFromJsonUrl($moreComment->getUrl());
+            $moreCommentResponseData = $this->redditApi->getPostFromJsonUrl($context, $moreComment->getUrl());
 
             // In the case of a More Comment that is "missing" (deleted, removed, etc.)
             // on the Reddit side, delete the More Comment entity and skip processing.
@@ -177,13 +180,13 @@ class Comments
      * @return ArrayCollection
      * @throws InvalidArgumentException
      */
-    public function syncAllCommentsByContent(Content $content): ArrayCollection
+    public function syncAllCommentsByContent(Context $context, Content $content): ArrayCollection
     {
         $post = $content->getPost();
         $postRedditId = $post->getRedditId();
-        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($postRedditId);
+        $commentsRawData = $this->redditApi->getPostCommentsByRedditId($context, $postRedditId);
 
-        $commentsData = $this->retrieveAllComments($postRedditId, $commentsRawData);
+        $commentsData = $this->retrieveAllComments($context, $postRedditId, $commentsRawData);
         foreach ($commentsData as $commentData) {
             $comment = $this->commentWithRepliesDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData]);
 
@@ -235,17 +238,17 @@ class Comments
      * @return array
      * @throws InvalidArgumentException
      */
-    private function retrieveAllComments(string $postRedditId, array $commentsRawData, array $moreElementData = []): array
+    private function retrieveAllComments(Context $context, string $postRedditId, array $commentsRawData, array $moreElementData = []): array
     {
         $targetCommentsData = $commentsRawData;
         if (!empty($moreElementData)) {
-            $targetCommentsData = $this->redditApi->getMoreChildren($postRedditId, $moreElementData);
+            $targetCommentsData = $this->redditApi->getMoreChildren($context, $postRedditId, $moreElementData);
         }
 
         $comments = [];
         foreach ($targetCommentsData as $commentRawData) {
             if ($commentRawData['kind'] === 'more' && !empty($commentRawData['data']['children'])) {
-                $extractedMoreComments = $this->retrieveAllComments($postRedditId, $commentsRawData, $commentRawData['data']);
+                $extractedMoreComments = $this->retrieveAllComments($context, $postRedditId, $commentsRawData, $commentRawData['data']);
 
                 array_push($comments, ...$extractedMoreComments);
             } else if ($commentRawData['kind'] !== 'more') {

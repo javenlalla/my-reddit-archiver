@@ -8,6 +8,7 @@ use App\Entity\Subreddit;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\SubredditRepository;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\Assets;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -57,7 +58,8 @@ class SubredditDenormalizer implements DenormalizerInterface
      */
     private function initSubreddit(string $subredditId): Subreddit
     {
-        $subredditRawData = $this->redditApi->getRedditItemInfoById($subredditId);
+        $context = new Context('SubredditDenormalizer:initSubreddit');
+        $subredditRawData = $this->redditApi->getRedditItemInfoById($context, $subredditId);
         $subredditData = $subredditRawData['data'];
 
         $subreddit = new Subreddit();

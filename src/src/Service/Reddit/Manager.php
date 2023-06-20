@@ -12,6 +12,7 @@ use App\Entity\Kind;
 use App\Entity\Post;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\Contents;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -48,6 +49,7 @@ class Manager
      *
      * Full Reddit ID example: t3_vepbt0
      *
+     * @param  Context  $context
      * @param  string  $fullRedditId
      * @param  bool  $syncComments
      * @param  bool  $downloadAssets
@@ -55,17 +57,18 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromApiByFullRedditId(string $fullRedditId, bool $syncComments = false, bool $downloadAssets = false): Content
+    public function syncContentFromApiByFullRedditId(Context $context, string $fullRedditId, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $response = $this->api->getRedditItemInfoById($fullRedditId);
+        $response = $this->api->getRedditItemInfoById($context, $fullRedditId);
         $contentUrl = $response['data']['permalink'];
 
-        return $this->syncContentByUrl($contentUrl, $syncComments, $downloadAssets);
+        return $this->syncContentByUrl($context, $contentUrl, $syncComments, $downloadAssets);
     }
 
     /**
      * Sync a piece of Content by its URL.
      *
+     * @param  Context  $context
      * @param  string  $url
      * @param  bool  $syncComments
      * @param  bool  $downloadAssets
@@ -73,7 +76,7 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentByUrl(string $url, bool $syncComments = false, bool $downloadAssets = false): Content
+    public function syncContentByUrl(Context $context, string $url, bool $syncComments = false, bool $downloadAssets = false): Content
     {
         $kind = Kind::KIND_LINK;
 
@@ -82,7 +85,7 @@ class Manager
             $kind = Kind::KIND_COMMENT;
         }
 
-        return $this->syncContentFromJsonUrl($kind, $url, $syncComments, $downloadAssets);
+        return $this->syncContentFromJsonUrl($context, $kind, $url, $syncComments, $downloadAssets);
     }
 
     /**
@@ -92,6 +95,7 @@ class Manager
      * dynamically loaded. To sync all Comments, including `more` loads, use the
      * `syncCommentsFromApiByPost` function.
      *
+     * @param  Context  $context
      * @param  string  $kind
      * @param  string  $postLink
      * @param  bool  $syncComments
@@ -100,15 +104,15 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromJsonUrl(string $kind, string $postLink, bool $syncComments = false, bool $downloadAssets = false): Content
+    public function syncContentFromJsonUrl(Context $context, string $kind, string $postLink, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $jsonData = $this->getRawDataFromJsonUrl($postLink);
+        $jsonData = $this->getRawDataFromJsonUrl($context, $postLink);
 
         if ($kind === Kind::KIND_COMMENT) {
-            return $this->persistCommentPostJsonUrlData($jsonData['postData'], $jsonData['commentsData']);
+            return $this->persistCommentPostJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData']);
         }
 
-        return $this->persistLinkContentJsonUrlData($jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
+        return $this->persistLinkContentJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
     }
 
     /**
@@ -117,6 +121,7 @@ class Manager
      * Additionally, retrieve the parent Post from the API if the provided
      * Response is of Comment `kind`.
      *
+     * @param  Context  $context
      * @param  string  $type
      * @param  array  $response
      * @param  bool  $downloadAssets
@@ -124,7 +129,7 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function hydrateContentFromResponseData(string $type, array $response, bool $downloadAssets = false): Content
+    public function hydrateContentFromResponseData(Context $context, string $type, array $response, bool $downloadAssets = false): Content
     {
         $parentPostResponse = [];
 
@@ -134,15 +139,15 @@ class Manager
             $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
         }
 
-        return $this->contentsManager->parseAndDenormalizeContent($response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
+        return $this->contentsManager->parseAndDenormalizeContent($context, $response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
-    private function syncCommentTreeBranch(Content $content, array $postData, array $commentData): Comment
+    private function syncCommentTreeBranch(Context $context, Content $content, array $postData, array $commentData): Comment
     {
         $comment = $content->getComment();
 
         // Sync Comment's Parents.
-        $this->syncCommentWithParents($content, $comment, $postData, $commentData);
+        $this->syncCommentWithParents($context, $content, $comment, $postData, $commentData);
 
         // Sync Comment's Replies, if any.
         if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
@@ -164,7 +169,7 @@ class Manager
         return $comment;
     }
 
-    private function syncCommentWithParents(Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
+    private function syncCommentWithParents(Context $context, Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
     {
         $post = $content->getPost();
         $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
@@ -195,7 +200,7 @@ class Manager
             $parentId = str_replace('t1_', '', $commentData['parent_id']);
             $targetCommentLink = $originalPostLink . $parentId;
 
-            $jsonData = $this->api->getPostFromJsonUrl($targetCommentLink);
+            $jsonData = $this->api->getPostFromJsonUrl($context, $targetCommentLink);
             if (count($jsonData) !== 2) {
                 throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $targetCommentLink));
             }
@@ -207,7 +212,7 @@ class Manager
                 $childComment = $originalComment;
             }
 
-            $this->syncCommentWithParents($content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
+            $this->syncCommentWithParents($context, $content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
         }
     }
 
@@ -233,6 +238,7 @@ class Manager
      * Persist the following Post and Comment data for a Link Post as
      * retrieved from the Post's JSON URL.
      *
+     * @param  Context  $context
      * @param  array  $postData
      * @param  array  $commentsData
      * @param  bool  $syncComments
@@ -241,9 +247,9 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    private function persistLinkContentJsonUrlData(array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
+    private function persistLinkContentJsonUrlData(Context $context, array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $content = $this->hydrateContentFromResponseData($postData['kind'], $postData, $downloadAssets);
+        $content = $this->hydrateContentFromResponseData($context, $postData['kind'], $postData, $downloadAssets);
 
         $this->contentRepository->add($content, true);
 
@@ -260,15 +266,17 @@ class Manager
      * Persist the following Post and Comment data for a Comment Post as
      * retrieved from the Post's JSON URL.
      *
+     * @param  Context  $context
      * @param  array  $postData
      * @param  array  $commentsData
      *
      * @return Content
+     * @throws InvalidArgumentException
      */
-    private function persistCommentPostJsonUrlData(array $postData, array $commentsData): Content
+    private function persistCommentPostJsonUrlData(Context $context, array $postData, array $commentsData): Content
     {
         $targetComment = $commentsData[0]['data'];
-        $content = $this->contentsManager->parseAndDenormalizeContent($postData, ['commentData' => $targetComment]);
+        $content = $this->contentsManager->parseAndDenormalizeContent($context, $postData, ['commentData' => $targetComment]);
 
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
         if ($existingContent instanceof Content) {
@@ -277,8 +285,8 @@ class Manager
             $this->contentRepository->add($content, true);
         }
 
-        $originalComment = $this->syncCommentTreeBranch($content, $postData['data'], $targetComment);
-        $jsonData = $this->getRawDataFromJsonUrl($content->getPost()->getRedditPostUrl());
+        $originalComment = $this->syncCommentTreeBranch($context, $content, $postData['data'], $targetComment);
+        $jsonData = $this->getRawDataFromJsonUrl($context, $content->getPost()->getRedditPostUrl());
         $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
 
         $this->entityManager->flush();
@@ -336,6 +344,7 @@ class Manager
     /**
      * Retrieve the raw JSON data from the provided JSON URL.
      *
+     * @param  Context  $context
      * @param  string  $jsonUrl
      *
      * @return array{
@@ -344,9 +353,9 @@ class Manager
      *     }
      * @throws InvalidArgumentException
      */
-    private function getRawDataFromJsonUrl(string $jsonUrl): array
+    private function getRawDataFromJsonUrl(Context $context, string $jsonUrl): array
     {
-        $jsonData = $this->api->getPostFromJsonUrl($jsonUrl);
+        $jsonData = $this->api->getPostFromJsonUrl($context, $jsonUrl);
         if (count($jsonData) !== 2) {
             throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $jsonUrl));
         }

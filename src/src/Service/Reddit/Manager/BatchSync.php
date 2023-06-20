@@ -7,6 +7,7 @@ use App\Entity\Content;
 use App\Entity\Kind;
 use App\Event\SyncErrorEvent;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -33,12 +34,12 @@ class BatchSync
      * @return Content[]
      * @throws InvalidArgumentException
      */
-    public function batchSyncContentsByRedditIds(array $redditIds): array
+    public function batchSyncContentsByRedditIds(Context $context, array $redditIds): array
     {
         $contents = [];
-        $itemsInfo = $this->redditApi->getRedditItemInfoByIds($redditIds);
+        $itemsInfo = $this->redditApi->getRedditItemInfoByIds($context, $redditIds);
         $itemsCount = count($itemsInfo);
-        $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($itemsInfo);
+        $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($context, $itemsInfo);
 
         $processed = 0;
         $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemsInfo)));
@@ -73,6 +74,7 @@ class BatchSync
      * original item that may be a Comment Content and, thus, contain a parent
      * `link_id`.
      *
+     * @param  Context  $context
      * @param  array  $itemsInfo
      *
      * @return array  The parent items found, if any, structured as:
@@ -83,7 +85,7 @@ class BatchSync
      *                  ]
      * @throws InvalidArgumentException
      */
-    public function searchAndSyncParentIdsFromItemsInfo(array $itemsInfo): array
+    public function searchAndSyncParentIdsFromItemsInfo(Context $context, array $itemsInfo): array
     {
         $parentRedditIds = [];
         foreach ($itemsInfo as $itemInfo) {
@@ -94,7 +96,7 @@ class BatchSync
 
         $parentItemsInfo = [];
         if (!empty($parentRedditIds)) {
-            $parentItemsInfoUnsorted = $this->redditApi->getRedditItemInfoByIds($parentRedditIds);
+            $parentItemsInfoUnsorted = $this->redditApi->getRedditItemInfoByIds($context, $parentRedditIds);
 
             foreach ($parentItemsInfoUnsorted as $parentItemInfo) {
                 $parentItemsInfo[$parentItemInfo['data']['name']] = $parentItemInfo;

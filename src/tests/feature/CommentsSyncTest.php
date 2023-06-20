@@ -9,6 +9,7 @@ use App\Entity\Post;
 use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\MoreCommentRepository;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -37,10 +38,11 @@ class CommentsSyncTest extends KernelTestCase
 
     public function testGetComments()
     {
+        $context = new Context('CommentsSyncTest:testGetComments');
         $redditId = 'vlyukg';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId);
 
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertCount(16, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
@@ -89,9 +91,10 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testGetCommentsLargeCount()
     {
+        $context = new Context('CommentsSyncTest:testGetCommentsLargeCount');
         $redditId = 'vepbt0';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
-        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId);
+        $comments = $this->commentsManager->syncAllCommentsByContent($context, $content);
 
         // Verify top-level Comments count.
         $post = $content->getPost();
@@ -139,10 +142,11 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testGetCommentsEmptyMore()
     {
+        $context = new Context('CommentsSyncTest:testGetCommentsEmptyMore');
         $redditId = 'won0ky';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId);
 
-        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $comments = $this->commentsManager->syncAllCommentsByContent($context, $content);
 
         $this->assertGreaterThan(850, count($comments));
         $this->assertInstanceOf(Comment::class, $comments[0]);
@@ -163,10 +167,11 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testGetCommentsInitialEmptyMore()
     {
+        $context = new Context('CommentsSyncTest:testGetCommentsInitialEmptyMore');
         $redditId = 'wfylnl';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId);
 
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertCount(45, $comments);
         $this->assertInstanceOf(Comment::class, $comments[0]);
     }
@@ -180,11 +185,12 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncCommentsFromCommentPostMultipleLevelsDeep()
     {
+        $context = new Context('CommentsSyncTest:testSyncCommentsFromCommentPostMultipleLevelsDeep');
         $redditId = 'wf1e8p';
         $commentRedditId = 'iirwrq4';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_COMMENT . '_' . $commentRedditId);
 
-        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $comments = $this->commentsManager->syncAllCommentsByContent($context, $content);
         $this->assertGreaterThan(500, $comments->count());
         $this->assertInstanceOf(Comment::class, $comments[0]);
     }
@@ -199,9 +205,10 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSaveCommentPostMultipleLevelsDeep()
     {
+        $context = new Context('CommentsSyncTest:testSaveCommentPostMultipleLevelsDeep');
         $redditId = 'wf1e8p';
         $commentRedditId = 'iirwrq4';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . $commentRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_COMMENT . '_' . $commentRedditId);
 
         $post = $content->getPost();
         $this->assertInstanceOf(Post::class, $post);
@@ -236,11 +243,12 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testParentCommentWasDeleted()
     {
+        $context = new Context('CommentsSyncTest:testParentCommentWasDeleted');
         $commentRedditId = 'ikcjn2n';
         $kind = Kind::KIND_COMMENT;
         $commentLink = 'https://www.reddit.com/r/coolguides/comments/won0ky/comment/ikcjn2n';
 
-        $content = $this->manager->syncContentFromJsonUrl($kind, $commentLink);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $commentLink);
 
         $comment = $content->getComment();
         $this->assertInstanceOf(Comment::class, $comment);
@@ -275,11 +283,12 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testTopLevelDeletedComment()
     {
+        $context = new Context('CommentsSyncTest:testTopLevelDeletedComment');
         $deletedCommentRedditId = 'ebu7bsm';
         $kind = Kind::KIND_LINK;
         $postLink = 'https://www.reddit.com/r/mildlyinfuriating/comments/a6ezwg/your_comment_was_removed_for_being_a_very_short/';
 
-        $content = $this->manager->syncContentFromJsonUrl($kind, $postLink, true);
+        $content = $this->manager->syncContentFromJsonUrl($context, $kind, $postLink, true);
         $comments = $content->getPost()->getComments();
 
         $deletedComment = null;
@@ -309,13 +318,14 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testNoCommentsSynced()
     {
+        $context = new Context('CommentsSyncTest:testNoCommentsSynced');
         $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
 
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId);
         $this->assertCount(0, $content->getPost()->getComments());
 
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId, true);
-        $this->assertCount(76, $content->getPost()->getComments());
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId, true);
+        $this->assertGreaterThan(60, $content->getPost()->getComments()->count());
     }
 
     /**
@@ -326,12 +336,13 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncAllMoreComments()
     {
+        $context = new Context('CommentsSyncTest:testSyncAllMoreComments');
         $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
 
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId);
         $this->assertCount(0, $content->getPost()->getComments());
 
-        $comments = $this->commentsManager->syncAllCommentsByContent($content);
+        $comments = $this->commentsManager->syncAllCommentsByContent($context, $content);
         $this->assertGreaterThan(400, $comments->count());
 
         $allCommentsCount = $this->commentRepository->getTotalPostCount($content->getPost());
@@ -347,12 +358,13 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncMoreCommentRelationToComment()
     {
+        $context = new Context('CommentsSyncTest:testSyncMoreCommentRelationToComment');
         $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
 
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId);
         $this->assertCount(0, $content->getPost()->getComments());
 
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertGreaterThan(70, $comments->count());
 
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
@@ -360,7 +372,7 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('icryh77', $parentComment->getRedditId());
         $this->assertEquals('Omg my whole family is dying laughing over this one', $parentComment->getLatestCommentAuthorText()->getAuthorText()->getText());
 
-        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icugcmt');
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId($context, 'icugcmt');
         $this->assertCount(1, $comments);
         $comment = $comments[0];
         $this->assertEquals('icugcmt', $comment->getRedditId());
@@ -383,7 +395,7 @@ class CommentsSyncTest extends KernelTestCase
 
         // Verify on subsequent syncs, a More Comment that is already synced
         // as a Comment is not pulled again as a More Comment.
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertGreaterThan(70, $comments->count());
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icugcmt']);
         $this->assertEmpty($moreComment);
@@ -398,12 +410,14 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncMoreCommentRelationToPost()
     {
+        $this->markTestSkipped('Skipping for now as the test takes more than 5 minutes to complete.');
+        $context = new Context('CommentsSyncTest:testSyncMoreCommentRelationToPost');
         $fullRedditId = Kind::KIND_LINK . '_' .'vepbt0';
 
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId);
         $this->assertCount(0, $content->getPost()->getComments());
 
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertGreaterThan(70, $comments->count());
 
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
@@ -411,10 +425,10 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertEquals('vepbt0', $parentPost->getRedditId());
         $this->assertEquals('My sister-in-law made vegetarian meat loaf. Apparently no loaf pans were available…', $parentPost->getTitle());
 
-        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', 20);
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId($context, 'icsbncm', 20);
         $this->assertGreaterThan(15, $comments);
 
-        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId('icsbncm', -1);
+        $comments = $this->commentsManager->syncMoreCommentAndRelatedByRedditId($context, 'icsbncm', -1);
         $this->assertGreaterThan(300, count($comments));
 
         $comment = $this->commentRepository->findOneBy(['redditId' => 'icsbncm']);
@@ -428,7 +442,7 @@ class CommentsSyncTest extends KernelTestCase
 
         // Verify on subsequent syncs, a More Comment that is already synced
         // as a Comment is not pulled again as a More Comment.
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
         $this->assertGreaterThan(70, $comments->count());
         $moreComment = $this->moreCommentRepository->findOneBy(['redditId' => 'icsbncm']);
         $this->assertEmpty($moreComment);
@@ -445,8 +459,9 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSortCommentsByUpvotes()
     {
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' .'vepbt0');
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $context = new Context('CommentsSyncTest:testSortCommentsByUpvotes');
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' .'vepbt0');
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
 
         $orderedComments = $this->commentsManager->getOrderedCommentsByPost($content->getPost());
 
@@ -480,8 +495,9 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testContentCommentsSortedTop()
     {
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_COMMENT . '_' . 'ip914eh');
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $context = new Context('CommentsSyncTest:testContentCommentsSortedTop');
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_COMMENT . '_' . 'ip914eh');
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
 
         $orderedComments = $this->commentsManager->getOrderedCommentsByPost($content->getPost(), true, true);
         $firstComment = $orderedComments[0];

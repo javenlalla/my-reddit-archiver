@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
-use App\Entity\Post;
 use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
+use App\Service\Reddit\Api\Context;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -68,20 +68,6 @@ class Api
     }
 
     /**
-     * Retrieve a Post from the API by its type and ID.
-     *
-     * @param  string  $type
-     * @param  string  $id
-     *
-     * @return array
-     * @throws InvalidArgumentException
-     */
-    public function getPostByRedditId(string $type, string $id): array
-    {
-        return $this->getPostByFullRedditId(sprintf(Post::FULL_REDDIT_ID_FORMAT, $type, $id));
-    }
-
-    /**
      * Retrieve a Post from the API by its Reddit "fullName" ID.
      * Example: t1_vlyukg
      *
@@ -106,13 +92,14 @@ class Api
      * Retrieve the Saved Posts under the current user's (as configured in the
      * application) Reddit Profile.
      *
+     * @param  Context  $context
      * @param  int  $limit
      * @param  string  $after
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getSavedContents(int $limit = 100, string $after = ''): array
+    public function getSavedContents(Context $context, int $limit = 100, string $after = ''): array
     {
         $endpoint = sprintf(self::SAVED_POSTS_ENDPOINT, $this->username);
         $endpoint = $endpoint . sprintf('?limit=%d', $limit);
@@ -122,8 +109,8 @@ class Api
 
         $cacheKey = md5($endpoint);
 
-        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($endpoint) {
-            $response = $this->executeCall(self::METHOD_GET, $endpoint)->toArray();
+        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($context, $endpoint) {
+            $response = $this->executeCall($context, self::METHOD_GET, $endpoint)->toArray();
 
             return $response['data'];
         });
@@ -132,6 +119,7 @@ class Api
     /**
      * Retrieve Comments under a Post by the Post's Reddit ID.
      *
+     * @param  Context  $context
      * @param  string  $redditId
      * @param  string  $sort
      * @param  int  $limit
@@ -139,11 +127,11 @@ class Api
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostCommentsByRedditId(string $redditId, string $sort = '', int $limit = -1): array
+    public function getPostCommentsByRedditId(Context $context, string $redditId, string $sort = '', int $limit = -1): array
     {
         $cacheKey = md5('comments-'.$redditId.'-'.$sort.'-'.$limit);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($redditId, $sort, $limit) {
+        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditId, $sort, $limit) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
 
             if (!empty($sort)) {
@@ -154,7 +142,7 @@ class Api
                 $commentsUrl .= '&limit=' . $limit;
             }
 
-            $response = $this->executeSimpleCall(self::METHOD_GET, $commentsUrl);
+            $response = $this->executeSimpleCall($context, self::METHOD_GET, $commentsUrl);
             $responseData = $response->toArray();
 
             if (!empty($responseData[1]['data']['children'])) {
@@ -172,13 +160,14 @@ class Api
      * The More Children data is batched in order to avoid a `414` error
      * returned from Reddit due to the URI being too long.
      *
+     * @param  Context  $context
      * @param  string  $postRedditId
      * @param  array  $moreChildrenData
      *
      * @return mixed
      * @throws InvalidArgumentException
      */
-    public function getMoreChildren(string $postRedditId, array $moreChildrenData): array
+    public function getMoreChildren(Context $context, string $postRedditId, array $moreChildrenData): array
     {
         $childrenDataGroups = array_chunk($moreChildrenData['children'], self::MORE_CHILDREN_BATCH_SIZE);
         $allRetrievedChildren = [];
@@ -187,8 +176,8 @@ class Api
             $url = $this->buildMoreChildrenUrl($postRedditId, $childrenData);
             $cacheKey = md5('more-children-'. $url);
 
-            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($url) {
-                $response = $this->executeSimpleCall(self::METHOD_GET, $url);
+            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $url) {
+                $response = $this->executeSimpleCall($context, self::METHOD_GET, $url);
 
                 return $response->toArray();
             });
@@ -203,25 +192,29 @@ class Api
      * Retrieve the JSON response data for the provided Post URL using its
      * `.json` equivalent endpoint.
      *
+     * @param  Context  $context
      * @param  string  $postLink
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostFromJsonUrl(string $postLink): array
+    public function getPostFromJsonUrl(Context $context, string $postLink): array
     {
         $jsonUrl = $this->sanitizePostLinkToJsonFormat($postLink);
         $cacheKey = md5('link-'.$jsonUrl);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($jsonUrl) {
+        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $jsonUrl) {
             return
-                $this->executeSimpleCall(self::METHOD_GET, $jsonUrl)
+                $this->executeSimpleCall($context, self::METHOD_GET, $jsonUrl)
                 ->toArray();
         });
     }
 
     /**
      * Retrieve the JSON response for the currently trending Hot Posts.
+     *
+     * @param  Context  $context
+     * @param  int  $limit
      *
      * @return array
      * @throws ClientExceptionInterface
@@ -230,12 +223,12 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function getHotPosts(int $limit = self::DEFAULT_HOT_LIMIT): array
+    public function getHotPosts(Context $context,int $limit = self::DEFAULT_HOT_LIMIT): array
     {
         $url = sprintf(self::HOT_CONTENTS_JSON_URL, $limit);
 
         return
-            $this->executeSimpleCall(self::METHOD_GET, $url)
+            $this->executeSimpleCall($context,self::METHOD_GET, $url)
                 ->toArray();
     }
 
@@ -246,13 +239,16 @@ class Api
      * Because this is a single ID, return first (and should be only) child
      * in the response listing data.
      *
-     * @param  string  $redditId Ex: t5_2sdu8
+     * @param  Context  $context
+     * @param  string  $redditId  Ex: t5_2sdu8
+     * @param  bool  $noCache
      *
      * @return array
+     * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoById(string $redditId): array
+    public function getRedditItemInfoById(Context $context, string $redditId, bool $noCache = false): array
     {
-        $childrenResponseData = $this->getRedditItemInfoByIds([$redditId]);
+        $childrenResponseData = $this->getRedditItemInfoByIds($context, [$redditId], $noCache);
 
         return $childrenResponseData[0];
     }
@@ -261,24 +257,31 @@ class Api
      * This is an all-purpose call to retrieve information about any Reddit
      * items (Post, Comment, Subreddit, etc.) using their full Reddit IDs.
      *
-     * @param  array  $redditIds Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
+     * @param  Context  $context
+     * @param  array  $redditIds  Ex: [t3_vepbt0, t5_2sdu8, t1_ia1smh6]
+     * @param  bool  $noCache
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getRedditItemInfoByIds(array $redditIds): array
+    public function getRedditItemInfoByIds(Context $context, array $redditIds, bool $noCache = false): array
     {
         $redditIdsGroups = array_chunk($redditIds, self::INFO_BATCH_SIZE);
         $allRetrievedItemsInfo = [];
 
         foreach ($redditIdsGroups as $redditIdsGroup) {
             $redditIdsString = implode(',', $redditIdsGroup);
-            $cacheKey = md5('info-'.$redditIdsString);
 
-            $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($redditIdsString) {
+            if ($noCache === true) {
+                $cacheKey = md5('info-'.$redditIdsString) . uniqid();
+            } else {
+                $cacheKey = md5('info-'.$redditIdsString);
+            }
+
+            $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
 
-                $responseData = $this->executeSimpleCall(self::METHOD_GET, $endpoint)
+                $responseData = $this->executeSimpleCall($context,self::METHOD_GET, $endpoint)
                     ->toArray();
 
                 return $responseData['data']['children'];
@@ -293,20 +296,20 @@ class Api
     /**
      * Core function which executes a call to the Reddit API.
      *
+     * @param  Context  $context
      * @param  string  $method
      * @param  string  $endpoint
      * @param  array  $options
      * @param  bool  $retry
      *
      * @return ResponseInterface
-     * @throws TransportExceptionInterface
      */
-    private function executeCall(string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
+    private function executeCall(Context $context, string $method, string $endpoint, array $options = [], bool $retry = false): ResponseInterface
     {
         if (isset($this->accessToken)) {
             $options['auth_bearer'] = $this->accessToken;
         } else {
-            $options['auth_bearer'] = $this->getAccessToken();
+            $options['auth_bearer'] = $this->getAccessToken($context);
         }
 
         if (empty($options['headers'])) {
@@ -316,11 +319,11 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 401 && $retry === false) {
-            $this->refreshToken();
-            return $this->executeCall($method, $endpoint, $options, true);
+            $this->refreshToken($context);
+            return $this->executeCall($context, $method, $endpoint, $options, true);
         } else if ($response->getStatusCode() === 401 && $retry === true) {
             throw new Exception(sprintf('Unable to execute authenticated call to %s', $endpoint));
         }
@@ -344,6 +347,7 @@ class Api
      *
      * No auth or retry functionality is included in this logic.
      *
+     * @param  Context  $context
      * @param  string  $method
      * @param  string  $endpoint
      * @param  array  $options
@@ -355,7 +359,7 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function executeSimpleCall(string $method, string $endpoint, array $options = []): ResponseInterface
+    private function executeSimpleCall(Context $context, string $method, string $endpoint, array $options = []): ResponseInterface
     {
         if (empty($options['headers'])) {
             $options['headers'] = [];
@@ -364,6 +368,8 @@ class Api
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
+
         if ($response->getStatusCode() !== 200) {
             throw new Exception(sprintf(
                 'API call failed. Response: %s. Status Code: %d. Endpoint: %s. Options: %s',
@@ -383,6 +389,8 @@ class Api
      * First, attempt to retrieve the token from the database. If no token
      * found, generate a new one from the Reddit API.
      *
+     * @param  Context  $context
+     *
      * @return string
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -390,13 +398,13 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function getAccessToken(): string
+    private function getAccessToken(Context $context): string
     {
         if (!isset($this->accessToken) || empty($this->accessToken)) {
             $this->accessToken = $this->apiUserRepository->getAccessTokenByUsername($this->username);
 
             if (empty($this->accessToken)) {
-                return $this->refreshToken();
+                return $this->refreshToken($context);
             }
         }
 
@@ -407,6 +415,8 @@ class Api
      * Generate a fresh Access Token from the Reddit API for the current user.
      * Also, persist the new token to the database once generated.
      *
+     * @param  Context  $context
+     *
      * @return string
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -414,7 +424,7 @@ class Api
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    private function refreshToken()
+    private function refreshToken(Context $context)
     {
         if (empty($this->userAgent)) {
             $this->setUserAgent();
@@ -433,7 +443,7 @@ class Api
         ];
 
         $response = $this->client->request(self::METHOD_POST, self::OAUTH_ENDPOINT, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($this->username), RedditApiCallEvent::NAME);
+        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context,self::METHOD_POST, self::OAUTH_ENDPOINT, $response, $options), RedditApiCallEvent::NAME);
 
         if ($response->getStatusCode() === 200) {
             $responseData = $response->toArray();

@@ -6,7 +6,9 @@ namespace App\Service\Reddit\Manager;
 use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
 use App\Service\Reddit\Api;
+use App\Service\Reddit\Api\Context;
 use Exception;
+use Psr\Cache\InvalidArgumentException;
 
 class Contents
 {
@@ -18,20 +20,21 @@ class Contents
      * Parse and prepare the provided Content data (Link Post or Comment) and
      * denormalize the data into a Content Entity to return.
      *
+     * @param  Context  $apiContext
      * @param  array  $contentRawData
      * @param  array  $context
      *
      * @return Content
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    public function parseAndDenormalizeContent(array $contentRawData, array $context = []): Content
+    public function parseAndDenormalizeContent(Context $apiContext, array $contentRawData, array $context = []): Content
     {
         if ($contentRawData['kind'] === 'Listing') {
             $contentRawData = $contentRawData['data']['children'][0];
         }
 
         if (!empty($contentRawData['data']['crosspost_parent_list']) && !empty($contentRawData['data']['crosspost_parent'])) {
-            $crosspostData = $this->redditApi->getRedditItemInfoById($contentRawData['data']['crosspost_parent']);
+            $crosspostData = $this->redditApi->getRedditItemInfoById($apiContext, $contentRawData['data']['crosspost_parent']);
 
             if (!empty($crosspostData['data'])) {
                 $context['crosspost'] = $crosspostData;
