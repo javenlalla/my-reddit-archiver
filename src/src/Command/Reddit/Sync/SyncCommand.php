@@ -124,7 +124,7 @@ class SyncCommand extends Command
                         continue;
                     } else {
                         $parentRawData = json_decode($pendingContent->getParentJsonData(), true);
-                        $content = $this->contentsManager->parseAndDenormalizeContent($parentRawData, ['commentData' => $contentRawData['data']]);
+                        $content = $this->contentsManager->parseAndDenormalizeContent($context, $parentRawData, ['commentData' => $contentRawData['data']]);
                     }
                 } else {
                     $content = $this->contentsManager->parseAndDenormalizeContent($context, $contentRawData);
