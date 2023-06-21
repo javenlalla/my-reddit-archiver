@@ -9,12 +9,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Typesense\Client;
 use Typesense\Exceptions\ConfigError;
 use Typesense\Exceptions\TypesenseClientError;
 
@@ -33,18 +31,32 @@ class HealthcheckController extends AbstractController
      *
      * @param  EntityManagerInterface  $em
      * @param  CacheInterface  $cachePool
+     * @param  TypesenseApi  $typesenseApi
+     * @param  Api  $redditApi
+     * @param  RateLimiterFactory  $redditApiLimiter
      *
      * @return JsonResponse
      */
     #[Route('/healthcheck', name: 'healthcheck')]
-    public function healthcheck(EntityManagerInterface $em, CacheInterface $cachePool, TypesenseApi $typesenseApi, Api $redditApi)
-    {
+    public function healthcheck(
+        EntityManagerInterface $em,
+        CacheInterface $cachePool,
+        TypesenseApi $typesenseApi,
+        Api $redditApi,
+        RateLimiterFactory $redditApiLimiter,
+    ) {
         $healthChecks = [
             'database-connected' => false,
             'cache-connected' => false,
             'typesense-connected' => false,
             'reddit-credentials-set' => false,
             'error' => null,
+            'rate-limit' => [
+                'calls-remaining' => 0,
+                'retry-datetime' => '',
+                'retry-timestamp' => 0,
+                'limit' => 0,
+            ]
         ];
 
         try {
@@ -52,6 +64,7 @@ class HealthcheckController extends AbstractController
             $healthChecks['cache-connected'] = $this->verifyCacheConnection($cachePool);
             $healthChecks['typesense-connected'] = $this->verifyTypesenseConnection($typesenseApi);
             $healthChecks['reddit-credentials-set'] = $this->verifyRedditCredentialsSet($redditApi);
+            $healthChecks['rate-limit'] = $this->verifyRateLimit($redditApiLimiter);
         } catch (InvalidArgumentException | Exception $e) {
             $healthChecks['error'] = $e->getMessage();
         }
@@ -115,7 +128,8 @@ class HealthcheckController extends AbstractController
             }
         }
 
-        $savedPosts = $redditApi->getSavedContents(1);
+        $context = new Api\Context('HealthcheckController:verifyRedditCredentialsSet');
+        $savedPosts = $redditApi->getSavedContents($context, 1);
         if (isset($savedPosts['children'])) {
             return true;
         }
@@ -142,5 +156,39 @@ class HealthcheckController extends AbstractController
         }
 
         return false;
+    }
+
+    /**
+     * Verify the status of the current rate limit to the Reddit API.
+     *
+     * @param  RateLimiterFactory  $redditApiLimiter
+     *
+     * @return array
+     */
+    private function verifyRateLimit(RateLimiterFactory $redditApiLimiter): array
+    {
+        $redditUsername = $this->getParameter(self::REDDIT_CREDENTIAL_PARAMS[0]);
+        $limiter = $redditApiLimiter->create($redditUsername);
+
+        // Explicitly provide 0 as to not affect the current rate limit status.
+        $limit = $limiter->consume(0);
+
+        $retryDateTime = '';
+        $retryTimestamp = 0;
+
+        if ($limit->getRemainingTokens() <= 0) {
+            $retryDateTimeObj = $limit->getRetryAfter()
+                ->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+
+            $retryDateTime = $retryDateTimeObj->format('Y-m-d H:i:s');
+            $retryTimestamp= $retryDateTimeObj->getTimestamp();
+        }
+
+        return [
+            'calls-remaining' => $limit->getRemainingTokens(),
+            'retry-datetime' => $retryDateTime,
+            'retry-timestamp' => $retryTimestamp,
+            'limit' => $limit->getLimit(),
+        ];
     }
 }
