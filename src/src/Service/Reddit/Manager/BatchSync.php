@@ -45,7 +45,7 @@ class BatchSync
         $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemsInfo)));
         foreach ($itemsInfo as $itemInfo) {
             try {
-                $content = $this->getContentFromItemInfo($itemInfo, $parentItemsInfo);
+                $content = $this->getContentFromItemInfo($context, $itemInfo, $parentItemsInfo);
                 $this->entityManager->persist($content);
                 // Including the flush here may seem intensive, but it is
                 // intentional to avoid unique clause violations upon inserts into
@@ -110,18 +110,19 @@ class BatchSync
      * Denormalize and return a Content Entity based on the provided Reddit
      * item data retrieved from Info endpoint.
      *
+     * @param  Context  $context
      * @param  array  $itemInfo
      * @param  array  $parentItemsInfo
      *
      * @return Content
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
-    private function getContentFromItemInfo(array $itemInfo, array $parentItemsInfo = []): Content
+    private function getContentFromItemInfo(Context $context, array $itemInfo, array $parentItemsInfo = []): Content
     {
         if ($itemInfo['kind'] === Kind::KIND_COMMENT) {
-            $content = $this->contentsManager->parseAndDenormalizeContent($parentItemsInfo[$itemInfo['data']['link_id']], ['commentData' => $itemInfo['data']]);
+            $content = $this->contentsManager->parseAndDenormalizeContent($context, $parentItemsInfo[$itemInfo['data']['link_id']], ['commentData' => $itemInfo['data']]);
         } else {
-            $content = $this->contentsManager->parseAndDenormalizeContent($itemInfo);
+            $content = $this->contentsManager->parseAndDenormalizeContent($context, $itemInfo);
         }
 
         return $content;
