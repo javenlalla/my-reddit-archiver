@@ -251,17 +251,17 @@ class JsonUrlSyncTest extends KernelTestCase
     {
         $context = new Context('JsonUrlSyncTest:testBasicCommentContentJsonUrlSync');
 
-        $originalPostUrl =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/';
-        $redditId =  'ia1smh6';
+        $originalPostUrl =  'https://www.reddit.com/r/TheSilphRoad/comments/10zrjou/my_new_stunlock_smeargle/j84z4vm/';
+        $redditId =  'j84z4vm';
         $type =  Kind::KIND_COMMENT;
-        $postType =  Type::CONTENT_TYPE_TEXT;
-        $title =  'Passed my telc B2 exam with a great score (275/300). Super stoked about it!';
-        $subreddit =  'German';
-        $url =  'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/';
-        $createdAt =  '2022-05-26 09:36:55';
-        $authorText =  'Congrats! What did your study routine look like leading up to it?';
-        $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;\n&lt;/div&gt;";
-        $authorTextHtml = "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>\n</div>";
+        $postType =  Type::CONTENT_TYPE_VIDEO;
+        $title =  'My new Stun-Lock Smeargle!';
+        $subreddit =  'TheSilphRoad';
+        $url =  'https://v.redd.it/xkmtttug6lha1';
+        $createdAt =  '2023-02-11 16:30:26';
+        $authorText =  "You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    \n\nI didn't do the leaders because I still have 3 more pieces to get before I can do one.";
+        $authorTextRawHtml =  "&lt;div class=\"md\"&gt;&lt;p&gt;You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    &lt;/p&gt;\n\n&lt;p&gt;I didn&amp;#39;t do the leaders because I still have 3 more pieces to get before I can do one.&lt;/p&gt;\n&lt;/div&gt;";
+        $authorTextHtml = "<div class=\"md\"><p>You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    </p>\n\n<p>I didn't do the leaders because I still have 3 more pieces to get before I can do one.</p>\n</div>";
 
         $content = $this->manager->syncContentFromJsonUrl($context, $type, $originalPostUrl);
 
@@ -269,7 +269,7 @@ class JsonUrlSyncTest extends KernelTestCase
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getRedditId());
         $this->assertEquals($authorText, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals('2022-05-26 10:42:40', $comment->getCommentAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
+        $this->assertEquals('2023-02-11 17:47:04', $comment->getCommentAuthorTexts()->get(0)->getCreatedAt()->format('Y-m-d H:i:s'));
         $this->assertEquals($authorText, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEquals($authorTextRawHtml, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
         $this->assertEquals($authorTextHtml, $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
@@ -278,10 +278,10 @@ class JsonUrlSyncTest extends KernelTestCase
 
         $this->assertInstanceOf(Post::class, $post);
         $this->assertNotEmpty($post->getId());
-        $this->assertEquals('uy3sx1', $post->getRedditId());
+        $this->assertEquals('10zrjou', $post->getRedditId());
         $this->assertEquals($title, $post->getTitle());
         $this->assertEquals($subreddit, $post->getSubreddit()->getName());
-        $this->assertEquals('https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/', $post->getUrl());
+        $this->assertEquals($url, $post->getUrl());
         $this->assertEquals($createdAt, $post->getCreatedAt()->format('Y-m-d H:i:s'));
 
         $contentKind = $content->getKind();
@@ -291,10 +291,6 @@ class JsonUrlSyncTest extends KernelTestCase
         $type = $post->getType();
         $this->assertInstanceOf(Type::class, $type);
         $this->assertEquals($postType, $type->getName());
-
-        $this->assertEquals("I’d be glad to offer any advice.", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getText());
-        $this->assertEquals("&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml());
-        $this->assertEquals("<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>", $post->getPostAuthorTexts()->get(0)->getAuthorText()->getTextHtml());
     }
 
     /**

@@ -270,7 +270,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
             't3_tl8qic',
             't3_wfylnl',
             't3_v27nr7',
-            't1_ia1smh6',
+            't1_j84z4vm',
             't3_8ung3q',
             't3_cs8urd',
             't3_utsmkw',
