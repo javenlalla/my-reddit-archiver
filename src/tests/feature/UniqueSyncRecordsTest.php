@@ -54,7 +54,7 @@ class UniqueSyncRecordsTest extends KernelTestCase
     {
         $context = new Context('UniqueSyncRecordsTest:testUniqueContentTextPost');
 
-        $redditId = 't3_vlyukg';
+        $redditId = 't3_uk7ctt';
         $firstContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Sync again.
@@ -82,7 +82,7 @@ class UniqueSyncRecordsTest extends KernelTestCase
     {
         $context = new Context('UniqueSyncRecordsTest:testUniqueContentComment');
 
-        $redditId = 't1_ia1smh6';
+        $redditId = 't1_j84z4vm';
         $firstContent = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
 
         // Sync again.

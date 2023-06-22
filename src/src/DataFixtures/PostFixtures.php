@@ -264,17 +264,17 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $redditIds = [
             't3_vepbt0',
             't3_won0ky',
-            't3_vlyukg',
+            't3_uk7ctt',
             't3_vdmg2f',
             't3_v443nh',
             't3_tl8qic',
             't3_wfylnl',
             't3_v27nr7',
-            't1_ia1smh6',
-            't3_wgb8wj',
+            't1_j84z4vm',
+            't3_8ung3q',
             't3_cs8urd',
             't3_utsmkw',
-            't3_urn2yw',
+            't3_8vkdsq',
             't1_ip914eh',
         ];
 

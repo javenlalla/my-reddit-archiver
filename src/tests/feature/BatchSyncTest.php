@@ -35,8 +35,8 @@ class BatchSyncTest extends KernelTestCase
         $context = new Context('BatchSyncTest:testBatchSync');
         $redditIds = [
             't3_vepbt0',
-            't3_vlyukg',
-            't1_ia1smh6',
+            't3_uk7ctt',
+            't1_j84z4vm',
         ];
 
         $contents = $this->batchSyncManager->batchSyncContentsByRedditIds($context, $redditIds);
@@ -82,28 +82,27 @@ class BatchSyncTest extends KernelTestCase
                         'url' => 'https://i.imgur.com/ThRMZx5.jpg',
                         'createdAt' => '2022-06-17 20:29:22',
                     ],
-                    't3_vlyukg' => [
-                        'originalPostUrl' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
-                        'redditId' => 'vlyukg',
+                    't3_uk7ctt' => [
+                        'originalPostUrl' => 'https://www.reddit.com/r/movies/comments/uk7ctt/another_great_thing_about_tremors/',
+                        'redditId' => 'uk7ctt',
                         'kind' => Kind::KIND_LINK,
                         'contentType' => Type::CONTENT_TYPE_TEXT,
-                        'title' => 'If you are an intermediate level learner, I strongly suggest you give the book "Tintenherz" a try',
-                        'subreddit' => 'German',
-                        'url' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
+                        'title' => 'Another great thing about Tremors…',
+                        'subreddit' => 'movies',
+                        'url' => 'https://www.reddit.com/r/movies/comments/uk7ctt/another_great_thing_about_tremors/',
                         'createdAt' => '2022-06-27 16:00:42',
-                        'authorText' => "I've been reading this book for the past weeks and I'm loving the pace in which I can read it. I feel like it's perfectly suited for B1/B2 level learners (I'd say even A2 learners could read it, albeit in a slower pace).\n\nIt is easy to read but not boringly easy since it can get rather challenging at certain times. Each chapter introduces about 3-5 new useful words, so it's not overwhelming to read as opposed to other more complicated books. The plot is actually entertaining, it has a Harry Potter feel to it, so if this genre interests you then you will like Tintenherz.",
+                        'authorText' => "The trope of the woman being ignored is exhausting. Movies where the scientists are ignored are also tiring and frustrating. Tremors has no time for it. \n\nRhonda: I think there are three more of these things…\n\nValentine: 3 more???\n\nRhonda: If you look at these seismographs, you’ll see…\n\nEarl: We’ll take your word for it.\n\nAnd off they go. The movie can continue!",
                     ],
-                    't1_ia1smh6' => [
-                        'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
-                        'redditId' => 'uy3sx1',
+                    't1_j84z4vm' => [
+                        'originalPostUrl' => 'https://www.reddit.com/r/TheSilphRoad/comments/10zrjou/my_new_stunlock_smeargle/j84z4vm/',
+                        'redditId' => '10zrjou',
                         'kind' => Kind::KIND_COMMENT,
-                        'contentType' => Type::CONTENT_TYPE_TEXT,
-                        'title' => 'Passed my telc B2 exam with a great score (275/300). Super stoked about it!',
-                        'subreddit' => 'German',
-                        'url' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/',
+                        'contentType' => Type::CONTENT_TYPE_VIDEO,
+                        'title' => 'My new Stun-Lock Smeargle!',
+                        'subreddit' => 'TheSilphRoad',
+                        'url' => 'https://v.redd.it/xkmtttug6lha1',
                         'createdAt' => '2022-05-26 09:36:55',
-                        'authorText' => 'I’d be glad to offer any advice.',
-                        'commentRedditId' => 'ia1smh6',
+                        'commentRedditId' => 'j84z4vm',
                     ],
                 ]
             ]

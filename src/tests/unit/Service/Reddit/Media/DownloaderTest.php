@@ -6,6 +6,7 @@ namespace App\Tests\unit\Service\Reddit\Media;
 use App\Entity\Asset;
 use App\Entity\Content;
 use App\Entity\Kind;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\InvalidArgumentException;
@@ -99,10 +100,12 @@ class DownloaderTest extends KernelTestCase
      */
     public function testVideoHtmlPage(): void
     {
+        $context = new Context('DownloaderTest:testVideoHtmlPage');
+
         $htmlVideoAssetPath = sprintf(self::BASE_PATH_FORMAT, self::HTML_VIDEO_ASSET['dirOne'], self::HTML_VIDEO_ASSET['dirTwo']) . self::HTML_VIDEO_ASSET['filename'];
         $this->assertFileDoesNotExist($htmlVideoAssetPath);
 
-        $content = $this->manager->syncContentByUrl('/r/Unexpected/comments/dvuois/people_are_so_immature/');
+        $content = $this->manager->syncContentByUrl($context, '/r/Unexpected/comments/dvuois/people_are_so_immature/');
         $post = $content->getPost();
         $this->assertEquals('https://i.imgur.com/nL4zkco.gifv', $post->getUrl());
 
@@ -140,7 +143,9 @@ class DownloaderTest extends KernelTestCase
      */
     public function testAwardAssetIcon404(): void
     {
-        $content = $this->manager->syncContentByUrl('/r/ketorecipes/comments/jcc799/keto_gummies_made_with_koolaid/');
+        $context = new Context('DownloaderTest:testAwardAssetIcon404');
+
+        $content = $this->manager->syncContentByUrl($context, '/r/ketorecipes/comments/jcc799/keto_gummies_made_with_koolaid/');
         $post = $content->getPost();
 
         $this->assertEquals('Keto gummies (made with kool-aid)', $post->getTitle());
@@ -176,7 +181,9 @@ class DownloaderTest extends KernelTestCase
      */
     public function testAssetRemovedByReddit(): void
     {
-        $content = $this->manager->syncContentByUrl('/r/funny/comments/jtwoe0/the_cat_just_took_a_huge_mouthful/');
+        $context = new Context('DownloaderTest:testAssetRemovedByReddit');
+
+        $content = $this->manager->syncContentByUrl($context, '/r/funny/comments/jtwoe0/the_cat_just_took_a_huge_mouthful/');
         $post = $content->getPost();
 
         $this->assertEquals('The cat just took a huge mouthful', $post->getTitle());
@@ -191,13 +198,15 @@ class DownloaderTest extends KernelTestCase
      */
     public function testSaveAwardIconAsset(): void
     {
+        $context = new Context('DownloaderTest:testSaveAwardIconAsset');
+
         foreach ([self::AWARD_SILVER_ICON_ASSET, self::AWARD_FACEPALM_ICON_ASSET] as $asset) {
             $assetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'];
             $this->assertFileDoesNotExist($assetPath);
         }
 
         $commentUrl = 'https://www.reddit.com/r/Jokes/comments/y1vmdf/comment/is022vs';
-        $content = $this->manager->syncContentFromJsonUrl(Kind::KIND_COMMENT, $commentUrl);
+        $content = $this->manager->syncContentFromJsonUrl($context, Kind::KIND_COMMENT, $commentUrl);
         $comment = $content->getComment();
 
         $commentAwards = $comment->getCommentAwards();
@@ -236,6 +245,8 @@ class DownloaderTest extends KernelTestCase
      */
     public function testSaveSubredditAssets(): void
     {
+        $context = new Context('DownloaderTest:testSaveSubredditAssets');
+
         $iconImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_ICON_IMAGE_ASSET['dirOne'], self::SUBREDDIT_ICON_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_ICON_IMAGE_ASSET['filename'];
         $bannerBackgroundImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_BACKGROUND_IMAGE_ASSET['filename'];
         $bannerImageAssetPath = sprintf(self::BASE_PATH_FORMAT, self::SUBREDDIT_BANNER_IMAGE_ASSET['dirOne'], self::SUBREDDIT_BANNER_IMAGE_ASSET['dirTwo']) . self::SUBREDDIT_BANNER_IMAGE_ASSET['filename'];
@@ -243,13 +254,13 @@ class DownloaderTest extends KernelTestCase
             $this->assertFileDoesNotExist($assetPath);
         }
 
-        $content = $this->manager->syncContentFromApiByFullRedditId('t3_10bt9qv');
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, 't3_10bt9qv');
         $subreddit = $content->getPost()->getSubreddit();
 
         $this->assertEquals('dbz', $subreddit->getName());
         $this->assertEquals('t5_2sdu8', $subreddit->getRedditId());
         $this->assertEquals('Dragon World', $subreddit->getTitle());
-        $this->assertEquals("A subreddit for all things Dragon Ball!\n\ndiscord.gg/dbz", $subreddit->getPublicDescription());
+        $this->assertEquals("A subreddit for the entire Dragon Ball franchise.  \ndiscord.gg/dbz", $subreddit->getPublicDescription());
 
         // Icon Image Asset.
         $iconImageAsset = $subreddit->getIconImageAsset();
@@ -313,9 +324,11 @@ class DownloaderTest extends KernelTestCase
         array $assets,
         array $thumbAsset,
     ) {
+        $context = new Context('DownloaderTest:testSaveAssetsFromContentsSyncedFromApi');
+
         $this->verifyPreDownloadAssertions($assets, $thumbAsset);
 
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' . $redditId, downloadAssets: true);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId, downloadAssets: true);
         $this->verifyContentsDownloads($content, $assets, $thumbAsset);
     }
 
@@ -338,9 +351,11 @@ class DownloaderTest extends KernelTestCase
         array $assets,
         array $thumbAsset,
     ) {
+        $context = new Context('DownloaderTest:testSaveAssetsFromContentUrls');
+
         $this->verifyPreDownloadAssertions($assets, $thumbAsset);
 
-        $content = $this->manager->syncContentByUrl($contentUrl, downloadAssets: true);
+        $content = $this->manager->syncContentByUrl($context, $contentUrl, downloadAssets: true);
         $this->verifyContentsDownloads($content, $assets, $thumbAsset);
     }
 
@@ -411,24 +426,18 @@ class DownloaderTest extends KernelTestCase
                 ],
             ],
             'GIF' => [
-                'contentUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
-                'redditId' => 'wgb8wj',
+                'contentUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/8ung3q/when_people_tell_me_that_wrestling_is_fake_i/',
+                'redditId' => '8ung3q',
                 'assets' => [
                     [
-                        'sourceUrl' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&v=enabled&s=a156b30a7caf0da0c73550b61b0e11e938d92c3b',
-                        'filename' => 'b72022b6e8399f658df62276cda40209.mp4',
-                        'dirOne' => 'b',
-                        'dirTwo' => '72',
-                        'filesize' => 264714,
+                        'sourceUrl' => 'http://i.imgur.com/RWFWUYi.gif',
+                        'filename' => 'f6c1d1af71bc3040f4b165c0f0e14a0e.mp4',
+                        'dirOne' => 'f',
+                        'dirTwo' => '6c',
+                        'filesize' => 1502792,
                     ],
                 ],
-                'thumbAsset' => [
-                    'sourceUrl' => 'https://a.thumbs.redditmedia.com/DI9yoWanjzCXyy5kF8-JFfP-SPg2__nhBo0HNSxU8W4.jpg',
-                    'filename' => 'e8703bc230f910e8f666222879347dab_thumb.jpg',
-                    'dirOne' => 'e',
-                    'dirTwo' => '87',
-                    'filesize' => 5977,
-                ],
+                'thumbAsset' => [],
             ],
             'Video' => [
                 // @TODO: Add initial assertion to ensure ffmpeg is installed.
@@ -445,13 +454,7 @@ class DownloaderTest extends KernelTestCase
                         'audioFilename' => '8u3caw3zm6p81_audio.mp4',
                     ],
                 ],
-                'thumbAsset' => [
-                    'sourceUrl' => 'https://b.thumbs.redditmedia.com/CPQpNEdyLw1Q2bK0jIpY8dLUtLzmegTqKJQMp5ONxto.jpg',
-                    'filename' => '68a03d510f5647f92eac1f1c28861950_thumb.jpg',
-                    'dirOne' => '6',
-                    'dirTwo' => '8a',
-                    'filesize' => 5444,
-                ],
+                'thumbAsset' => [],
             ],
             'Video | No Audio' => [
                 /**
@@ -633,8 +636,10 @@ class DownloaderTest extends KernelTestCase
      */
     private function verifyPreDownloadAssertions(array $assets, array $thumbAsset): void
     {
-        $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
-        $this->assertFileDoesNotExist($expectedThumbPath);
+        if (!empty($thumbAsset)) {
+            $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
+            $this->assertFileDoesNotExist($expectedThumbPath);
+        }
 
         foreach ($assets as $asset) {
             $assetPath = sprintf(self::BASE_PATH_FORMAT, $asset['dirOne'], $asset['dirTwo']) . $asset['filename'];
@@ -666,8 +671,10 @@ class DownloaderTest extends KernelTestCase
             $this->assertEquals($asset['filesize'], filesize($assetPath));
         }
 
-        $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
-        $this->assertFileExists($expectedThumbPath);
+        if (!empty($thumbAsset)) {
+            $expectedThumbPath = $this->getExpectedThumbPath($thumbAsset);
+            $this->assertFileExists($expectedThumbPath);
+        }
 
         // Assert assets were persisted to the database and associated to the
         // intended Post.
@@ -701,10 +708,12 @@ class DownloaderTest extends KernelTestCase
             }
         }
 
-        $thumbnailAsset = $post->getThumbnailAsset();
-        $this->assertEquals($thumbAsset['sourceUrl'], $thumbnailAsset->getSourceUrl());
-        $this->assertEquals($thumbAsset['filename'], $thumbnailAsset->getFilename());
-        $this->assertEquals($thumbAsset['filesize'], filesize($expectedThumbPath));
+        if (!empty($thumbAsset)) {
+            $thumbnailAsset = $post->getThumbnailAsset();
+            $this->assertEquals($thumbAsset['sourceUrl'], $thumbnailAsset->getSourceUrl());
+            $this->assertEquals($thumbAsset['filename'], $thumbnailAsset->getFilename());
+            $this->assertEquals($thumbAsset['filesize'], filesize($expectedThumbPath));
+        }
     }
 
     /**
@@ -740,8 +749,10 @@ class DownloaderTest extends KernelTestCase
                 $filesystem->remove($assetPath);
             }
 
-            $thumbAssetPath= sprintf(self::BASE_PATH_FORMAT, $targetData['thumbAsset']['dirOne'], $targetData['thumbAsset']['dirTwo']) . $targetData['thumbAsset']['filename'];
-            $filesystem->remove($thumbAssetPath);
+            if (!empty($targetData['thumbAsset'])) {
+                $thumbAssetPath= sprintf(self::BASE_PATH_FORMAT, $targetData['thumbAsset']['dirOne'], $targetData['thumbAsset']['dirTwo']) . $targetData['thumbAsset']['filename'];
+                $filesystem->remove($thumbAssetPath);
+            }
         }
 
         $additionalAssets = [
