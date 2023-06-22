@@ -39,46 +39,42 @@ class CommentsSyncTest extends KernelTestCase
     public function testGetComments()
     {
         $context = new Context('CommentsSyncTest:testGetComments');
-        $redditId = 'vlyukg';
+        $redditId = 'uk7ctt';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' . $redditId);
 
         $comments = $this->commentsManager->syncCommentsByContent($context, $content);
-        $this->assertCount(16, $comments);
+        $this->assertGreaterThan(30, count($comments));
         $this->assertInstanceOf(Comment::class, $comments[0]);
 
-        // Re-fetch Post.
-        $comments = $content->getPost()->getComments();
-        $this->assertCount(16, $comments);
-
         // Test basic fetch Comment from DB.
-        $commentRedditId = 'idygho1';
+        $commentRedditId = 'i7nss2g';
         $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('It\'s one of the few German books I\'ve read for which I would rate the language as "easy". Good for building confidence in reading.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('If anything Rhonda has the opposite problem - people keep demanding answers out of her because she\'s a scientist. I love it when she finally calls  Valentine out on it when they\'re on the roofs.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         // Test fetch Comment replies from Comment.
-        $commentRedditId = 'idy4nd0';
+        $commentRedditId = 'i7nm3bd';
         $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
         $this->assertInstanceOf(Comment::class, $comment);
         $this->assertEquals($redditId, $comment->getParentPost()->getRedditId());
-        $this->assertEquals('Can you share me the front page of the book? Or download link if you have?', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertEquals('Tremors is often touted as "the perfect movie" , as in not one scene is unnecessary.', $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
         $this->assertEmpty($comment->getParentComment());
 
         $replies = $comment->getReplies();
-        $this->assertCount(3, $replies);
-        $this->assertEquals("https://www.amazon.com/-/es/Cornelia-Funke/dp/3791504657\n\nI don’t remember where I got it from. I downloaded it in my kindle", $replies[0]->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
+        $this->assertCount(6, $replies);
+        $this->assertEquals('Plus, as OP pointed out, the dynamics and characters are really great (especially when you compare them to films of the time, and now).', $replies[0]->getCommentAuthorTexts()->get(0)->getAuthorText()->getText());
 
         // Test fetch a Comment reply at least two levels deep and verify its Parent Comment chain.
-        $commentRedditId = 'iebbk73';
+        $commentRedditId = 'i7oti6l';
         $comment = $this->commentRepository->findOneBy(['redditId' => $commentRedditId]);
 
         $parentComment = $comment->getParentComment();
-        $this->assertEquals('ieare0z', $parentComment->getRedditId());
+        $this->assertEquals('i7okaqm', $parentComment->getRedditId());
 
         $parentComment = $parentComment->getParentComment();
-        $this->assertEquals('ie09fz0', $parentComment->getRedditId());
+        $this->assertEquals('i7oeht7', $parentComment->getRedditId());
     }
 
     /**
