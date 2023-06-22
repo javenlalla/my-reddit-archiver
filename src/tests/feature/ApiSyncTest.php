@@ -10,9 +10,7 @@ use App\Entity\Type;
 use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\BatchSync;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class ApiSyncTest extends KernelTestCase
 {
@@ -76,6 +74,9 @@ class ApiSyncTest extends KernelTestCase
      * @param  string|null  $redditPostUrl
      * @param  string|null  $gifUrl
      * @param  string|null  $commentRedditId
+     * @param  string|null  $commentAuthorText
+     * @param  string|null  $commentAuthorTextRawHtml
+     * @param  string|null  $commentAuthorTextHtml
      *
      * @return void
      */
@@ -94,6 +95,9 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
         string $commentRedditId = null,
+        string $commentAuthorText = null,
+        string $commentAuthorTextRawHtml = null,
+        string $commentAuthorTextHtml = null,
     ) {
         $fullRedditId = $type . '_' . $redditId;
         if (!empty($commentRedditId)) {
@@ -121,6 +125,9 @@ class ApiSyncTest extends KernelTestCase
             $redditPostUrl,
             $gifUrl,
             $commentRedditId,
+            $commentAuthorText,
+            $commentAuthorTextRawHtml,
+            $commentAuthorTextHtml,
         );
     }
 
@@ -141,10 +148,11 @@ class ApiSyncTest extends KernelTestCase
      * @param  string|null  $redditPostUrl
      * @param  string|null  $gifUrl
      * @param  string|null  $commentRedditId
+     * @param  string|null  $commentAuthorText
+     * @param  string|null  $commentAuthorTextRawHtml
+     * @param  string|null  $commentAuthorTextHtml
      *
      * @return void
-     * @throws InvalidArgumentException
-     * @throws ExceptionInterface
      */
     public function testSyncPostsFromApi(
         string $originalPostUrl,
@@ -161,6 +169,9 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
         string $commentRedditId = null,
+        string $commentAuthorText = null,
+        string $commentAuthorTextRawHtml = null,
+        string $commentAuthorTextHtml = null,
     ) {
         $fullRedditId = $type . '_' . $redditId;
         if ($type === Kind::KIND_COMMENT) {
@@ -186,6 +197,9 @@ class ApiSyncTest extends KernelTestCase
             $redditPostUrl,
             $gifUrl,
             $commentRedditId,
+            $commentAuthorText,
+            $commentAuthorTextRawHtml,
+            $commentAuthorTextHtml,
         );
     }
 
@@ -206,9 +220,11 @@ class ApiSyncTest extends KernelTestCase
      * @param  string|null  $redditPostUrl
      * @param  string|null  $gifUrl
      * @param  string|null  $commentRedditId
+     * @param  string|null  $commentAuthorText
+     * @param  string|null  $commentAuthorTextRawHtml
+     * @param  string|null  $commentAuthorTextHtml
      *
      * @return void
-     * @throws InvalidArgumentException
      */
     public function testSyncPostsFromJsonUrls(
         string $originalPostUrl,
@@ -225,6 +241,9 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
         string $commentRedditId = null,
+        string $commentAuthorText = null,
+        string $commentAuthorTextRawHtml = null,
+        string $commentAuthorTextHtml = null,
     ) {
         $context = new Context('ApiSyncText:testSyncPostsFromJsonUrls');
 
@@ -245,6 +264,9 @@ class ApiSyncTest extends KernelTestCase
             $redditPostUrl,
             $gifUrl,
             $commentRedditId,
+            $commentAuthorText,
+            $commentAuthorTextRawHtml,
+            $commentAuthorTextHtml,
         );
     }
 
@@ -272,17 +294,17 @@ class ApiSyncTest extends KernelTestCase
                 'createdAt' => '2022-08-15 01:52:53',
             ],
             'Text Post' => [
-                'originalPostUrl' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
-                'redditId' => 'vlyukg',
+                'originalPostUrl' => 'https://www.reddit.com/r/movies/comments/uk7ctt/another_great_thing_about_tremors/',
+                'redditId' => 'uk7ctt',
                 'type' => Kind::KIND_LINK,
                 'contentType' => Type::CONTENT_TYPE_TEXT,
-                'title' => 'If you are an intermediate level learner, I strongly suggest you give the book "Tintenherz" a try',
-                'subreddit' => 'German',
-                'url' => 'https://www.reddit.com/r/German/comments/vlyukg/if_you_are_an_intermediate_level_learner_i/',
-                'createdAt' => '2022-06-27 16:00:42',
-                'authorText' => "I've been reading this book for the past weeks and I'm loving the pace in which I can read it. I feel like it's perfectly suited for B1/B2 level learners (I'd say even A2 learners could read it, albeit in a slower pace).\n\nIt is easy to read but not boringly easy since it can get rather challenging at certain times. Each chapter introduces about 3-5 new useful words, so it's not overwhelming to read as opposed to other more complicated books. The plot is actually entertaining, it has a Harry Potter feel to it, so if this genre interests you then you will like Tintenherz.",
-                'authorTextRawHtml' => "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I&amp;#39;ve been reading this book for the past weeks and I&amp;#39;m loving the pace in which I can read it. I feel like it&amp;#39;s perfectly suited for B1/B2 level learners (I&amp;#39;d say even A2 learners could read it, albeit in a slower pace).&lt;/p&gt;\n\n&lt;p&gt;It is easy to read but not boringly easy since it can get rather challenging at certain times. Each chapter introduces about 3-5 new useful words, so it&amp;#39;s not overwhelming to read as opposed to other more complicated books. The plot is actually entertaining, it has a Harry Potter feel to it, so if this genre interests you then you will like Tintenherz.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
-                'authorTextHtml' => "<div class=\"md\"><p>I've been reading this book for the past weeks and I'm loving the pace in which I can read it. I feel like it's perfectly suited for B1/B2 level learners (I'd say even A2 learners could read it, albeit in a slower pace).</p>\n\n<p>It is easy to read but not boringly easy since it can get rather challenging at certain times. Each chapter introduces about 3-5 new useful words, so it's not overwhelming to read as opposed to other more complicated books. The plot is actually entertaining, it has a Harry Potter feel to it, so if this genre interests you then you will like Tintenherz.</p>\n</div>",
+                'title' => 'Another great thing about Tremors…',
+                'subreddit' => 'movies',
+                'url' => 'https://www.reddit.com/r/movies/comments/uk7ctt/another_great_thing_about_tremors/',
+                'createdAt' => '2022-05-07 06:36:35',
+                'authorText' => "The trope of the woman being ignored is exhausting. Movies where the scientists are ignored are also tiring and frustrating. Tremors has no time for it. \n\nRhonda: I think there are three more of these things…\n\nValentine: 3 more???\n\nRhonda: If you look at these seismographs, you’ll see…\n\nEarl: We’ll take your word for it.\n\nAnd off they go. The movie can continue!",
+                'authorTextRawHtml' => "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;The trope of the woman being ignored is exhausting. Movies where the scientists are ignored are also tiring and frustrating. Tremors has no time for it. &lt;/p&gt;\n\n&lt;p&gt;Rhonda: I think there are three more of these things…&lt;/p&gt;\n\n&lt;p&gt;Valentine: 3 more???&lt;/p&gt;\n\n&lt;p&gt;Rhonda: If you look at these seismographs, you’ll see…&lt;/p&gt;\n\n&lt;p&gt;Earl: We’ll take your word for it.&lt;/p&gt;\n\n&lt;p&gt;And off they go. The movie can continue!&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
+                'authorTextHtml' => "<div class=\"md\"><p>The trope of the woman being ignored is exhausting. Movies where the scientists are ignored are also tiring and frustrating. Tremors has no time for it. </p>\n\n<p>Rhonda: I think there are three more of these things…</p>\n\n<p>Valentine: 3 more???</p>\n\n<p>Rhonda: If you look at these seismographs, you’ll see…</p>\n\n<p>Earl: We’ll take your word for it.</p>\n\n<p>And off they go. The movie can continue!</p>\n</div>",
             ],
             'Text Post With Only Title (No Author Text Or Content)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/vdmg2f/serious_what_should_everyone_learn_how_to_do/',
@@ -335,36 +357,33 @@ class ApiSyncTest extends KernelTestCase
                 'createdAt' => '2022-06-01 03:31:38',
             ],
             'Comment Post' => [
-                'originalPostUrl' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/ia1smh6/',
-                'redditId' => 'uy3sx1',
+                'originalPostUrl' => 'https://www.reddit.com/r/TheSilphRoad/comments/10zrjou/my_new_stunlock_smeargle/j84z4vm/',
+                'redditId' => '10zrjou',
                 'type' => Kind::KIND_COMMENT,
-                'contentType' => Type::CONTENT_TYPE_TEXT,
-                'title' => 'Passed my telc B2 exam with a great score (275/300). Super stoked about it!',
-                'subreddit' => 'German',
-                'url' => 'https://www.reddit.com/r/German/comments/uy3sx1/passed_my_telc_b2_exam_with_a_great_score_275300/',
-                // 'commentCreatedAt' => '2022-05-26 10:42:40',
-                'createdAt' => '2022-05-26 09:36:55',
-//                 'authorText' => 'Congrats! What did your study routine look like leading up to it?',
-//                 'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Congrats! What did your study routine look like leading up to it?&lt;/p&gt;
-// &lt;/div&gt;",
-//                 'authorTextHtml' => "<div class=\"md\"><p>Congrats! What did your study routine look like leading up to it?</p>
-// </div>",
-                'authorText' => 'I’d be glad to offer any advice.',
-                'authorTextRawHtml' => "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I’d be glad to offer any advice.&lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
-                'authorTextHtml' => "<div class=\"md\"><p>I’d be glad to offer any advice.</p>\n</div>",
+                'contentType' => Type::CONTENT_TYPE_VIDEO,
+                'title' => 'My new Stun-Lock Smeargle!',
+                'subreddit' => 'TheSilphRoad',
+                'url' => 'https://www.reddit.com/r/TheSilphRoad/comments/10zrjou/my_new_stunlock_smeargle/',
+                'createdAt' => '2023-02-11 16:30:26',
+                'authorText' => null,
+                'authorTextRawHtml' => null,
+                'authorTextHtml' => null,
                 'redditPostUrl' => null,
                 'gifUrl' => null,
-                'commentRedditId' => 'ia1smh6',
+                'commentRedditId' => 'j84z4vm',
+                'commentAuthorText' => "You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    \n\nI didn't do the leaders because I still have 3 more pieces to get before I can do one.",
+                'commentAuthorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    &lt;/p&gt;\n\n&lt;p&gt;I didn&amp;#39;t do the leaders because I still have 3 more pieces to get before I can do one.&lt;/p&gt;\n&lt;/div&gt;",
+                'commentAuthorTextHtml' => "<div class=\"md\"><p>You can take out the leaders and Giovanni with it... Take a picture of Shadow Registeel or Porygon. As long as you have a 35 or 40 energy charge move, this will work.    </p>\n\n<p>I didn't do the leaders because I still have 3 more pieces to get before I can do one.</p>\n</div>",
             ],
             'GIF Post' => [
-                'originalPostUrl' => 'https://www.reddit.com/r/me_irl/comments/wgb8wj/me_irl/',
-                'redditId' => 'wgb8wj',
+                'originalPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/8ung3q/when_people_tell_me_that_wrestling_is_fake_i/',
+                'redditId' => '8ung3q',
                 'type' => Kind::KIND_LINK,
                 'contentType' => Type::CONTENT_TYPE_GIF,
-                'title' => 'me_irl',
-                'subreddit' => 'me_irl',
-                'url' => 'https://preview.redd.it/kanpjvgbarf91.gif?format=mp4&s=d3c0bb16145d61e9872bda355b742cfd3031fd69',
-                'createdAt' => '2022-08-04 20:25:21',
+                'title' => "When people tell me that wrestling is 'fake', I always show them this gif.",
+                'subreddit' => 'SquaredCircle',
+                'url' => 'http://i.imgur.com/RWFWUYi.gif',
+                'createdAt' => '2018-06-28 21:12:06',
             ],
             'GIF Post (Reddit-Hosted)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/SquaredCircle/comments/cs8urd/matt_riddle_got_hit_by_a_truck/',
@@ -395,18 +414,18 @@ class ApiSyncTest extends KernelTestCase
                 'authorTextHtml' => "<div class=\"md\"><p>I did a poster for Gallery1988 in L.A.<br/>\nI called the artwork \"The floor is lava\"</p>\n\n<p>For all of you who are interested in a print, here's the link:</p>\n\n<p><a href=\"https://nineteeneightyeight.com/products/edgar-ascensao-the-floor-is-lava-print?variant=41801538732230\">https://nineteeneightyeight.com/products/edgar-ascensao-the-floor-is-lava-print?variant=41801538732230</a></p>\n\n<p><a href=\"https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&v=enabled&s=8a5a16f886e24f206b0dbea9cc0e5a6cd25ef018\">https://preview.redd.it/gcj91awy8m091.jpg?width=900&format=pjpg&auto=webp&v=enabled&s=8a5a16f886e24f206b0dbea9cc0e5a6cd25ef018</a></p>\n</div>",
             ],
             'External Link Post' => [
-                'originalPostUrl' => 'https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
-                'redditId' => 'urn2yw',
+                'originalPostUrl' => 'https://www.reddit.com/r/css/comments/8vkdsq/the_complete_css_flex_box_tutorial_javascript/',
+                'redditId' => '8vkdsq',
                 'type' => Kind::KIND_LINK,
                 'contentType' => Type::CONTENT_TYPE_EXTERNAL_LINK,
-                'title' => 'Mithril.js release a new version after nearly 3 years',
-                'subreddit' => 'javascript',
-                'url' => 'https://github.com/MithrilJS/mithril.js/releases',
-                'createdAt' => '2022-05-17 13:59:01',
+                'title' => 'The Complete CSS Flex Box Tutorial – JavaScript Teacher – Medium',
+                'subreddit' => 'css',
+                'url' => 'https://medium.com/@js_tut/the-complete-css-flex-box-tutorial-d17971950bdc',
+                'createdAt' => '2018-07-02 17:15:14',
                 'authorText' => null,
                 'authorTextRawHtml' => null,
                 'authorTextHtml' => null,
-                'redditPostUrl' => 'https://www.reddit.com/r/javascript/comments/urn2yw/mithriljs_release_a_new_version_after_nearly_3/',
+                'redditPostUrl' => 'https://www.reddit.com/r/css/comments/8vkdsq/the_complete_css_flex_box_tutorial_javascript/',
             ],
             'Comment Post (Several Levels Deep)' => [
                 'originalPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip914eh/',
@@ -416,19 +435,18 @@ class ApiSyncTest extends KernelTestCase
                 'title' => 'Gamers of old, what will the gamers of the modern console generation never be able to experience?',
                 'subreddit' => 'AskReddit',
                 'url' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
-                // 'commentCreatedAt' => '2022-09-20 21:45:38',
                 'createdAt' => '2022-09-20 14:46:24',
                 'authorText' => null,
                 'authorTextRawHtml' => null,
                 'authorTextHtml' => null,
-//                 'authorText' => 'Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.',
-//                 'authorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.&lt;/p&gt;
-// &lt;/div&gt;",
-//                 'authorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
-// </div>",
                 'redditPostUrl' => 'https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/',
                 'gifUrl' => null,
                 'commentRedditId' => 'ip914eh',
+                'commentAuthorText' => 'Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.',
+                'commentAuthorTextRawHtml' => "&lt;div class=\"md\"&gt;&lt;p&gt;Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.&lt;/p&gt;
+&lt;/div&gt;",
+                'commentAuthorTextHtml' => "<div class=\"md\"><p>Yeah, that boss really was the pinnacle in that game. I mean it was such a big deal to kill it I remember how I did it more than two decades later.</p>
+</div>",
             ],
         ];
     }
@@ -450,6 +468,9 @@ class ApiSyncTest extends KernelTestCase
      * @param  string|null  $redditPostUrl
      * @param  string|null  $gifUrl
      * @param  string|null  $commentRedditId
+     * @param  string|null  $commentAuthorText
+     * @param  string|null  $commentAuthorTextRawHtml
+     * @param  string|null  $commentAuthorTextHtml
      *
      * @return void
      */
@@ -470,6 +491,9 @@ class ApiSyncTest extends KernelTestCase
         string $redditPostUrl = null,
         string $gifUrl = null,
         string $commentRedditId = null,
+        string $commentAuthorText = null,
+        string $commentAuthorTextRawHtml = null,
+        string $commentAuthorTextHtml = null,
     )
     {
         $post = $content->getPost();
@@ -525,7 +549,17 @@ class ApiSyncTest extends KernelTestCase
         }
 
         if (!empty($commentRedditId)) {
-            $this->assertEquals($commentRedditId, $content->getComment()->getRedditId());
+            $comment = $content->getComment();
+            $this->assertEquals($commentRedditId, $comment->getRedditId());
+
+            $targetText = $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getText();
+            $this->assertEquals($commentAuthorText, $targetText);
+
+            $targetText = $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextRawHtml();
+            $this->assertEquals($commentAuthorTextRawHtml, $targetText);
+
+            $targetText = $comment->getCommentAuthorTexts()->get(0)->getAuthorText()->getTextHtml();
+            $this->assertEquals($commentAuthorTextHtml, $targetText);
         }
     }
 }
