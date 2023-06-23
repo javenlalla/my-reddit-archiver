@@ -22,6 +22,7 @@ framework:
             policy: 'fixed_window'
             limit: 60
             interval: '60 seconds'
+            cache_pool: 'reddit_api_rate_limiter.cache'
 
 when@test:
     framework:
