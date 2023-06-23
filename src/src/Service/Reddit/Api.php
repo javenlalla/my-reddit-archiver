@@ -186,8 +186,7 @@ class Api
                 'children' => implode(',', $childrenData),
             ];
 
-            $url = $this->buildMoreChildrenUrl($postRedditId, $childrenData);
-            $cacheKey = md5('more-children-'. $url);
+            $cacheKey = md5('more-children-'. implode(',', $body));
 
             $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $body) {
                 $options = [
