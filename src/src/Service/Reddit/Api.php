@@ -74,27 +74,6 @@ class Api
     }
 
     /**
-     * Retrieve a Post from the API by its Reddit "fullName" ID.
-     * Example: t3_uk7ctt
-     *
-     * @param  string  $fullRedditId
-     *
-     * @return array
-     * @throws InvalidArgumentException
-     */
-    public function getPostByFullRedditId(string $fullRedditId): array
-    {
-        $cacheKey = md5('post-'.$fullRedditId);
-
-        return $this->cachePoolRedis->get($cacheKey, function() use ($fullRedditId) {
-            $endpoint = sprintf(self::POST_DETAIL_ENDPOINT, $fullRedditId);
-            $response = $this->executeSimpleCall(self::METHOD_GET, $endpoint);
-
-            return $response->toArray();
-        });
-    }
-
-    /**
      * Retrieve the Saved Posts under the current user's (as configured in the
      * application) Reddit Profile.
      *

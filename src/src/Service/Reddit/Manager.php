@@ -134,9 +134,9 @@ class Manager
         $parentPostResponse = [];
 
         if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['children'][0]['data']['link_id']);
+            $parentPostResponse = $this->api->getRedditItemInfoById($context, $response['data']['children'][0]['data']['link_id']);
         } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
-            $parentPostResponse = $this->api->getPostByFullRedditId($response['data']['link_id']);
+            $parentPostResponse = $this->api->getRedditItemInfoById($context, $response['data']['link_id']);
         }
 
         return $this->contentsManager->parseAndDenormalizeContent($context, $response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
