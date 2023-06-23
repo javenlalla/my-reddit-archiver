@@ -52,7 +52,9 @@ class Api
 
     const COMMENTS_SORT_NEW = 'new';
 
-    const HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json?limit=%d';
+    const HOT_CONTENTS_JSON_URL = 'https://oauth.reddit.com/hot/?limit=%d';
+
+    const UNAUTHENTICATED_HOT_CONTENTS_JSON_URL = 'https://www.reddit.com/hot/.json?limit=%d';
 
     const DEFAULT_HOT_LIMIT = 10;
 
@@ -223,7 +225,7 @@ class Api
         $url = sprintf(self::HOT_CONTENTS_JSON_URL, $limit);
 
         return
-            $this->executeSimpleCall($context,self::METHOD_GET, $url)
+            $this->executeCall($context,self::METHOD_GET, $url)
                 ->toArray();
     }
 
@@ -336,11 +338,7 @@ class Api
     }
 
     /**
-     * @TODO: Investigate if this can be combined with `executeCall` function.
-     *
-     * Execute an HTTP request to the targeted endpoint.
-     *
-     * No auth or retry functionality is included in this logic.
+     * @deprecated This function was originally used for unauthenticated calls to the Reddit API. Use executeCall().
      *
      * @param  Context  $context
      * @param  string  $method
@@ -348,36 +346,11 @@ class Api
      * @param  array  $options
      *
      * @return ResponseInterface
-     * @throws ClientExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws TransportExceptionInterface
+     * @throws Exception
      */
     private function executeSimpleCall(Context $context, string $method, string $endpoint, array $options = []): ResponseInterface
     {
         throw new Exception('Deprecated. Use Authorized API calls only.');
-
-        if (empty($options['headers'])) {
-            $options['headers'] = [];
-        }
-
-        $options['headers']['User-Agent'] = $this->userAgent;
-
-        $response = $this->client->request($method, $endpoint, $options);
-        $this->eventDispatcher->dispatch(new RedditApiCallEvent($context, $method, $endpoint, $response, $options), RedditApiCallEvent::NAME);
-
-        if ($response->getStatusCode() !== 200) {
-            throw new Exception(sprintf(
-                'API call failed. Response: %s. Status Code: %d. Endpoint: %s. Options: %s',
-                var_export($response->toArray(), true),
-                $response->getStatusCode(),
-                $endpoint,
-                var_export($options, true)
-            ));
-        }
-
-        return $response;
     }
 
     /**
