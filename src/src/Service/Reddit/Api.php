@@ -28,13 +28,19 @@ class Api
 
     const POST_DETAIL_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=%s';
 
-    const POST_COMMENTS_ENDPOINT = 'https://www.reddit.com/comments/%s/.json?raw_json=1';
+    const POST_COMMENTS_ENDPOINT = 'https://oauth.reddit.com/comments/%s/?raw_json=1';
+
+    const UNAUTHENTICATED_POST_COMMENTS_ENDPOINT = 'https://www.reddit.com/comments/%s/.json?raw_json=1';
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
 
-    const MORE_CHILDREN_ENDPOINT = 'https://www.reddit.com/api/morechildren/.json?api_type=json&limit_children=false&link_id=t3_%s&children=%s';
+    const MORE_CHILDREN_ENDPOINT = 'https://oauth.reddit.com/api/morechildren/';
 
-    const INFO_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=%s';
+    const UNAUTHENTICATED_MORE_CHILDREN_ENDPOINT = 'https://www.reddit.com/api/morechildren/.json?api_type=json&limit_children=false&link_id=t3_%s&children=%s';
+
+    const INFO_ENDPOINT = 'https://oauth.reddit.com/api/info?id=%s';
+
+    const UNAUTHENTICATED_INFO_ENDPOINT = 'https://www.reddit.com/api/info/.json?id=%s';
 
     const METHOD_GET = 'GET';
 
@@ -69,7 +75,7 @@ class Api
 
     /**
      * Retrieve a Post from the API by its Reddit "fullName" ID.
-     * Example: t1_vlyukg
+     * Example: t3_uk7ctt
      *
      * @param  string  $fullRedditId
      *
@@ -142,7 +148,7 @@ class Api
                 $commentsUrl .= '&limit=' . $limit;
             }
 
-            $response = $this->executeSimpleCall($context, self::METHOD_GET, $commentsUrl);
+            $response = $this->executeCall($context, self::METHOD_GET, $commentsUrl);
             $responseData = $response->toArray();
 
             if (!empty($responseData[1]['data']['children'])) {
@@ -173,11 +179,22 @@ class Api
         $allRetrievedChildren = [];
 
         foreach ($childrenDataGroups as $childrenData) {
+            $body = [
+                'api_type' => 'json',
+                'limit_children' => false,
+                'link_id' => 't3_' . $postRedditId,
+                'children' => implode(',', $childrenData),
+            ];
+
             $url = $this->buildMoreChildrenUrl($postRedditId, $childrenData);
             $cacheKey = md5('more-children-'. $url);
 
-            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $url) {
-                $response = $this->executeSimpleCall($context, self::METHOD_GET, $url);
+            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $body) {
+                $options = [
+                    'body' => $body,
+                ];
+
+                $response = $this->executeCall($context, self::METHOD_POST, self::MORE_CHILDREN_ENDPOINT, $options);
 
                 return $response->toArray();
             });
@@ -205,7 +222,7 @@ class Api
 
         return $this->cachePoolRedis->get($cacheKey, function() use ($context, $jsonUrl) {
             return
-                $this->executeSimpleCall($context, self::METHOD_GET, $jsonUrl)
+                $this->executeCall($context, self::METHOD_GET, $jsonUrl)
                 ->toArray();
         });
     }
@@ -281,7 +298,7 @@ class Api
             $itemsInfo = $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditIdsString) {
                 $endpoint = sprintf(self::INFO_ENDPOINT, $redditIdsString);
 
-                $responseData = $this->executeSimpleCall($context,self::METHOD_GET, $endpoint)
+                $responseData = $this->executeCall($context,self::METHOD_GET, $endpoint)
                     ->toArray();
 
                 return $responseData['data']['children'];
@@ -361,6 +378,8 @@ class Api
      */
     private function executeSimpleCall(Context $context, string $method, string $endpoint, array $options = []): ResponseInterface
     {
+        throw new Exception('Deprecated. Use Authorized API calls only.');
+
         if (empty($options['headers'])) {
             $options['headers'] = [];
         }
@@ -497,8 +516,11 @@ class Api
             // Remove leading slash, if any.
             $sanitizedPostLink = ltrim($sanitizedPostLink, '/');
 
-            $sanitizedPostLink = 'https://www.reddit.com/' . $sanitizedPostLink;
+            $sanitizedPostLink = 'https://oauth.reddit.com/' . $sanitizedPostLink;
         }
+
+        // Ensure OAuth domain is targeted.
+        $sanitizedPostLink = str_replace('https://www.reddit', 'https://oauth.reddit', $sanitizedPostLink);
 
         return $sanitizedPostLink;
     }
