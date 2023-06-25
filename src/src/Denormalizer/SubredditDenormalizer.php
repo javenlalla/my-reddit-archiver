@@ -7,9 +7,8 @@ use App\Entity\Asset;
 use App\Entity\Subreddit;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\SubredditRepository;
-use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
-use App\Service\Reddit\Manager\Assets;
+use App\Service\Reddit\Items;
 use DateTimeImmutable;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -17,7 +16,7 @@ class SubredditDenormalizer implements DenormalizerInterface
 {
     public function __construct(
         private readonly SubredditRepository $subredditRepository,
-        private readonly Api $redditApi,
+        private readonly Items $itemsService,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AssetDenormalizer $assetDenormalizer,
     ) {
@@ -59,7 +58,7 @@ class SubredditDenormalizer implements DenormalizerInterface
     private function initSubreddit(string $subredditId): Subreddit
     {
         $context = new Context('SubredditDenormalizer:initSubreddit');
-        $subredditRawData = $this->redditApi->getRedditItemInfoById($context, $subredditId);
+        $subredditRawData = $this->itemsService->getItemInfoByRedditId($context, $subredditId)->getJsonBodyArray();
         $subredditData = $subredditRawData['data'];
 
         $subreddit = new Subreddit();

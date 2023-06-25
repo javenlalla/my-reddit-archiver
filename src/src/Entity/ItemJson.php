@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ItemJsonRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 
 #[ORM\Entity(repositoryClass: ItemJsonRepository::class)]
 class ItemJson
@@ -46,5 +47,10 @@ class ItemJson
         $this->jsonBody = $jsonBody;
 
         return $this;
+    }
+
+    public function getJsonBodyArray(): array
+    {
+        return json_decode($this->getJsonBody(), true);
     }
 }

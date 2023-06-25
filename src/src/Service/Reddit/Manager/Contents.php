@@ -5,15 +5,16 @@ namespace App\Service\Reddit\Manager;
 
 use App\Denormalizer\ContentDenormalizer;
 use App\Entity\Content;
-use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
-use Exception;
+use App\Service\Reddit\Items;
 use Psr\Cache\InvalidArgumentException;
 
 class Contents
 {
-    public function __construct(private readonly ContentDenormalizer $contentDenormalizer, private readonly Api $redditApi)
-    {
+    public function __construct(
+        private readonly ContentDenormalizer $contentDenormalizer,
+        private readonly Items $itemsService,
+    ) {
     }
 
     /**
@@ -34,7 +35,7 @@ class Contents
         }
 
         if (!empty($contentRawData['data']['crosspost_parent_list']) && !empty($contentRawData['data']['crosspost_parent'])) {
-            $crosspostData = $this->redditApi->getRedditItemInfoById($apiContext, $contentRawData['data']['crosspost_parent']);
+            $crosspostData = $this->itemsService->getItemInfoByRedditId($apiContext, $contentRawData['data']['crosspost_parent'])->getJsonBodyArray();
 
             if (!empty($crosspostData['data'])) {
                 $context['crosspost'] = $crosspostData;

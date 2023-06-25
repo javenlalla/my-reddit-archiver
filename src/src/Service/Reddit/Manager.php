@@ -33,6 +33,7 @@ class Manager
 
     public function __construct(
         private readonly Api $api,
+        private readonly Items $itemsService,
         private readonly Contents $contentsManager,
         private readonly ContentRepository $contentRepository,
         private readonly CommentRepository $commentRepository,
@@ -59,7 +60,7 @@ class Manager
      */
     public function syncContentFromApiByFullRedditId(Context $context, string $fullRedditId, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $response = $this->api->getRedditItemInfoById($context, $fullRedditId);
+        $response = $this->itemsService->getItemInfoByRedditId($context, $fullRedditId)->getJsonBodyArray();
         $contentUrl = $response['data']['permalink'];
 
         return $this->syncContentByUrl($context, $contentUrl, $syncComments, $downloadAssets);
@@ -134,9 +135,9 @@ class Manager
         $parentPostResponse = [];
 
         if ($type === Kind::KIND_COMMENT && $response['kind'] === 'Listing') {
-            $parentPostResponse = $this->api->getRedditItemInfoById($context, $response['data']['children'][0]['data']['link_id']);
+            $parentPostResponse = $this->itemsService->getItemInfoByRedditId($context, $response['data']['children'][0]['data']['link_id'])->getJsonBodyArray();
         } else if ($type === Kind::KIND_COMMENT && $response['kind'] === Kind::KIND_COMMENT) {
-            $parentPostResponse = $this->api->getRedditItemInfoById($context, $response['data']['link_id']);
+            $parentPostResponse = $this->itemsService->getItemInfoByRedditId($context, $response['data']['link_id'])->getJsonBodyArray();
         }
 
         return $this->contentsManager->parseAndDenormalizeContent($context, $response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
