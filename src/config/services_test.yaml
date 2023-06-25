@@ -9,3 +9,6 @@ services:
 
     App\Service\Reddit\Manager\BatchSync:
         public: true
+
+    App\Service\Reddit\Items:
+        public: true
