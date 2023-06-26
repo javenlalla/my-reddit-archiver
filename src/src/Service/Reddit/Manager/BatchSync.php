@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace App\Service\Reddit\Manager;
 
 use App\Entity\Content;
+use App\Entity\ItemJson;
 use App\Entity\Kind;
 use App\Event\SyncErrorEvent;
-use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
+use App\Service\Reddit\Items;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -17,7 +18,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class BatchSync
 {
     public function __construct(
-        private readonly Api $redditApi,
+        private readonly Items $itemsService,
         private readonly Contents $contentsManager,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
@@ -37,15 +38,15 @@ class BatchSync
     public function batchSyncContentsByRedditIds(Context $context, array $redditIds): array
     {
         $contents = [];
-        $itemsInfo = $this->redditApi->getRedditItemInfoByIds($context, $redditIds);
-        $itemsCount = count($itemsInfo);
-        $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($context, $itemsInfo);
+        $itemJsons = $this->itemsService->getItemInfoByRedditIds($context, $redditIds);
+        $itemsCount = count($itemJsons);
+        $parentItemsInfo = $this->searchAndSyncParentIdsFromItemsInfo($context, $itemJsons);
 
         $processed = 0;
-        $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemsInfo)));
-        foreach ($itemsInfo as $itemInfo) {
+        $this->logger->info(sprintf('Batch syncing %d Reddit items.', count($itemJsons)));
+        foreach ($itemJsons as $itemJson) {
             try {
-                $content = $this->getContentFromItemInfo($context, $itemInfo, $parentItemsInfo);
+                $content = $this->getContentFromItemInfo($context, $itemJson, $parentItemsInfo);
                 $this->entityManager->persist($content);
                 // Including the flush here may seem intensive, but it is
                 // intentional to avoid unique clause violations upon inserts into
@@ -54,7 +55,7 @@ class BatchSync
 
                 $contents[] = $content;
             } catch (Exception $e) {
-                $this->handleSyncError($e, $itemInfo);
+                $this->handleSyncError($e, $itemJson);
             }
 
             $processed++;
@@ -75,7 +76,7 @@ class BatchSync
      * `link_id`.
      *
      * @param  Context  $context
-     * @param  array  $itemsInfo
+     * @param  ItemJson[]  $itemsJsons
      *
      * @return array  The parent items found, if any, structured as:
      *                  [
@@ -83,27 +84,28 @@ class BatchSync
      *                        ...parentItemInfo
      *                    ]
      *                  ]
-     * @throws InvalidArgumentException
      */
-    public function searchAndSyncParentIdsFromItemsInfo(Context $context, array $itemsInfo): array
+    public function searchAndSyncParentIdsFromItemsInfo(Context $context, array $itemsJsons): array
     {
         $parentRedditIds = [];
-        foreach ($itemsInfo as $itemInfo) {
+        foreach ($itemsJsons as $itemJson) {
+            $itemInfo = $itemJson->getJsonBodyArray();
+
             if ($itemInfo['kind'] === Kind::KIND_COMMENT) {
                 $parentRedditIds[] = $itemInfo['data']['link_id'];
             }
         }
 
-        $parentItemsInfo = [];
+        $parentItemsJsons = [];
         if (!empty($parentRedditIds)) {
-            $parentItemsInfoUnsorted = $this->redditApi->getRedditItemInfoByIds($context, $parentRedditIds);
+            $parentItemsInfoUnsorted = $this->itemsService->getItemInfoByRedditIds($context, $parentRedditIds);
 
-            foreach ($parentItemsInfoUnsorted as $parentItemInfo) {
-                $parentItemsInfo[$parentItemInfo['data']['name']] = $parentItemInfo;
+            foreach ($parentItemsInfoUnsorted as $parentItemJson) {
+                $parentItemsJsons[$parentItemJson->getRedditId()] = $parentItemJson;
             }
         }
 
-        return $parentItemsInfo;
+        return $parentItemsJsons;
     }
 
     /**
@@ -111,16 +113,20 @@ class BatchSync
      * item data retrieved from Info endpoint.
      *
      * @param  Context  $context
-     * @param  array  $itemInfo
-     * @param  array  $parentItemsInfo
+     * @param  ItemJson  $itemJson
+     * @param  ItemJson[]  $parentItemJsons
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    private function getContentFromItemInfo(Context $context, array $itemInfo, array $parentItemsInfo = []): Content
+    private function getContentFromItemInfo(Context $context, ItemJson $itemJson, array $parentItemJsons = []): Content
     {
+        $itemInfo = $itemJson->getJsonBodyArray();
+
         if ($itemInfo['kind'] === Kind::KIND_COMMENT) {
-            $content = $this->contentsManager->parseAndDenormalizeContent($context, $parentItemsInfo[$itemInfo['data']['link_id']], ['commentData' => $itemInfo['data']]);
+            $parentItemJson = $parentItemJsons[$itemInfo['data']['link_id']];
+
+            $content = $this->contentsManager->parseAndDenormalizeContent($context, $parentItemJson->getJsonBodyArray(), ['commentData' => $itemInfo['data']]);
         } else {
             $content = $this->contentsManager->parseAndDenormalizeContent($context, $itemInfo);
         }

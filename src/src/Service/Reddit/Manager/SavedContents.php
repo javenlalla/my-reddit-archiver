@@ -17,6 +17,7 @@ use App\Repository\PostRepository;
 use App\Repository\ProfileContentGroupRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
+use App\Service\Reddit\Items;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
@@ -30,6 +31,7 @@ class SavedContents
 
     public function __construct(
         private readonly Api $redditApi,
+        private readonly Items $itemsService,
         private readonly EntityManagerInterface $entityManager,
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
@@ -316,16 +318,15 @@ class SavedContents
 
         $parentRedditIds = array_keys($pendingSyncParents);
 
-        $parentItemsInfo = $this->redditApi->getRedditItemInfoByIds($context, $parentRedditIds);
+        $parentItemJsons = $this->itemsService->getItemInfoByRedditIds($context, $parentRedditIds);
 
         $persistedCount = 0;
-        foreach ($parentItemsInfo as $parentItemInfo) {
-            $redditIds = $pendingSyncParents[$parentItemInfo['data']['name']];
+        foreach ($parentItemJsons as $parentItemJson) {
+            $redditIds = $pendingSyncParents[$parentItemJson->getRedditId()];
             $pendingSyncEntities = $this->contentPendingSyncRepository->findPendingSyncsByRedditIds($redditIds);
-            $encodedItemInfo = json_encode($parentItemInfo);
 
             foreach ($pendingSyncEntities as $pendingSync) {
-                $pendingSync->setParentJsonData($encodedItemInfo);
+                $pendingSync->setParentJsonData($parentItemJson->getJsonBody());
                 $this->entityManager->persist($pendingSync);
 
                 $persistedCount++;

@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
 use App\Entity\ItemJson;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -45,7 +47,7 @@ class ItemJsonRepository extends ServiceEntityRepository
      * @param  string  $redditId
      *
      * @return ItemJson|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function findByRedditId(string $redditId): ?ItemJson
     {
@@ -55,6 +57,23 @@ class ItemJsonRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    /**
+     * Retrieve all Item Json Entities by the provided array of Reddit IDs.
+     *
+     * @param  array  $redditIds
+     *
+     * @return ItemJson[]
+     */
+    public function findByRedditIds(array $redditIds): array
+    {
+       return $this->createQueryBuilder('i')
+           ->andWhere('i.redditId IN (:redditIds)')
+           ->setParameter('redditIds', $redditIds)
+           ->getQuery()
+           ->getResult()
+       ;
     }
 
 //    /**
