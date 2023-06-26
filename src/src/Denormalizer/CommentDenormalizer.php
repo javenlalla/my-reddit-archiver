@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
@@ -41,8 +42,11 @@ class CommentDenormalizer implements DenormalizerInterface
     {
         $post = $data;
         $commentData = $context['commentData'];
-        $redditId = $commentData['id'];
+        if (isset($commentData['kind']) && isset($commentData['data'])) {
+            $commentData = $commentData['data'];
+        }
 
+        $redditId = $commentData['id'];
         $comment = $this->commentRepository->findOneBy(['redditId' => $redditId]);
         if (empty($comment)) {
             $comment = $this->initNewComment($post, $commentData, $context);
