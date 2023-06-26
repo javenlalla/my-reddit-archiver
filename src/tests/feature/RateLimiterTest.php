@@ -31,7 +31,7 @@ class RateLimiterTest extends KernelTestCase
 
         for ($i = 1; $i < 61; $i++) {
             $time = time();
-            $this->redditApi->getRedditItemInfoById($context, 't3_vepbt0', true);
+            $this->redditApi->getRedditItemInfoById($context, 't3_vepbt0');
             $processTime = time();
 
             // Verify the 61st request is rate limited.
