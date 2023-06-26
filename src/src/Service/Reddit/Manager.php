@@ -29,7 +29,7 @@ class Manager
      * It is meant to NOT match a Link Post URL such as:
      * https://www.reddit.com/r/golang/comments/z2ngmf/
      */
-    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/.*\/[a-zA-Z0-9]{4,10}/i';
+    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/[[:word:]_]*\/[a-zA-Z0-9]{4,10}/iu';
 
     public function __construct(
         private readonly Api $api,
