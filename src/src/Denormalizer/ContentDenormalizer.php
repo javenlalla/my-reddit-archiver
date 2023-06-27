@@ -146,7 +146,12 @@ class ContentDenormalizer implements DenormalizerInterface
         if ($kindRedditId === Kind::KIND_LINK) {
             $post = $this->linkPostDenormalizer->denormalize($responseData['data'], Post::class, null, $context);
         } elseif ($kindRedditId === Kind::KIND_COMMENT) {
-            $post = $this->linkPostDenormalizer->denormalize($context['parentPostData']['data']['children'][0]['data'], Post::class, null, $context);
+            if (!empty($context['parentPostData']['data']['children'][0]['data'])) {
+                $parentPostData = $context['parentPostData']['data']['children'][0]['data'];
+            } elseif (!empty($context['parentPostData']['data'])) {
+                $parentPostData = $context['parentPostData']['data'];
+            }
+            $post = $this->linkPostDenormalizer->denormalize($parentPostData, Post::class, null, $context);
         } else {
             throw new Exception(sprintf('Unexpected Post type %s: %s', $kindRedditId, var_export($responseData, true)));
         }

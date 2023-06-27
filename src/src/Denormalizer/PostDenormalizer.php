@@ -108,7 +108,13 @@ class PostDenormalizer implements DenormalizerInterface
         if ($kindRedditId === Kind::KIND_LINK) {
             $type = $this->typeHelper->getContentTypeFromPostData($postData);
         } elseif ($kindRedditId === Kind::KIND_COMMENT) {
-            $type = $this->typeHelper->getContentTypeFromPostData($context['parentPostData']['data']['children'][0]['data']);
+            if (!empty($context['parentPostData']['data']['children'][0]['data'])) {
+                $parentPostData = $context['parentPostData']['data']['children'][0]['data'];
+            } elseif (!empty($context['parentPostData']['data'])) {
+                $parentPostData = $context['parentPostData']['data'];
+            }
+
+            $type = $this->typeHelper->getContentTypeFromPostData($parentPostData);
         }
         $post->setType($type);
 

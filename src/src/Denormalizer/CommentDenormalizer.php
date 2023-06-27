@@ -123,7 +123,7 @@ class CommentDenormalizer implements DenormalizerInterface
 
             // Prioritize the updated date over the created date when the
             // Comment has been edited.
-            $createdDate = DateTimeImmutable::createFromFormat('U', $commentData['created_utc']);
+            $createdDate = DateTimeImmutable::createFromFormat('U', (string) $commentData['created_utc']);
             if ($commentData['edited'] !== false && is_numeric($commentData['edited'])) {
                 $createdDate = DateTimeImmutable::createFromFormat('U', (string) $commentData['edited']);
             }

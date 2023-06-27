@@ -76,6 +76,7 @@ class SavedContents
      * Get any Content Entities under the targeted group that are still pending
      * a sync.
      *
+     * @param  Context  $context
      * @param  string|null  $profileGroupName
      * @param  int  $limit
      * @param  bool  $fetchPendingEntities
@@ -83,10 +84,10 @@ class SavedContents
      * @return ContentPendingSync[]
      * @throws InvalidArgumentException
      */
-    public function getContentsPendingSync(?string $profileGroupName = null, int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
+    public function getContentsPendingSync(Context $context, ?string $profileGroupName = null, int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
     {
         if ($fetchPendingEntities) {
-            $this->getSavedContentsData();
+            $this->getSavedContentsData($context);
         }
 
         if ($limit < 1) {
@@ -105,16 +106,18 @@ class SavedContents
     /**
      * Retrieve all `Saved` Contents data from the Reddit profile.
      *
+     * @param  Context  $context
+     *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getSavedContentsData(): array
+    public function getSavedContentsData(Context $context): array
     {
         $contents = [];
         $contentsAvailable = true;
         $after = '';
         while ($contentsAvailable) {
-            $savedContents = $this->redditApi->getSavedContents(limit: self::BATCH_SIZE, after: $after);
+            $savedContents = $this->redditApi->getSavedContents($context, limit: self::BATCH_SIZE, after: $after);
 
             $contents = [...$contents, ...$savedContents['children']];
             if (!empty($savedContents['after'])) {
