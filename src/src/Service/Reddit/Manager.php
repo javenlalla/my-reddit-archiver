@@ -10,6 +10,7 @@ use App\Entity\Comment;
 use App\Entity\Content;
 use App\Entity\Kind;
 use App\Entity\Post;
+use App\Helper\RedditIdHelper;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Service\Reddit\Api\Context;
@@ -29,7 +30,7 @@ class Manager
      * It is meant to NOT match a Link Post URL such as:
      * https://www.reddit.com/r/golang/comments/z2ngmf/
      */
-    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/.*\/[a-zA-Z0-9]{4,10}/i';
+    public const COMMENT_URL_REGEX_PATTERN = '/comments\/[a-zA-Z0-9]{4,10}\/[[:word:]_]*\/[a-zA-Z0-9]{4,10}/iu';
 
     public function __construct(
         private readonly Api $api,
@@ -41,6 +42,7 @@ class Manager
         private readonly CommentsAndMoreDenormalizer $commentsAndMoreDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentDenormalizer,
         private readonly CommentDenormalizer $commentNoRepliesDenormalizer,
+        private readonly RedditIdHelper $redditIdHelper,
     ) {
     }
 
@@ -97,7 +99,7 @@ class Manager
      * `syncCommentsFromApiByPost` function.
      *
      * @param  Context  $context
-     * @param  string  $kind
+     * @param  string  $redditKindId
      * @param  string  $postLink
      * @param  bool  $syncComments
      * @param  bool  $downloadAssets
@@ -105,15 +107,19 @@ class Manager
      * @return Content
      * @throws InvalidArgumentException
      */
-    public function syncContentFromJsonUrl(Context $context, string $kind, string $postLink, bool $syncComments = false, bool $downloadAssets = false): Content
+    public function syncContentFromJsonUrl(Context $context, string $redditKindId, string $postLink, bool $syncComments = false, bool $downloadAssets = false): Content
     {
-        $jsonData = $this->getRawDataFromJsonUrl($context, $postLink);
+        $postRedditId = $this->redditIdHelper->extractRedditIdFromUrl(Kind::KIND_LINK, $postLink);
+        $postItemJson = $this->itemsService->getItemInfoByRedditId($context, $postRedditId);
+        $postItemInfo = $postItemJson->getJsonBodyArray();
 
-        if ($kind === Kind::KIND_COMMENT) {
-            return $this->persistCommentPostJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData']);
+        if ($redditKindId === Kind::KIND_COMMENT) {
+            $commentRedditId = $this->redditIdHelper->extractRedditIdFromUrl($redditKindId, $postLink);
+
+            return $this->persistCommentPostJsonUrlData($context, $postItemInfo, $commentRedditId);
         }
 
-        return $this->persistLinkContentJsonUrlData($context, $jsonData['postData'], $jsonData['commentsData'], $syncComments, $downloadAssets);
+        return $this->persistLinkContentJsonUrlData($context, $postItemInfo, $syncComments, $downloadAssets);
     }
 
     /**
@@ -241,21 +247,22 @@ class Manager
      *
      * @param  Context  $context
      * @param  array  $postData
-     * @param  array  $commentsData
      * @param  bool  $syncComments
      * @param  bool  $downloadAssets
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    private function persistLinkContentJsonUrlData(Context $context, array $postData, array $commentsData, bool $syncComments = false, bool $downloadAssets = false): Content
+    private function persistLinkContentJsonUrlData(Context $context, array $postData, bool $syncComments = false, bool $downloadAssets = false): Content
     {
         $content = $this->hydrateContentFromResponseData($context, $postData['kind'], $postData, $downloadAssets);
 
         $this->contentRepository->add($content, true);
 
         if ($syncComments === true) {
-            $this->processJsonCommentsData($content, $commentsData);
+            // Disabled to prevent automatic unexpected calls to Reddit API.
+            // Syncing Comments will instead be handled by user-triggered behavior.
+            // $this->processJsonCommentsData($content, $commentsData);
         }
 
         $this->entityManager->flush();
@@ -268,17 +275,18 @@ class Manager
      * retrieved from the Post's JSON URL.
      *
      * @param  Context  $context
-     * @param  array  $postData
-     * @param  array  $commentsData
+     * @param  array  $postItemInfo
+     * @param  string  $commentRedditId
      *
      * @return Content
      * @throws InvalidArgumentException
      */
-    private function persistCommentPostJsonUrlData(Context $context, array $postData, array $commentsData): Content
+    private function persistCommentPostJsonUrlData(Context $context, array $postItemInfo, string $commentRedditId): Content
     {
-        $targetComment = $commentsData[0]['data'];
-        $content = $this->contentsManager->parseAndDenormalizeContent($context, $postData, ['commentData' => $targetComment]);
+        $commentItemJson = $this->itemsService->getItemInfoByRedditId($context, $commentRedditId);
+        $targetComment = $commentItemJson->getJsonBodyArray();
 
+        $content = $this->contentsManager->parseAndDenormalizeContent($context, $postItemInfo, ['commentData' => $targetComment]);
         $existingContent = $this->contentRepository->findOneBy(['comment' => $content->getComment()]);
         if ($existingContent instanceof Content) {
             $content = $existingContent;
@@ -286,9 +294,11 @@ class Manager
             $this->contentRepository->add($content, true);
         }
 
-        $originalComment = $this->syncCommentTreeBranch($context, $content, $postData['data'], $targetComment);
-        $jsonData = $this->getRawDataFromJsonUrl($context, $content->getPost()->getRedditPostUrl());
-        $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
+        // Disabled to prevent automatic unexpected calls to Reddit API.
+        // Syncing Comments will instead be handled by user-triggered behavior.
+        // $originalComment = $this->syncCommentTreeBranch($context, $content, $postItemInfo['data'], $targetComment);
+        // $jsonData = $this->getRawDataFromJsonUrl($context, $content->getPost()->getRedditPostUrl());
+        // $this->processJsonCommentsData($content, $jsonData['commentsData'], $originalComment);
 
         $this->entityManager->flush();
 

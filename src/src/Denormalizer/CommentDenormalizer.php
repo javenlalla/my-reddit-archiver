@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Denormalizer;
 
@@ -41,8 +42,11 @@ class CommentDenormalizer implements DenormalizerInterface
     {
         $post = $data;
         $commentData = $context['commentData'];
-        $redditId = $commentData['id'];
+        if (isset($commentData['kind']) && isset($commentData['data'])) {
+            $commentData = $commentData['data'];
+        }
 
+        $redditId = $commentData['id'];
         $comment = $this->commentRepository->findOneBy(['redditId' => $redditId]);
         if (empty($comment)) {
             $comment = $this->initNewComment($post, $commentData, $context);
@@ -119,7 +123,7 @@ class CommentDenormalizer implements DenormalizerInterface
 
             // Prioritize the updated date over the created date when the
             // Comment has been edited.
-            $createdDate = DateTimeImmutable::createFromFormat('U', $commentData['created_utc']);
+            $createdDate = DateTimeImmutable::createFromFormat('U', (string) $commentData['created_utc']);
             if ($commentData['edited'] !== false && is_numeric($commentData['edited'])) {
                 $createdDate = DateTimeImmutable::createFromFormat('U', (string) $commentData['edited']);
             }

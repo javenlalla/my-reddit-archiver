@@ -10,6 +10,7 @@ use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -50,8 +51,9 @@ class ManagerTest extends KernelTestCase
      */
     public function testCreatedAtTimeZone()
     {
+        $context = new Context('ManagerTest:testCreatedAtTimeZone');
         $redditId = 'vepbt0';
-        $content = $this->manager->syncContentFromApiByFullRedditId(Kind::KIND_LINK . '_' .$redditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, Kind::KIND_LINK . '_' .$redditId);
 
         $fetchedPost = $this->postRepository->findOneBy(['redditId' => $content->getPost()->getRedditId()]);
 
@@ -92,14 +94,15 @@ class ManagerTest extends KernelTestCase
      */
     public function testParseCommentPostFromSavedListing()
     {
+        $context = new Context('ManagerTest:testParseCommentPostFromSavedListing');
         $redditId = 'wf1e8p';
 
         $savedHistoryRawResponse = file_get_contents('/var/www/mra/tests/resources/sample-json/iirwrq4-from-saved-listing.json');
         $savedHistoryResponse = json_decode($savedHistoryRawResponse, true);
 
-        $content = $this->manager->hydrateContentFromResponseData($savedHistoryResponse['kind'], $savedHistoryResponse);
+        $content = $this->manager->hydrateContentFromResponseData($context, $savedHistoryResponse['kind'], $savedHistoryResponse);
         $this->contentRepository->add($content, true);
-        $comments = $this->commentsManager->syncCommentsByContent($content);
+        $comments = $this->commentsManager->syncCommentsByContent($context, $content);
 
         $fetchedPost = $this->postRepository->findOneBy(['redditId' => $redditId]);
         $this->assertInstanceOf(Post::class, $fetchedPost);
@@ -139,8 +142,9 @@ class ManagerTest extends KernelTestCase
      */
     public function testPostUrlLengthFix(): void
     {
+        $context = new Context('ManagerTest:testPostUrlLengthFix');
         $fullRedditId = 't3_102oo0x';
-        $content = $this->manager->syncContentFromApiByFullRedditId($fullRedditId);
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $fullRedditId);
 
         // If a Content Entity is returned, the process did not error out
         // during the sync.

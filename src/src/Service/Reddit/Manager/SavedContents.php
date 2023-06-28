@@ -9,7 +9,7 @@ use App\Entity\ContentPendingSync;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\ProfileContentGroup;
-use App\Helper\FullRedditIdHelper;
+use App\Helper\RedditIdHelper;
 use App\Repository\CommentRepository;
 use App\Repository\ContentPendingSyncRepository;
 use App\Repository\ContentRepository;
@@ -38,7 +38,7 @@ class SavedContents
         private readonly ContentRepository $contentRepository,
         private readonly ContentPendingSyncRepository $contentPendingSyncRepository,
         private readonly ProfileContentGroupRepository $profileContentGroupRepository,
-        private readonly FullRedditIdHelper $fullRedditIdHelper,
+        private readonly RedditIdHelper $redditIdHelper,
     ) {
     }
 
@@ -76,6 +76,7 @@ class SavedContents
      * Get any Content Entities under the targeted group that are still pending
      * a sync.
      *
+     * @param  Context  $context
      * @param  string|null  $profileGroupName
      * @param  int  $limit
      * @param  bool  $fetchPendingEntities
@@ -83,10 +84,10 @@ class SavedContents
      * @return ContentPendingSync[]
      * @throws InvalidArgumentException
      */
-    public function getContentsPendingSync(?string $profileGroupName = null, int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
+    public function getContentsPendingSync(Context $context, ?string $profileGroupName = null, int $limit = self::DEFAULT_LIMIT, bool $fetchPendingEntities = false): array
     {
         if ($fetchPendingEntities) {
-            $this->getSavedContentsData();
+            $this->getSavedContentsData($context);
         }
 
         if ($limit < 1) {
@@ -105,16 +106,18 @@ class SavedContents
     /**
      * Retrieve all `Saved` Contents data from the Reddit profile.
      *
+     * @param  Context  $context
+     *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getSavedContentsData(): array
+    public function getSavedContentsData(Context $context): array
     {
         $contents = [];
         $contentsAvailable = true;
         $after = '';
         while ($contentsAvailable) {
-            $savedContents = $this->redditApi->getSavedContents(limit: self::BATCH_SIZE, after: $after);
+            $savedContents = $this->redditApi->getSavedContents($context, limit: self::BATCH_SIZE, after: $after);
 
             $contents = [...$contents, ...$savedContents['children']];
             if (!empty($savedContents['after'])) {
@@ -131,7 +134,7 @@ class SavedContents
         $persistedCount = 0;
         foreach ($contents as $content) {
             // Saved a full_reddit_id on the `content` table. Use that as a look-up to see if this `pending_sync` record should be saved
-            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($content['kind'], $content['data']['id']);
+            $fullRedditId = $this->redditIdHelper->formatRedditId($content['kind'], $content['data']['id']);
 
             $syncedContent = $this->contentRepository->findOneBy(['fullRedditId' => $fullRedditId]);
 
@@ -261,7 +264,7 @@ class SavedContents
         $persistedCount = 0;
         foreach ($contentsData as $contentData) {
             $kind = $contentData['kind'];
-            $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($kind, $contentData['data']['id']);
+            $fullRedditId = $this->redditIdHelper->formatRedditId($kind, $contentData['data']['id']);
 
             $syncedContent = $this->contentRepository->findOneBy(['fullRedditId' => $fullRedditId]);
             $existingPendingContent = $this->contentPendingSyncRepository->findOneBy(['fullRedditId' => $fullRedditId]);

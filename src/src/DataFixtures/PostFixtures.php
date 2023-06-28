@@ -10,7 +10,7 @@ use App\Entity\Post;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
 use App\Entity\Subreddit;
-use App\Helper\FullRedditIdHelper;
+use App\Helper\RedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
 use App\Repository\KindRepository;
@@ -21,6 +21,7 @@ use App\Service\Reddit\Manager;
 use App\Service\Typesense\Collection\Contents;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -41,8 +42,9 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         private readonly SubredditRepository $subredditRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly Manager $manager,
-        private readonly FullRedditIdHelper $fullRedditIdHelper,
+        private readonly RedditIdHelper $redditIdHelper,
         private readonly ContainerBagInterface $params,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -135,7 +137,9 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         // Pre-populating test Contents causes conflicts and race conditions
         // when running unit tests. Thus, do not populate in the `test`
         // environment.
-        if ($this->currentEnvironment !== 'test') {
+        if ($this->currentEnvironment === 'test') {
+            $this->loadTestData();
+        } else {
             $this->syncTestContents();
         }
 
@@ -201,7 +205,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $kind = $this->kindRepository->findOneBy(['redditKindId' => $contentRow[0]]);
         $content->setKind($kind);
 
-        $fullRedditId = $this->fullRedditIdHelper->formatFullRedditId($contentRow[0], $redditId);
+        $fullRedditId = $this->redditIdHelper->formatRedditId($contentRow[0], $redditId);
         $content->setFullRedditId($fullRedditId);
 
         return $content;
@@ -332,5 +336,18 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
     private function clearGlobalCache()
     {
         exec("php /var/www/mra/bin/console cache:pool:clear cache.global_clearer");
+    }
+
+    /**
+     * Load the data needed specifically for the `test` environment.
+     *
+     * @return void
+     */
+    private function loadTestData(): void
+    {
+        $sql = file_get_contents('/var/www/mra/resources/data-fixtures-source-files/test-item-jsons.sql');
+
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
+        $stmt->executeStatement();
     }
 }
