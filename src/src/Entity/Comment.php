@@ -66,7 +66,7 @@ class Comment
     private $hasReplies;
 
     #[ORM\Column(type: 'string', length: 15, nullable: true)]
-    private $parentRedditId;
+    private $parentCommentRedditId;
 
     public function __construct()
     {
@@ -420,14 +420,14 @@ class Comment
         return $this;
     }
 
-    public function getParentRedditId(): ?string
+    public function getParentCommentRedditId(): ?string
     {
-        return $this->parentRedditId;
+        return $this->parentCommentRedditId;
     }
 
-    public function setParentRedditId(?string $parentRedditId): self
+    public function setParentCommentRedditId(?string $parentCommentRedditId): self
     {
-        $this->parentRedditId = $parentRedditId;
+        $this->parentCommentRedditId = $parentCommentRedditId;
 
         return $this;
     }
