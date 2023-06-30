@@ -107,4 +107,23 @@ class RedditIdHelper
     {
         return $kindRedditId . '_' . $redditId;
     }
+
+    /**
+     * Verify if the provided Reddit ID is a Comment ID based on the ID's
+     * prefix.
+     *
+     * Examples:
+     *      - t1_ip7pedq -> true
+     *      - t3_abcdefg1 -> false
+     *
+     * @param  string  $redditId
+     *
+     * @return bool
+     */
+    public function isRedditIdCommentId(string $redditId): bool
+    {
+        $targetPrefix = Kind::KIND_COMMENT . '_';
+
+        return str_starts_with($redditId, $targetPrefix);
+    }
 }

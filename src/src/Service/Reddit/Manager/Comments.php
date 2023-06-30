@@ -15,6 +15,7 @@ use App\Repository\ContentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
+use App\Service\Reddit\Items;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
@@ -23,6 +24,7 @@ class Comments
 {
     public function __construct(
         private readonly Api $redditApi,
+        private readonly Items $itemsService,
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentWithRepliesDenormalizer,
         private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
@@ -31,6 +33,44 @@ class Comments
         private readonly CommentRepository $commentRepository,
         private readonly ContentRepository $contentRepository,
     ) {
+    }
+
+    /**
+     * Sync the Parent Comment, if any, of the following Comment Entity.
+     *
+     * @param  Context  $context
+     * @param  Comment  $comment
+     *
+     * @return Comment|null
+     */
+    public function syncParentComment(Context $context, Comment $comment): ?Comment
+    {
+        $parentComment = $comment->getParentComment();
+        if ($parentComment instanceof Comment) {
+            return $parentComment;
+        }
+
+        // If there is no parent Comment Reddit ID associated, return null as
+        // there is no parent to sync.
+        if (empty($comment->getParentCommentRedditId())) {
+            return null;
+        }
+
+        $parentItemJson = $this->itemsService->getItemInfoByRedditId(
+            $context,
+            $comment->getParentCommentRedditId()
+        );
+
+        $parentComment = $this->commentDenormalizer->denormalize(
+            $comment->getParentPost(),
+            Comment::class,
+            null,
+            ['commentData' => $parentItemJson->getJsonBodyArray()]
+        );
+
+        $this->linkCommentToParent($comment, $parentComment);
+
+        return $parentComment;
     }
 
     /**
@@ -298,5 +338,25 @@ class Comments
         }
 
         return $prioritizedComments;
+    }
+
+    /**
+     * Link the provided Comment to the targeted parent Comment and persist the
+     * updated Entity.
+     *
+     * @param  Comment  $comment
+     * @param  Comment  $parentComment
+     *
+     * @return void
+     */
+    private function linkCommentToParent(Comment $comment, Comment $parentComment): void
+    {
+        $comment->setParentComment($parentComment);
+        $this->entityManager->persist($comment);
+
+        $parentComment->addReply($comment);
+        $this->entityManager->persist($parentComment);
+
+        $this->entityManager->flush();
     }
 }

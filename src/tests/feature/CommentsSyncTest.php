@@ -10,6 +10,7 @@ use App\Entity\Type;
 use App\Repository\CommentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api\Context;
+use App\Service\Reddit\Items;
 use App\Service\Reddit\Manager;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -24,6 +25,8 @@ class CommentsSyncTest extends KernelTestCase
 
     private MoreCommentRepository $moreCommentRepository;
 
+    private Items $itemsService;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -34,6 +37,66 @@ class CommentsSyncTest extends KernelTestCase
         $this->commentsManager = $container->get(Comments::class);
         $this->commentRepository = $container->get(CommentRepository::class);
         $this->moreCommentRepository = $container->get(MoreCommentRepository::class);
+        $this->itemsService = $container->get(Items::class);
+    }
+
+
+    /**
+     * Verify a syncing a Comment by its Reddit ID and confirming its Item Json
+     * is also persisted.
+     *
+     * @return void
+     */
+    public function testSyncComment(): void
+    {
+        $context = new Context('CommentsSyncTest:testGetComments');
+        $commentRedditId = 't1_ip914eh';
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
+
+        $comment = $content->getComment();
+        $this->assertEquals(str_replace('t1_', '', $commentRedditId), $comment->getRedditId());
+
+        $commentItemJson = $this->itemsService->getItemInfoByRedditId($context, $commentRedditId);
+        $this->assertEquals($commentRedditId, $commentItemJson->getRedditId());
+    }
+
+    /**
+     * Verify a Comment's parent can be synced and persisted correctly.
+     *
+     * @return void
+     */
+    public function testSyncCommentParent(): void
+    {
+        $context = new Context('CommentsSyncTest:testGetComments');
+        $commentRedditId = 't1_ip914eh';
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
+
+        $comment = $content->getComment();
+
+        $this->assertEquals('t1_ip90mlq', $comment->getParentCommentRedditId());
+        $this->assertEmpty($comment->getParentComment());
+
+        $parentComment = $this->commentsManager->syncParentComment($context, $comment);
+        $this->assertInstanceOf(Comment::class, $parentComment);
+        $this->assertInstanceOf(Comment::class, $comment->getParentComment());
+
+        $this->assertEquals('t1_' . $parentComment->getRedditId(), $comment->getParentCommentRedditId());
+        $this->assertCount(1, $parentComment->getReplies());
+    }
+
+    public function testSyncCommentChildren(): void
+    {
+        $this->markTestSkipped('Test to come.');
+    }
+
+    public function testSyncCommentMoreComments(): void
+    {
+        $this->markTestSkipped('Test to come.');
+    }
+
+    public function testSyncContentComments(): void
+    {
+        $this->markTestSkipped('Test to come.');
     }
 
     public function testGetComments()
