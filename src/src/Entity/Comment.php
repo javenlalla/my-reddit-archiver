@@ -62,7 +62,7 @@ class Comment
     #[ORM\Column(type: 'text')]
     private $jsonData;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(type: 'boolean', nullable: true)]
     private $hasReplies;
 
     #[ORM\Column(type: 'string', length: 15, nullable: true)]
@@ -413,7 +413,7 @@ class Comment
         return $this->hasReplies;
     }
 
-    public function setHasReplies(bool $hasReplies): self
+    public function setHasReplies(?bool $hasReplies): self
     {
         $this->hasReplies = $hasReplies;
 
