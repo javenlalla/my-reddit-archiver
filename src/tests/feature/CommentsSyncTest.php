@@ -49,7 +49,7 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncComment(): void
     {
-        $context = new Context('CommentsSyncTest:testGetComments');
+        $context = new Context('CommentsSyncTest:testSyncComment');
         $commentRedditId = 't1_ip914eh';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
 
@@ -67,7 +67,7 @@ class CommentsSyncTest extends KernelTestCase
      */
     public function testSyncCommentParent(): void
     {
-        $context = new Context('CommentsSyncTest:testGetComments');
+        $context = new Context('CommentsSyncTest:testSyncCommentParent');
         $commentRedditId = 't1_ip914eh';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
 
@@ -84,9 +84,47 @@ class CommentsSyncTest extends KernelTestCase
         $this->assertCount(1, $parentComment->getReplies());
     }
 
-    public function testSyncCommentChildren(): void
+    /**
+     * Verify the replies to a Comment, if any, are synced and persisted
+     * correctly.
+     *
+     * https://www.reddit.com/r/AskReddit/comments/xjarj9/gamers_of_old_what_will_the_gamers_of_the_modern/ip90mlq/
+     *
+     * @return void
+     */
+    public function testSyncCommentReplies(): void
     {
-        $this->markTestSkipped('Test to come.');
+        $context = new Context('CommentsSyncTest:testSyncCommentReplies');
+        $commentRedditId = 't1_ip90mlq';
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
+
+        $comment = $content->getComment();
+
+        $this->assertEmpty($comment->getReplies());
+
+        // Verify parent Post, parent Comment
+        $replies = $this->commentsManager->syncCommentReplies($context, $comment);
+        $this->assertCount(1, $replies);
+        $this->assertTrue($comment->hasReplies());
+
+        $reply = $replies->get(0);
+        $this->assertEquals('ip914eh', $reply->getRedditId());
+        $this->assertEquals($comment, $reply->getParentComment());
+        $this->assertEquals($comment->getParentPost(), $reply->getParentPost());
+
+        // Re-sync to verify no errors are thrown nor duplicates persisted.
+        $replies = $this->commentsManager->syncCommentReplies($context, $comment);
+        $this->assertCount(1, $replies);
+
+        // Verify no errors are thrown when no replies are available for a Comment.
+        $commentRedditId = 't1_ip914eh';
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $commentRedditId);
+        $comment = $content->getComment();
+
+        $this->assertNull($comment->hasReplies());
+        $replies = $this->commentsManager->syncCommentReplies($context, $comment);
+        $this->assertCount(0, $replies);
+        $this->assertFalse($comment->hasReplies());
     }
 
     public function testSyncCommentMoreComments(): void

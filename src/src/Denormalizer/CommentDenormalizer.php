@@ -93,7 +93,6 @@ class CommentDenormalizer implements DenormalizerInterface
             $comment->setParentCommentRedditId($commentData['parent_id']);
         }
 
-        $comment->setHasReplies(false);
         if (is_array($commentData['replies']) && !empty($commentData['replies'])) {
             $comment->setHasReplies(true);
         }
