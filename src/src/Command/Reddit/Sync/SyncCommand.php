@@ -101,9 +101,9 @@ class SyncCommand extends Command
         $output->writeln(sprintf('<info>Updated pending list in %d seconds.</info>', (time() - $time)));
 
         if ($group !== self::PROFILE_GROUP_ALL) {
-            $pendingContents = $this->savedContentsManager->getContentsPendingSync($group, -1);
+            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, $group, -1);
         } else {
-            $pendingContents = $this->savedContentsManager->getContentsPendingSync(limit: -1);
+            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, limit: -1);
         }
         $output->writeln(sprintf('<info>Retrieved %d pending Contents to sync.</info>', count($pendingContents)));
 
