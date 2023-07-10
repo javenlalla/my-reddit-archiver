@@ -149,97 +149,97 @@ class Manager
         return $this->contentsManager->parseAndDenormalizeContent($context, $response, ['parentPostData' => $parentPostResponse, 'downloadAssets' => $downloadAssets]);
     }
 
-    private function syncCommentTreeBranch(Context $context, Content $content, array $postData, array $commentData): Comment
-    {
-        $comment = $content->getComment();
+    // private function syncCommentTreeBranch(Context $context, Content $content, array $postData, array $commentData): Comment
+    // {
+    //     $comment = $content->getComment();
+    //
+    //     // Sync Comment's Parents.
+    //     $this->syncCommentWithParents($context, $content, $comment, $postData, $commentData);
+    //
+    //     // Sync Comment's Replies, if any.
+    //     if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
+    //         $replies = $this->commentsAndMoreDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
+    //
+    //         foreach ($replies as $reply) {
+    //             $existingComment = $this->commentRepository->findOneBy(['redditId' => $reply->getRedditId()]);
+    //
+    //             if (empty($existingComment)) {
+    //                 $comment->addReply($reply);
+    //                 $this->entityManager->persist($reply);
+    //             }
+    //         }
+    //     }
+    //
+    //     $this->entityManager->persist($comment);
+    //     $this->entityManager->flush();
+    //
+    //     return $comment;
+    // }
 
-        // Sync Comment's Parents.
-        $this->syncCommentWithParents($context, $content, $comment, $postData, $commentData);
+    // private function syncCommentWithParents(Context $context, Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
+    // {
+    //     $post = $content->getPost();
+    //     $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
+    //
+    //     $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
+    //     if (!empty($existingComment)) {
+    //         $comment = $existingComment;
+    //     }
+    //
+    //     // Do not re-persist the original Comment.
+    //     if ($originalComment->getRedditId() !== $comment->getRedditId()) {
+    //         if (!empty($childComment)) {
+    //             $comment->addReply($childComment);
+    //             $childComment->setParentComment($comment);
+    //             $this->entityManager->persist($childComment);
+    //         }
+    //
+    //         $post->addComment($comment);
+    //
+    //         $this->entityManager->persist($comment);
+    //         $this->entityManager->persist($post);
+    //         $this->entityManager->flush();
+    //     }
+    //
+    //     // Sync parent Comments, if any.
+    //     if (!empty($commentData['parent_id']) && $this->redditFullIdIsComment($commentData['parent_id'])) {
+    //         $originalPostLink = $postData['permalink'];
+    //         $parentId = str_replace('t1_', '', $commentData['parent_id']);
+    //         $targetCommentLink = $originalPostLink . $parentId;
+    //
+    //         $jsonData = $this->api->getPostFromJsonUrl($context, $targetCommentLink);
+    //         if (count($jsonData) !== 2) {
+    //             throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $targetCommentLink));
+    //         }
+    //
+    //         $commentsData = $jsonData[1]['data']['children'];
+    //
+    //         $childComment = $comment;
+    //         if ($originalComment->getRedditId() === $comment->getRedditId()) {
+    //             $childComment = $originalComment;
+    //         }
+    //
+    //         $this->syncCommentWithParents($context, $content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
+    //     }
+    // }
 
-        // Sync Comment's Replies, if any.
-        if (isset($commentData['replies']) && !empty($commentData['replies']['data']['children'])) {
-            $replies = $this->commentsAndMoreDenormalizer->denormalize($commentData['replies']['data']['children'], 'array', null, ['post' => $content->getPost(), 'parentComment' => $comment]);
-
-            foreach ($replies as $reply) {
-                $existingComment = $this->commentRepository->findOneBy(['redditId' => $reply->getRedditId()]);
-
-                if (empty($existingComment)) {
-                    $comment->addReply($reply);
-                    $this->entityManager->persist($reply);
-                }
-            }
-        }
-
-        $this->entityManager->persist($comment);
-        $this->entityManager->flush();
-
-        return $comment;
-    }
-
-    private function syncCommentWithParents(Context $context, Content $content, Comment $originalComment, array $postData, array $commentData, ?Comment $childComment = null): void
-    {
-        $post = $content->getPost();
-        $comment = $this->commentNoRepliesDenormalizer->denormalize($post, Post::class, null, ['commentData' => $commentData]);
-
-        $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
-        if (!empty($existingComment)) {
-            $comment = $existingComment;
-        }
-
-        // Do not re-persist the original Comment.
-        if ($originalComment->getRedditId() !== $comment->getRedditId()) {
-            if (!empty($childComment)) {
-                $comment->addReply($childComment);
-                $childComment->setParentComment($comment);
-                $this->entityManager->persist($childComment);
-            }
-
-            $post->addComment($comment);
-
-            $this->entityManager->persist($comment);
-            $this->entityManager->persist($post);
-            $this->entityManager->flush();
-        }
-
-        // Sync parent Comments, if any.
-        if (!empty($commentData['parent_id']) && $this->redditFullIdIsComment($commentData['parent_id'])) {
-            $originalPostLink = $postData['permalink'];
-            $parentId = str_replace('t1_', '', $commentData['parent_id']);
-            $targetCommentLink = $originalPostLink . $parentId;
-
-            $jsonData = $this->api->getPostFromJsonUrl($context, $targetCommentLink);
-            if (count($jsonData) !== 2) {
-                throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $targetCommentLink));
-            }
-
-            $commentsData = $jsonData[1]['data']['children'];
-
-            $childComment = $comment;
-            if ($originalComment->getRedditId() === $comment->getRedditId()) {
-                $childComment = $originalComment;
-            }
-
-            $this->syncCommentWithParents($context, $content, $originalComment, $postData, $commentsData[0]['data'], $childComment);
-        }
-    }
-
-    /**
-     * Verify if the provided full Reddit ID (Ex: t1_ip7pedq) is a Comment ID.
-     *
-     * @param  string  $id
-     *
-     * @return bool
-     */
-    private function redditFullIdIsComment(string $id): bool
-    {
-        $targetPrefix = 't1_';
-
-        if (str_starts_with($id, $targetPrefix)) {
-            return true;
-        }
-
-        return false;
-    }
+    // /**
+    //  * Verify if the provided full Reddit ID (Ex: t1_ip7pedq) is a Comment ID.
+    //  *
+    //  * @param  string  $id
+    //  *
+    //  * @return bool
+    //  */
+    // private function redditFullIdIsComment(string $id): bool
+    // {
+    //     $targetPrefix = 't1_';
+    //
+    //     if (str_starts_with($id, $targetPrefix)) {
+    //         return true;
+    //     }
+    //
+    //     return false;
+    // }
 
     /**
      * Persist the following Post and Comment data for a Link Post as
@@ -315,42 +315,42 @@ class Manager
      *
      * @return void
      */
-    private function processJsonCommentsData(Content $content, array $commentsData, Comment $originalComment = null): void
-    {
-        $rootParentComment = null;
-        if (!empty($originalComment)) {
-            $rootParentComment = $this->getRootParentCommentFromComment($originalComment);
-        }
-
-        $post = $content->getPost();
-        foreach ($commentsData as $commentData) {
-            if ($commentData['kind'] !== 'more') {
-                $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData['data']]);
-
-                $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
-                if (!empty($existingComment)) {
-                    $comment = $existingComment;
-
-                    // Existing Comment is already associated to the target
-                    // Post. Skip additional processing.
-                    if ($comment->getParentPost()->getRedditId() === $post->getRedditId()) {
-                        continue;
-                    }
-                }
-
-                // Do not re-persist the Top Level Comment of the Saved Comment
-                // in order to avoid a unique constraint violation.
-                if (!empty($rootParentComment) && $rootParentComment->getRedditId() === $comment->getRedditId()) {
-                    continue;
-                }
-
-                $post->addComment($comment);
-
-                $this->entityManager->persist($comment);
-                $this->entityManager->persist($post);
-            }
-        }
-    }
+    // private function processJsonCommentsData(Content $content, array $commentsData, Comment $originalComment = null): void
+    // {
+    //     $rootParentComment = null;
+    //     if (!empty($originalComment)) {
+    //         $rootParentComment = $this->getRootParentCommentFromComment($originalComment);
+    //     }
+    //
+    //     $post = $content->getPost();
+    //     foreach ($commentsData as $commentData) {
+    //         if ($commentData['kind'] !== 'more') {
+    //             $comment = $this->commentDenormalizer->denormalize($post, Comment::class, null, ['commentData' => $commentData['data']]);
+    //
+    //             $existingComment = $this->commentRepository->findOneBy(['redditId' => $comment->getRedditId()]);
+    //             if (!empty($existingComment)) {
+    //                 $comment = $existingComment;
+    //
+    //                 // Existing Comment is already associated to the target
+    //                 // Post. Skip additional processing.
+    //                 if ($comment->getParentPost()->getRedditId() === $post->getRedditId()) {
+    //                     continue;
+    //                 }
+    //             }
+    //
+    //             // Do not re-persist the Top Level Comment of the Saved Comment
+    //             // in order to avoid a unique constraint violation.
+    //             if (!empty($rootParentComment) && $rootParentComment->getRedditId() === $comment->getRedditId()) {
+    //                 continue;
+    //             }
+    //
+    //             $post->addComment($comment);
+    //
+    //             $this->entityManager->persist($comment);
+    //             $this->entityManager->persist($post);
+    //         }
+    //     }
+    // }
 
     /**
      * Retrieve the raw JSON data from the provided JSON URL.
@@ -364,18 +364,18 @@ class Manager
      *     }
      * @throws InvalidArgumentException
      */
-    private function getRawDataFromJsonUrl(Context $context, string $jsonUrl): array
-    {
-        $jsonData = $this->api->getPostFromJsonUrl($context, $jsonUrl);
-        if (count($jsonData) !== 2) {
-            throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $jsonUrl));
-        }
-
-        return [
-            'postData' => $jsonData[0]['data']['children'][0],
-            'commentsData' => $jsonData[1]['data']['children'],
-        ];
-    }
+    // private function getRawDataFromJsonUrl(Context $context, string $jsonUrl): array
+    // {
+    //     $jsonData = $this->api->getPostFromJsonUrl($context, $jsonUrl);
+    //     if (count($jsonData) !== 2) {
+    //         throw new Exception(sprintf('Unexpected body count for JSON URL: %s', $jsonUrl));
+    //     }
+    //
+    //     return [
+    //         'postData' => $jsonData[0]['data']['children'][0],
+    //         'commentsData' => $jsonData[1]['data']['children'],
+    //     ];
+    // }
 
     /**
      * Recursively travel up the Comment Tree of the provided Comment and return
@@ -385,13 +385,13 @@ class Manager
      *
      * @return Comment
      */
-    private function getRootParentCommentFromComment(Comment $comment): Comment
-    {
-        $parentComment = $comment->getParentComment();
-        if ($parentComment instanceof Comment) {
-            return $this->getRootParentCommentFromComment($parentComment);
-        }
-
-        return $comment;
-    }
+    // private function getRootParentCommentFromComment(Comment $comment): Comment
+    // {
+    //     $parentComment = $comment->getParentComment();
+    //     if ($parentComment instanceof Comment) {
+    //         return $this->getRootParentCommentFromComment($parentComment);
+    //     }
+    //
+    //     return $comment;
+    // }
 }
