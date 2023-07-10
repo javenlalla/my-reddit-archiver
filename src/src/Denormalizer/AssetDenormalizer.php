@@ -43,7 +43,7 @@ class AssetDenormalizer implements DenormalizerInterface
      */
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): ?Asset
     {
-        $sourceUrl = $data;
+        $sourceUrl = htmlspecialchars_decode($data);
         $downloadAssets = $context['downloadAssets'] ?? false;
 
         $asset = new Asset();

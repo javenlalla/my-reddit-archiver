@@ -65,6 +65,14 @@ class DownloaderTest extends KernelTestCase
         'filesize' => 291523,
     ];
 
+    const ENCODED_URL_ASSET = [
+        'sourceUrl' => 'https://v.redd.it/zr04l9pxhq6b1/DASH_240.mp4?source=fallback',
+        'filename' => '32d91f2057667044e23c97071ed54b3d.mp4',
+        'dirOne' => '3',
+        'dirTwo' => '2d',
+        'filesize' => 1158978,
+    ];
+
     private Manager $manager;
 
     private EntityManager $entityManager;
@@ -82,6 +90,43 @@ class DownloaderTest extends KernelTestCase
         $this->assetsManager = $container->get(Manager\Assets::class);
 
         $this->cleanupAssets();
+    }
+
+    /**
+     * The following Post throws an error when attempting to sync due to the Asset
+     * URL having encoded parameter values:
+     * https://external-preview.redd.it/NTMyaGZ0anhocTZiMZvlzPEo-APD7rAOWZWDJKO4z89bH6yzQ0QcAO59Zj9m.png?width=140&amp;height=77&amp;crop=140:77,smart&amp;format=jpg&amp;v=enabled&amp;lthumb=true&amp;s=b176dbf2eb5c66e278e1695f2117678dee1d8275
+     *
+     * Implement decoding logic and verify the Post can be synced correctly.
+     *
+     * https://www.reddit.com/r/familyguy/comments/14cerh3/punish_your_toilet/
+     * @return void
+     */
+    public function testEncodedAssetUrl()
+    {
+        $assetPath = sprintf(self::BASE_PATH_FORMAT, self::ENCODED_URL_ASSET['dirOne'], self::ENCODED_URL_ASSET['dirTwo']) . self::ENCODED_URL_ASSET['filename'];
+        $this->assertFileDoesNotExist($assetPath);
+
+        $context = new Context('DownloaderTest:testAssetUrlError');
+        $redditId = 't3_14cerh3';
+        $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
+
+        $post = $content->getPost();
+        $this->assertEquals('https://v.redd.it/zr04l9pxhq6b1', $post->getUrl());
+
+        $mediaAsset = $post->getMediaAssets()->first();
+        $this->assertFalse($mediaAsset->isDownloaded());
+
+        $mediaAsset = $this->assetsManager->downloadAsset($mediaAsset);
+        $this->assertTrue($mediaAsset->isDownloaded());
+
+        $this->assertInstanceOf(Asset::class, $mediaAsset);
+        $this->assertEquals(self::ENCODED_URL_ASSET['sourceUrl'], $mediaAsset->getSourceUrl());
+        $this->assertEquals(self::ENCODED_URL_ASSET['filename'], $mediaAsset->getFilename());
+        $this->assertEquals(self::ENCODED_URL_ASSET['dirOne'], $mediaAsset->getDirOne());
+        $this->assertEquals(self::ENCODED_URL_ASSET['dirTwo'], $mediaAsset->getDirTwo());
+        $this->assertFileExists($assetPath);
+        $this->assertEquals(self::ENCODED_URL_ASSET['filesize'], filesize($assetPath));
     }
 
     /**
@@ -762,6 +807,7 @@ class DownloaderTest extends KernelTestCase
             self::AWARD_SILVER_ICON_ASSET,
             self::AWARD_FACEPALM_ICON_ASSET,
             self::HTML_VIDEO_ASSET,
+            self::ENCODED_URL_ASSET,
         ];
 
         foreach ($additionalAssets as $asset) {
