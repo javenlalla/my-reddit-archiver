@@ -231,6 +231,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $comment->setScore((int) $commentRow[4]);
         $comment->setRedditId($commentRow[5]);
         $comment->setDepth((int) $commentRow[6]);
+        $comment->setJsonData('');
         $comment->setRedditUrl(sprintf(Comment::REDDIT_URL_FORMAT,
             $post->getSubreddit()->getName(),
             $post->getRedditId(),

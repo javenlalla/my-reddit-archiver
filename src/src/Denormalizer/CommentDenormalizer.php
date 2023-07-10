@@ -9,6 +9,7 @@ use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
 use App\Entity\CommentAward;
 use App\Entity\Post;
+use App\Helper\RedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentAwardRepository;
 use App\Repository\CommentRepository;
@@ -25,6 +26,7 @@ class CommentDenormalizer implements DenormalizerInterface
         private readonly CommentAwardRepository $commentAwardRepository,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AwardDenormalizer $awardDenormalizer,
+        private readonly RedditIdHelper $redditIdHelper,
     ) {
     }
 
@@ -79,12 +81,21 @@ class CommentDenormalizer implements DenormalizerInterface
         $comment->setRedditId($commentData['id']);
         $comment->setAuthor($commentData['author']);
         $comment->setParentPost($post);
+        $comment->setJsonData(json_encode($commentData));
 
         $commentUrl = $this->generateRedditUrl($post, $comment->getRedditId());
         $comment->setRedditUrl($commentUrl);
 
         $depth = $commentData['depth'] ?? 0;
         $comment->setDepth((int) $depth);
+
+        if (isset($commentData['parent_id']) && $this->redditIdHelper->isRedditIdCommentId($commentData['parent_id'])) {
+            $comment->setParentCommentRedditId($commentData['parent_id']);
+        }
+
+        if (is_array($commentData['replies']) && !empty($commentData['replies'])) {
+            $comment->setHasReplies(true);
+        }
 
         if (isset($context['parentComment']) && $context['parentComment'] instanceof Comment) {
             $comment->setParentComment($context['parentComment']);

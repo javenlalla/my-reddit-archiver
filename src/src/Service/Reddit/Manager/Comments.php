@@ -8,6 +8,7 @@ use App\Denormalizer\CommentWithRepliesDenormalizer;
 use App\Denormalizer\MoreCommentDenormalizer;
 use App\Entity\Comment;
 use App\Entity\Content;
+use App\Entity\Kind;
 use App\Entity\MoreComment;
 use App\Entity\Post;
 use App\Repository\CommentRepository;
@@ -15,7 +16,9 @@ use App\Repository\ContentRepository;
 use App\Repository\MoreCommentRepository;
 use App\Service\Reddit\Api;
 use App\Service\Reddit\Api\Context;
+use App\Service\Reddit\Items;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\InvalidArgumentException;
 
@@ -23,6 +26,7 @@ class Comments
 {
     public function __construct(
         private readonly Api $redditApi,
+        private readonly Items $itemsService,
         private readonly CommentDenormalizer $commentDenormalizer,
         private readonly CommentWithRepliesDenormalizer $commentWithRepliesDenormalizer,
         private readonly MoreCommentDenormalizer $moreCommentDenormalizer,
@@ -31,6 +35,73 @@ class Comments
         private readonly CommentRepository $commentRepository,
         private readonly ContentRepository $contentRepository,
     ) {
+    }
+
+    /**
+     * Sync the Parent Comment, if any, of the following Comment Entity.
+     *
+     * @param  Context  $context
+     * @param  Comment  $comment
+     *
+     * @return Comment|null
+     */
+    public function syncParentComment(Context $context, Comment $comment): ?Comment
+    {
+        $parentComment = $comment->getParentComment();
+        if ($parentComment instanceof Comment) {
+            return $parentComment;
+        }
+
+        // If there is no parent Comment Reddit ID associated, return null as
+        // there is no parent to sync.
+        if (empty($comment->getParentCommentRedditId())) {
+            return null;
+        }
+
+        $parentItemJson = $this->itemsService->getItemInfoByRedditId(
+            $context,
+            $comment->getParentCommentRedditId()
+        );
+
+        $parentComment = $this->commentDenormalizer->denormalize(
+            $comment->getParentPost(),
+            Comment::class,
+            null,
+            ['commentData' => $parentItemJson->getJsonBodyArray()]
+        );
+
+        $this->linkCommentToParent($comment, $parentComment);
+
+        return $parentComment;
+    }
+
+    /**
+     * Sync the replies, if any, of the provided Comment.
+     *
+     * @param  Context  $context
+     * @param  Comment  $comment
+     *
+     * @return Collection&Comment[]
+     */
+    public function syncCommentReplies(Context $context, Comment $comment): Collection
+    {
+        $commentData = $this->redditApi->getPostCommentsByRedditId($context, redditId: $comment->getParentPost()->getRedditId(), byComment: $comment);
+
+        if (!empty($commentData[0]['data']['replies']['data']['children'])) {
+            $this->persistRepliesData(
+                $comment,
+                $commentData[0]['data']['replies']['data']['children'],
+            );
+
+            $comment->setHasReplies(true);
+        } else {
+            $comment->setHasReplies(false);
+        }
+
+        $this->entityManager->persist($comment);
+        $this->entityManager->flush();
+
+        return $comment->getReplies();
     }
 
     /**
@@ -298,5 +369,61 @@ class Comments
         }
 
         return $prioritizedComments;
+    }
+
+    /**
+     * Link the provided Comment to the targeted parent Comment and persist the
+     * updated Entity.
+     *
+     * @param  Comment  $comment
+     * @param  Comment  $parentComment
+     *
+     * @return void
+     */
+    private function linkCommentToParent(Comment $comment, Comment $parentComment): void
+    {
+        $comment->setParentComment($parentComment);
+        $this->entityManager->persist($comment);
+
+        $parentComment->addReply($comment);
+        $this->entityManager->persist($parentComment);
+
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Denormalize and persist the Replies data associated to the targeted
+     * Comment.
+     *
+     * @param  Comment  $comment
+     * @param  array  $repliesData
+     *
+     * @return void
+     */
+    private function persistRepliesData(Comment $comment, array $repliesData): void
+    {
+        $flushBatchSize = 100;
+        $flushBatchCount = 0;
+        foreach ($repliesData as $replyData) {
+            if (!empty($replyData['kind']) && $replyData['kind'] === Kind::KIND_COMMENT) {
+                $reply = $this->commentDenormalizer->denormalize($comment->getParentPost(), Comment::class, null, ['commentData' => $replyData]);
+
+                $reply->setParentComment($comment);
+                $comment->addReply($reply);
+
+                $this->entityManager->persist($reply);
+                $this->entityManager->persist($comment);
+
+                $flushBatchCount++;
+                if (($flushBatchCount % $flushBatchSize) === 0) {
+                    $this->entityManager->flush();
+                    $flushBatchCount = 0;
+                }
+            }
+        }
+
+        if ($flushBatchCount > 0) {
+            $this->entityManager->flush();
+        }
     }
 }

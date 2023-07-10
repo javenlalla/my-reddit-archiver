@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Service\Reddit;
 
+use App\Entity\Comment;
 use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
 use App\Service\Reddit\Api\Context;
@@ -110,16 +111,24 @@ class Api
      * @param  string  $redditId
      * @param  string  $sort
      * @param  int  $limit
+     * @param  Comment|null  $byComment  Provide Comment Entity to only get Comments (replies) under this targeted Comment.
      *
      * @return array
      * @throws InvalidArgumentException
      */
-    public function getPostCommentsByRedditId(Context $context, string $redditId, string $sort = '', int $limit = -1): array
+    public function getPostCommentsByRedditId(Context $context, string $redditId, string $sort = '', int $limit = -1, Comment $byComment = null): array
     {
-        $cacheKey = md5('comments-'.$redditId.'-'.$sort.'-'.$limit);
+        $cacheKeyData = 'comments-'.$redditId.'-'.$sort.'-'.$limit;
+        if ($byComment instanceof Comment) {
+            $cacheKeyData .= '-' . $byComment->getRedditId();
+        }
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditId, $sort, $limit) {
+        $cacheKey = md5($cacheKeyData);
+        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditId, $sort, $limit, $byComment) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
+            if ($byComment instanceof Comment) {
+                $commentsUrl .= '&comment=' . $byComment->getRedditId();
+            }
 
             if (!empty($sort)) {
                 $commentsUrl .= '&sort=' . $sort;

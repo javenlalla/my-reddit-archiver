@@ -59,6 +59,15 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'parentComment', targetEntity: MoreComment::class, cascade: ['persist', 'remove'])]
     private $moreComments;
 
+    #[ORM\Column(type: 'text')]
+    private $jsonData;
+
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private $hasReplies;
+
+    #[ORM\Column(type: 'string', length: 15, nullable: true)]
+    private $parentCommentRedditId;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
@@ -385,5 +394,41 @@ class Comment
         }
 
         return $rootComment;
+    }
+
+    public function getJsonData(): ?string
+    {
+        return $this->jsonData;
+    }
+
+    public function setJsonData(string $jsonData): self
+    {
+        $this->jsonData = $jsonData;
+
+        return $this;
+    }
+
+    public function hasReplies(): ?bool
+    {
+        return $this->hasReplies;
+    }
+
+    public function setHasReplies(?bool $hasReplies): self
+    {
+        $this->hasReplies = $hasReplies;
+
+        return $this;
+    }
+
+    public function getParentCommentRedditId(): ?string
+    {
+        return $this->parentCommentRedditId;
+    }
+
+    public function setParentCommentRedditId(?string $parentCommentRedditId): self
+    {
+        $this->parentCommentRedditId = $parentCommentRedditId;
+
+        return $this;
     }
 }
