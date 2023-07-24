@@ -20,6 +20,7 @@ use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -155,6 +156,8 @@ class SyncCommand extends Command
             $this->reportMemoryUsage($output);
         }
 
+        $this->runSearchIndexing($output);
+
         return Command::SUCCESS;
     }
 
@@ -214,5 +217,20 @@ class SyncCommand extends Command
         $output->writeln(
             'Memory used: ' . $this->getFormattedMemoryUsage()
         );
+    }
+
+    /**
+     * Index all synced Contents for Search.
+     *
+     * @param  OutputInterface  $output
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function runSearchIndexing(OutputInterface $output)
+    {
+        $command = $this->getApplication()->find('reddit:search:index');
+
+        $command->run(new ArrayInput([]), $output);
     }
 }
