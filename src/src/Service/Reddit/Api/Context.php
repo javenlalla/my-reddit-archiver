@@ -12,6 +12,8 @@ class Context implements JsonSerializable
 {
     const SOURCE_USER_SYNC_COMMENTS = 'UserTriggered: Sync Comments';
 
+    const SOURCE_USER_SYNC_COMMENT_CHILDREN = 'UserTriggered: Sync Comment Children';
+
     public function __construct(private readonly string $source)
     {
 
