@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20221128202003 extends AbstractMigration
+final class Version20230724212001 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -22,6 +22,7 @@ final class Version20221128202003 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
 
         /********Tables********/
+        $this->addSql('CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', available_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', delivered_at DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****api_user****/
         $this->addSql('CREATE TABLE api_user (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(100) NOT NULL, access_token LONGTEXT DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -177,6 +178,7 @@ final class Version20221128202003 extends AbstractMigration
         $this->addSql('ALTER TABLE award DROP FOREIGN KEY FK_8A5B2EE718CF367E');
         $this->addSql('ALTER TABLE asset_error_log DROP FOREIGN KEY FK_11E5CF935DA1941');
         $this->addSql('ALTER TABLE content_pending_sync DROP FOREIGN KEY FK_2C554837735BCD0');
+        $this->addSql('DROP TABLE messenger_messages');
         $this->addSql('DROP TABLE api_user');
         $this->addSql('DROP TABLE author_text');
         $this->addSql('DROP TABLE award');
