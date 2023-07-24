@@ -10,6 +10,8 @@ use JsonSerializable;
  */
 class Context implements JsonSerializable
 {
+    const SOURCE_USER_SYNC_COMMENTS = 'UserTriggered: Sync Comments';
+
     public function __construct(private readonly string $source)
     {
 

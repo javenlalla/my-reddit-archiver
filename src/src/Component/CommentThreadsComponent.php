@@ -5,6 +5,7 @@ namespace App\Component;
 
 use App\Entity\Content;
 use App\Entity\Post;
+use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
@@ -47,7 +48,8 @@ class CommentThreadsComponent extends AbstractController
     #[LiveAction]
     public function syncComments()
     {
-        $syncedComments = $this->commentsManager->syncCommentsByContent($this->content)->toArray();
+        $context = new Context(Context::SOURCE_USER_SYNC_COMMENTS);
+        $syncedComments = $this->commentsManager->syncCommentsByContent($context, $this->content)->toArray();
 
         $post = $this->content->getPost();
         $this->comments = $this->getCommentsByPost($post);
