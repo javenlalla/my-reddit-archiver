@@ -10,6 +10,7 @@
         "doctrine/doctrine-bundle": "^2.10",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.15",
+        "php-http/curl-client": "^2.3",
         "phpdocumentor/reflection-docblock": "^5.3",
         "phpstan/phpdoc-parser": "^1.23",
         "symfony/asset": "6.3.*",
@@ -22,6 +23,7 @@
         "symfony/framework-bundle": "6.3.*",
         "symfony/http-client": "6.3.*",
         "symfony/intl": "6.3.*",
+        "symfony/lock": "6.3.*",
         "symfony/mailer": "6.3.*",
         "symfony/mime": "6.3.*",
         "symfony/monolog-bundle": "^3.0",
@@ -29,6 +31,7 @@
         "symfony/process": "6.3.*",
         "symfony/property-access": "6.3.*",
         "symfony/property-info": "6.3.*",
+        "symfony/rate-limiter": "6.3.*",
         "symfony/runtime": "6.3.*",
         "symfony/security-bundle": "6.3.*",
         "symfony/serializer": "6.3.*",
@@ -44,7 +47,8 @@
         "symfony/webpack-encore-bundle": "^2.0",
         "symfony/yaml": "6.3.*",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0"
+        "twig/twig": "^2.12|^3.0",
+        "typesense/typesense-php": "^4.8"
     },
     "config": {
         "allow-plugins": {
