@@ -32,6 +32,7 @@ echo "REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}" >> .env
 echo "REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}" >> .env
 export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
+echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
 
 if [[ $APP_ENV != "prod" ]]; then
     # Note: it is intentional that the APP_ENV is written to the .env file instead of declared in the Dockerfile.dev because the container Environment Variables take precedence over the .env file(s).
