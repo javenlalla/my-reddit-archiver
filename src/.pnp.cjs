@@ -34,9 +34,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@popperjs/core", "npm:2.11.8"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.2"],\
             ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=fe3a83&locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=685a51&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
             ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
+            ["chart.js", "npm:3.9.1"],\
             ["core-js", "npm:3.31.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\
             ["tom-select", "npm:2.2.2"],\
@@ -2650,6 +2652,32 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@symfony/ux-chartjs", [\
+        ["file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/cache/@symfony-ux-chartjs-file-e21cd9ddb4-3ea9a9cdfe.zip/node_modules/@symfony/ux-chartjs/",\
+          "packageDependencies": [\
+            ["@symfony/ux-chartjs", "file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A."]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A.", {\
+          "packageLocation": "./.yarn/__virtual__/@symfony-ux-chartjs-virtual-e13f248737/0/cache/@symfony-ux-chartjs-file-e21cd9ddb4-3ea9a9cdfe.zip/node_modules/@symfony/ux-chartjs/",\
+          "packageDependencies": [\
+            ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@hotwired/stimulus", "npm:3.2.1"],\
+            ["@types/chart.js", null],\
+            ["@types/hotwired__stimulus", null],\
+            ["chart.js", "npm:3.9.1"]\
+          ],\
+          "packagePeers": [\
+            "@hotwired/stimulus",\
+            "@types/chart.js",\
+            "@types/hotwired__stimulus",\
+            "chart.js"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@symfony/ux-live-component", [\
         ["file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=685a51&locator=root-workspace-0b6124%40workspace%3A.", {\
           "packageLocation": "./.yarn/cache/@symfony-ux-live-component-file-0cfa103283-16e411888e.zip/node_modules/@symfony/ux-live-component/",\
@@ -4101,6 +4129,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["chalk", "npm:4.1.2"],\
             ["ansi-styles", "npm:4.3.0"],\
             ["supports-color", "npm:7.2.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["chart.js", [\
+        ["npm:3.9.1", {\
+          "packageLocation": "./.yarn/cache/chart.js-npm-3.9.1-931bfaba91-9ab0c0ac01.zip/node_modules/chart.js/",\
+          "packageDependencies": [\
+            ["chart.js", "npm:3.9.1"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -8222,9 +8259,11 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@popperjs/core", "npm:2.11.8"],\
             ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.2"],\
             ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=fe3a83&locator=root-workspace-0b6124%40workspace%3A."],\
+            ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=685a51&locator=root-workspace-0b6124%40workspace%3A."],\
             ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
             ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
+            ["chart.js", "npm:3.9.1"],\
             ["core-js", "npm:3.31.1"],\
             ["regenerator-runtime", "npm:0.13.11"],\
             ["tom-select", "npm:2.2.2"],\

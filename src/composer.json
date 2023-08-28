@@ -40,6 +40,7 @@
         "symfony/translation": "6.3.*",
         "symfony/twig-bundle": "6.3.*",
         "symfony/ux-autocomplete": "^2.10",
+        "symfony/ux-chartjs": "^2.10",
         "symfony/ux-live-component": "^2.10",
         "symfony/ux-twig-component": "^2.10",
         "symfony/validator": "6.3.*",

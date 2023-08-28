@@ -1,0 +1,38 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}MRA | API Call Logs{% endblock %}
+
+{% block main_content %}
+
+    <div class="row mx-2 search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
+        <div class="col">
+            <h2>API Calls</h2>
+            <div class="row">
+                <div class="col-6">
+                    {{ render_chart(chart) }}
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Called At</th>
+                    <th scope="col">Context</th>
+                    <th scope="col">Endpoint</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.createdAt|date('m/d H:i:s') }}</td>
+                            <td>{{ log.context }}</td>
+                            <td>{{ log.method }} {{ log.endpoint }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+{% endblock %}

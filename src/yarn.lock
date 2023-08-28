@@ -1533,6 +1533,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@symfony/ux-chartjs@file:vendor/symfony/ux-chartjs/assets::locator=root-workspace-0b6124%40workspace%3A.":
+  version: 1.1.0
+  resolution: "@symfony/ux-chartjs@file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=2a8755&locator=root-workspace-0b6124%40workspace%3A."
+  peerDependencies:
+    "@hotwired/stimulus": ^3.0.0
+    chart.js: ^3.4.1
+  checksum: 3ea9a9cdfe8c84bbc67dc249dec8b4d2d133a9a9b69fb4e2849f6907f0610beec07009839bbe033cc9cc22614e445d58c2f83afe5a73c9c25857d67dc7524b24
+  languageName: node
+  linkType: hard
+
 "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
   resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=685a51&locator=root-workspace-0b6124%40workspace%3A."
@@ -2663,6 +2673,13 @@ __metadata:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
   checksum: fe75c9d5c76a7a98d45495b91b2172fa3b7a09e0cc9370e5c8feb1c567b85c4288e2b3fded7cfdd7359ac28d6b3844feb8b82b8686842e93d23c827c417e83fc
+  languageName: node
+  linkType: hard
+
+"chart.js@npm:^3.4.1":
+  version: 3.9.1
+  resolution: "chart.js@npm:3.9.1"
+  checksum: 9ab0c0ac01215af0b3f020f2e313030fd6e347b48ed17d5484ee9c4e8ead45e78ae71bea16c397621c386b409ce0b14bf17f9f6c2492cd15b56c0f433efdfff6
   languageName: node
   linkType: hard
 
@@ -5916,9 +5933,11 @@ __metadata:
     "@popperjs/core": ^2.11.8
     "@symfony/stimulus-bridge": ^3.2.0
     "@symfony/ux-autocomplete": "file:vendor/symfony/ux-autocomplete/assets"
+    "@symfony/ux-chartjs": "file:vendor/symfony/ux-chartjs/assets"
     "@symfony/ux-live-component": "file:vendor/symfony/ux-live-component/assets"
     "@symfony/webpack-encore": ^4.0.0
     bootstrap: ^5.3.0
+    chart.js: ^3.4.1
     core-js: ^3.23.0
     regenerator-runtime: ^0.13.9
     tom-select: ^2.2.2
