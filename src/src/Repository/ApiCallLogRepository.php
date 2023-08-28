@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\ApiCallLog;
+use App\Model\GroupedApiCalls;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -38,6 +40,41 @@ class ApiCallLogRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * Find calls and group them into one minute intervals.
+     *
+     * @return GroupedApiCalls[]
+     * @throws Exception
+     */
+    public function findCallsGroupedByMinute(): array
+    {
+        $sql = '
+            SELECT
+                DATE_FORMAT(created_at, \'%H:%i\') AS minuteCalled,
+                count(a.id) AS totalCalls
+            FROM api_call_log a
+            GROUP BY
+                UNIX_TIMESTAMP(a.created_at) DIV 60
+            ORDER BY
+                minuteCalled
+        ';
+
+        $q = $this->getEntityManager()->getConnection();
+        $stmt = $q->prepare($sql);
+        $result = $stmt->executeQuery();
+
+        $allGroupedCalls = [];
+        while($groupedCallsValues = $result->fetchAssociative()) {
+            $groupedCalls = new GroupedApiCalls();
+            $groupedCalls->minuteCalled = $groupedCallsValues['minuteCalled'];
+            $groupedCalls->totalCalls = $groupedCallsValues['totalCalls'];
+
+            $allGroupedCalls[] = $groupedCalls;
+        }
+
+        return $allGroupedCalls;
     }
 
 //    /**
