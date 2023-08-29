@@ -93,6 +93,9 @@ final class Version20230724212001 extends AbstractMigration
         /****item_json****/
         $this->addSql('CREATE TABLE item_json (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, json_body LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
+        /****flair_text****/
+        $this->addSql('CREATE TABLE flair_text (id INT AUTO_INCREMENT NOT NULL, plain_text VARCHAR(255) NOT NULL, display_text VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
@@ -202,5 +205,6 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('DROP TABLE profile_content_group');
         $this->addSql('DROP TABLE api_call_log');
         $this->addSql('DROP TABLE item_json');
+        $this->addSql('DROP TABLE flair_text');
     }
 }
