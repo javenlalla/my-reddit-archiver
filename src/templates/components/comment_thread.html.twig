@@ -3,7 +3,11 @@
         <span style="font-size: 10px; font-weight: bold; color: #1c1c1c">
             <span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}
         </span>
-        <span class="font-size--8 badge bg-info">{{ comment.flairText }}</span>
+
+        {% if comment.flairText %}
+            <span class="font-size--8 badge bg-info">{{ comment.flairText.displayText }}</span>
+        {% endif %}
+
         {% for commentAward in comment.commentAwards %}
             {{ component('asset_render', {
                 asset: commentAward.award.iconAsset,

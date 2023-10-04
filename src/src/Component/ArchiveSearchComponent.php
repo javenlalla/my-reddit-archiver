@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Component;
 
+use App\Entity\FlairText;
 use App\Entity\Post;
 use App\Entity\Subreddit;
 use App\Entity\Tag;
@@ -67,7 +68,7 @@ class ArchiveSearchComponent extends AbstractController
 
         $flairTextEntities = [];
         foreach ($this->flairTexts as $flairText) {
-            $flairTextEntity = $this->entityManager->getRepository(Post::class)->findOneBy(['flairText' => $flairText]);
+            $flairTextEntity = $this->entityManager->getRepository(FlairText::class)->findOneBy(['referenceId' => $flairText]);
             if (!empty($flairTextEntity)) {
                 $flairTextEntities[] = $flairTextEntity;
             }

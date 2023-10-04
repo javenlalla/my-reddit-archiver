@@ -15,7 +15,9 @@
                     customClass: "width--16px"
                 }) }}
             {% endfor %}
-            <span class="font-size--8 badge bg-info">{{ content.comment.flairText }}</span>
+            {% if content.comment.flairText %}
+                <span class="font-size--8 badge bg-info">{{ content.comment.flairText.displayText }}</span>
+            {% endif %}
         {% else %}
             {% for postAward in content.post.postAwards %}
                 {{ component('asset_render', {
@@ -23,7 +25,9 @@
                     customClass: "width--16px"
                 }) }}
             {% endfor %}
-            <span class="font-size--8 badge bg-primary">{{ content.post.flairText }}</span>
+            {% if content.post.flairText %}
+                <span class="font-size--8 badge bg-primary">{{ content.post.flairText.displayText }}</span>
+            {% endif %}
         {% endif %}
     </div>
 </div>
