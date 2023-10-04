@@ -8,13 +8,17 @@ use App\Entity\Award;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
 use App\Entity\CommentAward;
+use App\Entity\FlairText;
 use App\Entity\Post;
+use App\Helper\FlairTextHelper;
 use App\Helper\RedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentAwardRepository;
 use App\Repository\CommentRepository;
+use App\Repository\FlairTextRepository;
 use App\Trait\CommentUrlTrait;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 class CommentDenormalizer implements DenormalizerInterface
@@ -27,6 +31,9 @@ class CommentDenormalizer implements DenormalizerInterface
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly RedditIdHelper $redditIdHelper,
+        private readonly FlairTextHelper $flairTextHelper,
+        private readonly FlairTextRepository $flairTextRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -116,7 +123,7 @@ class CommentDenormalizer implements DenormalizerInterface
     private function updateComment(Comment $comment, array $commentData): Comment
     {
         $comment->setScore((int) $commentData['score']);
-        $comment->setFlairText($commentData['author_flair_text'] ?? null);
+        $comment = $this->processFlairText($comment, $commentData);
 
         $text = $commentData['body'];
         $commentAuthorText = $comment->getCommentAuthorTextByText($text);
@@ -157,6 +164,37 @@ class CommentDenormalizer implements DenormalizerInterface
                     $comment->addCommentAward($commentAward);
                 }
             }
+        }
+
+        return $comment;
+    }
+
+    /**
+     * Analyze the Comment's Flair Text and persist as necessary.
+     *
+     * @param  Comment  $comment
+     * @param  array  $commentData
+     *
+     * @return Comment
+     */
+    private function processFlairText(Comment $comment, array $commentData): Comment
+    {
+        $flairTextValue = $commentData['author_flair_text'] ?? null;
+        if (!empty($flairTextValue)) {
+            $referenceId = $this->flairTextHelper->generateReferenceId($flairTextValue, $comment->getParentPost()->getSubreddit());
+            $flairText = $this->flairTextRepository->findOneBy(['referenceId' => $referenceId]);
+
+            if (empty($flairText)) {
+                $flairText = new FlairText();
+                $flairText->setPlainText($flairTextValue);
+                $flairText->setDisplayText($flairTextValue);
+                $flairText->setReferenceId($referenceId);
+
+                $this->entityManager->persist($flairText);
+                $this->entityManager->flush();
+            }
+
+            $comment->setFlairText($flairText);
         }
 
         return $comment;

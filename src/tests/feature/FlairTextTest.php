@@ -15,8 +15,6 @@ class FlairTextTest extends KernelTestCase
 
     private CommentRepository $commentRepository;
 
-    private FlairTextRepository $flairTextRepository;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -25,7 +23,6 @@ class FlairTextTest extends KernelTestCase
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
         $this->commentRepository = $container->get(CommentRepository::class);
-        $this->flairTextRepository = $container->get(FlairTextRepository::class);
     }
 
     /**
@@ -75,6 +72,10 @@ class FlairTextTest extends KernelTestCase
         $redditId = 't1_iocadb2';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
         $comment = $this->commentRepository->findOneBy(['redditId' => 'iocadb2']);
-        $this->assertEquals('“Here’s Johnny!” ', $comment->getFlairText());
+
+        $flairText = $comment->getFlairText();
+        $this->assertInstanceOf(FlairText::class, $flairText);
+        $this->assertEquals('“Here’s Johnny!” ', $flairText->getPlainText());
+        $this->assertEquals('“Here’s Johnny!” ', $flairText->getDisplayText());
     }
 }

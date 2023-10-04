@@ -65,6 +65,9 @@ class Comment
     #[ORM\Column(type: 'string', length: 15, nullable: true)]
     private $parentCommentRedditId;
 
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    private ?FlairText $flairText = null;
+
     public function __construct()
     {
         $this->replies = new ArrayCollection();
@@ -413,6 +416,18 @@ class Comment
     public function setParentCommentRedditId(?string $parentCommentRedditId): self
     {
         $this->parentCommentRedditId = $parentCommentRedditId;
+
+        return $this;
+    }
+
+    public function getFlairText(): ?FlairText
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?FlairText $flairText): static
+    {
+        $this->flairText = $flairText;
 
         return $this;
     }

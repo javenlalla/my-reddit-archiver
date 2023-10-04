@@ -34,7 +34,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('CREATE TABLE award (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(50) NOT NULL, name VARCHAR(30) NOT NULL, description VARCHAR(255) DEFAULT NULL, reference_id VARCHAR(10) NOT NULL, icon_asset_id INT NOT NULL, UNIQUE INDEX UNIQ_8A5B2EE718CF367E (icon_asset_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****comment****/
-        $this->addSql('CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, parent_comment_id INT DEFAULT NULL, parent_post_id INT NOT NULL, author VARCHAR(25) NOT NULL, score INT DEFAULT 0 NOT NULL, reddit_id VARCHAR(10) NOT NULL, reddit_url LONGTEXT NOT NULL, depth INT DEFAULT 0 NOT NULL, json_data LONGTEXT NOT NULL, has_replies TINYINT(1) DEFAULT NULL, parent_comment_reddit_id VARCHAR(15) DEFAULT NULL, UNIQUE INDEX UNIQ_9474526CA5B44A4D (reddit_id), INDEX IDX_9474526CBF2AF943 (parent_comment_id), INDEX IDX_9474526C39C1776A (parent_post_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, parent_comment_id INT DEFAULT NULL, parent_post_id INT NOT NULL, author VARCHAR(25) NOT NULL, score INT DEFAULT 0 NOT NULL, reddit_id VARCHAR(10) NOT NULL, reddit_url LONGTEXT NOT NULL, depth INT DEFAULT 0 NOT NULL, json_data LONGTEXT NOT NULL, has_replies TINYINT(1) DEFAULT NULL, parent_comment_reddit_id VARCHAR(15) DEFAULT NULL, flair_text_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_9474526CA5B44A4D (reddit_id), INDEX IDX_9474526CBF2AF943 (parent_comment_id), INDEX IDX_9474526C39C1776A (parent_post_id), INDEX IDX_9474526C9620E4C5 (flair_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****comment_author_text****/
         $this->addSql('CREATE TABLE comment_author_text (id INT AUTO_INCREMENT NOT NULL, comment_id INT NOT NULL, author_text_id INT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_E488EE5AF8697D13 (comment_id), UNIQUE INDEX UNIQ_E488EE5A2CB7AA0B (author_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -101,6 +101,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E176BAD26311 FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE comment ADD CONSTRAINT FK_9474526CBF2AF943 FOREIGN KEY (parent_comment_id) REFERENCES comment (id) ON DELETE SET NULL');
         $this->addSql('ALTER TABLE comment ADD CONSTRAINT FK_9474526C39C1776A FOREIGN KEY (parent_post_id) REFERENCES post (id)');
+        $this->addSql('ALTER TABLE comment ADD CONSTRAINT FK_9474526C9620E4C5 FOREIGN KEY (flair_text_id) REFERENCES flair_text (id)');
         $this->addSql('ALTER TABLE comment_author_text ADD CONSTRAINT FK_E488EE5AF8697D13 FOREIGN KEY (comment_id) REFERENCES comment (id)');
         $this->addSql('ALTER TABLE comment_author_text ADD CONSTRAINT FK_E488EE5A2CB7AA0B FOREIGN KEY (author_text_id) REFERENCES author_text (id)');
         $this->addSql('ALTER TABLE comment_award ADD CONSTRAINT FK_23C1B616F8697D13 FOREIGN KEY (comment_id) REFERENCES comment (id)');
@@ -170,6 +171,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('ALTER TABLE content DROP FOREIGN KEY FK_FEC530A9F8697D13');
         $this->addSql('ALTER TABLE content DROP FOREIGN KEY FK_FEC530A930602CA9');
         $this->addSql('ALTER TABLE comment DROP FOREIGN KEY FK_9474526C39C1776A');
+        $this->addSql('ALTER TABLE comment DROP FOREIGN KEY FK_9474526C9620E4C5');
         $this->addSql('ALTER TABLE content DROP FOREIGN KEY FK_FEC530A94B89032C');
         $this->addSql('ALTER TABLE post_author_text DROP FOREIGN KEY FK_3324A5374B89032C');
         $this->addSql('ALTER TABLE post_award DROP FOREIGN KEY FK_1D40A2084B89032C');
