@@ -164,7 +164,7 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $post->setUrl($postRow[5]);
         $post->setAuthor($postRow[6]);
         $post->setRedditPostUrl($postRow[8]);
-        $post->setFlairText($postRow[11] ?? null);
+        // $post->setFlairText($postRow[11] ?? null);
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);
