@@ -103,10 +103,10 @@ class Search
             $document['postText'] = $latestPostAuthorText->getAuthorText()->getText();
         }
 
-        // $flairText = $post->getFlairText();
-        // if (!empty($flairText)) {
-        //     $document['flairText'] = $flairText;
-        // }
+        $flairText = $post->getFlairText();
+        if (!empty($flairText)) {
+            $document['flairText'] = $flairText->getDisplayText();
+        }
 
         if ($comment instanceof Comment) {
             $latestCommentAuthorText = $comment->getLatestCommentAuthorText();
