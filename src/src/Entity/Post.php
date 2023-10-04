@@ -71,6 +71,9 @@ class Post
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MoreComment::class, cascade: ['persist', 'remove'])]
     private $moreComments;
 
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    private ?FlairText $flairText = null;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -451,6 +454,18 @@ class Post
                 $moreComment->setParentPost(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFlairText(): ?FlairText
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?FlairText $flairText): static
+    {
+        $this->flairText = $flairText;
 
         return $this;
     }

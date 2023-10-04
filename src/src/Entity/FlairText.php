@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\FlairTextRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FlairTextRepository::class)]
@@ -18,6 +20,17 @@ class FlairText
 
     #[ORM\Column(length: 255)]
     private ?string $displayText = null;
+
+    #[ORM\OneToMany(mappedBy: 'flairText', targetEntity: Post::class)]
+    private Collection $posts;
+
+    #[ORM\Column(length: 10)]
+    private ?string $referenceId = null;
+
+    public function __construct()
+    {
+        $this->posts = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -44,6 +57,48 @@ class FlairText
     public function setDisplayText(string $displayText): static
     {
         $this->displayText = $displayText;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Post>
+     */
+    public function getPosts(): Collection
+    {
+        return $this->posts;
+    }
+
+    public function addPost(Post $post): static
+    {
+        if (!$this->posts->contains($post)) {
+            $this->posts->add($post);
+            $post->setFlairText($this);
+        }
+
+        return $this;
+    }
+
+    public function removePost(Post $post): static
+    {
+        if ($this->posts->removeElement($post)) {
+            // set the owning side to null (unless already changed)
+            if ($post->getFlairText() === $this) {
+                $post->setFlairText(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getReferenceId(): ?string
+    {
+        return $this->referenceId;
+    }
+
+    public function setReferenceId(string $referenceId): static
+    {
+        $this->referenceId = $referenceId;
 
         return $this;
     }

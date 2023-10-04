@@ -2,7 +2,9 @@
 
 namespace App\Tests\feature;
 
+use App\Entity\FlairText;
 use App\Repository\CommentRepository;
+use App\Repository\FlairTextRepository;
 use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -13,6 +15,8 @@ class FlairTextTest extends KernelTestCase
 
     private CommentRepository $commentRepository;
 
+    private FlairTextRepository $flairTextRepository;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -21,6 +25,7 @@ class FlairTextTest extends KernelTestCase
         $container = static::getContainer();
         $this->manager = $container->get(Manager::class);
         $this->commentRepository = $container->get(CommentRepository::class);
+        $this->flairTextRepository = $container->get(FlairTextRepository::class);
     }
 
     /**
@@ -43,7 +48,11 @@ class FlairTextTest extends KernelTestCase
         $redditId = 't3_wqjpqx';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
         $post = $content->getPost();
-        $this->assertEquals('Discussion', $post->getFlairText());
+
+        $flairText = $post->getFlairText();
+        $this->assertInstanceOf(FlairText::class, $flairText);
+        $this->assertEquals('Discussion', $flairText->getPlainText());
+        $this->assertEquals('Discussion', $flairText->getDisplayText());
     }
 
     /**

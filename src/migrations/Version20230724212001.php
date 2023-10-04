@@ -49,7 +49,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('CREATE TABLE kind (id INT AUTO_INCREMENT NOT NULL, reddit_kind_id VARCHAR(2) NOT NULL, name VARCHAR(20) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****post****/
-        $this->addSql('CREATE TABLE post (id INT AUTO_INCREMENT NOT NULL, type_id INT NOT NULL, reddit_id VARCHAR(10) NOT NULL, subreddit_id INT NOT NULL, title LONGTEXT NOT NULL, score INT DEFAULT 0 NOT NULL, url LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', author VARCHAR(25) NOT NULL, reddit_post_url VARCHAR(255) NOT NULL, thumbnail_asset_id INT DEFAULT NULL, is_archived TINYINT(1) DEFAULT 0 NOT NULL, UNIQUE INDEX UNIQ_5A8A6C8DA5B44A4D (reddit_id), UNIQUE INDEX UNIQ_5A8A6C8D2C2174B2 (thumbnail_asset_id), INDEX IDX_5A8A6C8DC54C8C93 (type_id), INDEX IDX_5A8A6C8D31DBE174 (subreddit_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE post (id INT AUTO_INCREMENT NOT NULL, type_id INT NOT NULL, reddit_id VARCHAR(10) NOT NULL, subreddit_id INT NOT NULL, title LONGTEXT NOT NULL, score INT DEFAULT 0 NOT NULL, url LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', author VARCHAR(25) NOT NULL, reddit_post_url VARCHAR(255) NOT NULL, thumbnail_asset_id INT DEFAULT NULL, is_archived TINYINT(1) DEFAULT 0 NOT NULL, flair_text_id INT DEFAULT NULL, UNIQUE INDEX UNIQ_5A8A6C8DA5B44A4D (reddit_id), UNIQUE INDEX UNIQ_5A8A6C8D2C2174B2 (thumbnail_asset_id), INDEX IDX_5A8A6C8DC54C8C93 (type_id), INDEX IDX_5A8A6C8D31DBE174 (subreddit_id), INDEX IDX_5A8A6C8D9620E4C5 (flair_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****post_author_text****/
         $this->addSql('CREATE TABLE post_author_text (id INT AUTO_INCREMENT NOT NULL, post_id INT NOT NULL, author_text_id INT NOT NULL, created_at DATETIME NOT NULL COMMENT \'(DC2Type:datetime_immutable)\', INDEX IDX_3324A5374B89032C (post_id), UNIQUE INDEX UNIQ_3324A5372CB7AA0B (author_text_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
@@ -94,7 +94,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('CREATE TABLE item_json (id INT AUTO_INCREMENT NOT NULL, reddit_id VARCHAR(15) NOT NULL, json_body LONGTEXT NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /****flair_text****/
-        $this->addSql('CREATE TABLE flair_text (id INT AUTO_INCREMENT NOT NULL, plain_text VARCHAR(255) NOT NULL, display_text VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $this->addSql('CREATE TABLE flair_text (id INT AUTO_INCREMENT NOT NULL, reference_id VARCHAR(10) NOT NULL, plain_text VARCHAR(255) NOT NULL, display_text VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
 
         /********Foreign Keys********/
         $this->addSql('ALTER TABLE content_tag ADD CONSTRAINT FK_B662E17684A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) ON DELETE CASCADE');
@@ -111,6 +111,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8DC54C8C93 FOREIGN KEY (type_id) REFERENCES type (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D31DBE174 FOREIGN KEY (subreddit_id) REFERENCES subreddit (id)');
         $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D2C2174B2 FOREIGN KEY (thumbnail_asset_id) REFERENCES asset (id)');
+        $this->addSql('ALTER TABLE post ADD CONSTRAINT FK_5A8A6C8D9620E4C5 FOREIGN KEY (flair_text_id) REFERENCES flair_text (id)');
         $this->addSql('ALTER TABLE post_author_text ADD CONSTRAINT FK_3324A5374B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
         $this->addSql('ALTER TABLE post_author_text ADD CONSTRAINT FK_3324A5372CB7AA0B FOREIGN KEY (author_text_id) REFERENCES author_text (id)');
         $this->addSql('ALTER TABLE post_award ADD CONSTRAINT FK_1D40A2084B89032C FOREIGN KEY (post_id) REFERENCES post (id)');
@@ -176,6 +177,7 @@ final class Version20230724212001 extends AbstractMigration
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8DC54C8C93');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D31DBE174');
         $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D2C2174B2');
+        $this->addSql('ALTER TABLE post DROP FOREIGN KEY FK_5A8A6C8D9620E4C5');
         $this->addSql('ALTER TABLE content_tag DROP FOREIGN KEY FK_B662E176BAD26311');
         $this->addSql('ALTER TABLE asset DROP FOREIGN KEY FK_2AF5A5C4B89032C');
         $this->addSql('ALTER TABLE award DROP FOREIGN KEY FK_8A5B2EE718CF367E');

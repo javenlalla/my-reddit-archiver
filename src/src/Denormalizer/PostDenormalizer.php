@@ -13,6 +13,7 @@ use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
 use App\Entity\Subreddit;
 use App\Entity\Type;
+use App\Helper\FlairTextHelper;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\FlairTextRepository;
@@ -50,6 +51,7 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly AssetDenormalizer $assetDenormalizer,
         private readonly FlairTextRepository $flairTextRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly FlairTextHelper $flairTextHelper,
     ) {
     }
 
@@ -335,12 +337,14 @@ class PostDenormalizer implements DenormalizerInterface
     {
         $flairTextValue = $postData['link_flair_text'] ?? null;
         if (!empty($flairTextValue)) {
-            $flairText = $this->flairTextRepository->findOneBy(['plainText' => $flairTextValue]);
+            $referenceId = $this->flairTextHelper->generateReferenceId($flairTextValue, $post->getSubreddit());
+            $flairText = $this->flairTextRepository->findOneBy(['referenceId' => $referenceId]);
 
             if (empty($flairText)) {
                 $flairText = new FlairText();
                 $flairText->setPlainText($flairTextValue);
                 $flairText->setDisplayText($flairTextValue);
+                $flairText->setReferenceId($referenceId);
 
                 $this->entityManager->persist($flairText);
                 $this->entityManager->flush();
