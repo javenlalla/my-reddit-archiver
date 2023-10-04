@@ -105,7 +105,7 @@ class Search
 
         $flairText = $post->getFlairText();
         if (!empty($flairText)) {
-            $document['flairText'] = $flairText;
+            $document['flairText'] = $flairText->getDisplayText();
         }
 
         if ($comment instanceof Comment) {

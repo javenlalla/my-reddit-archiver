@@ -2,7 +2,9 @@
 
 namespace App\Tests\feature;
 
+use App\Entity\FlairText;
 use App\Repository\CommentRepository;
+use App\Repository\FlairTextRepository;
 use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -43,7 +45,11 @@ class FlairTextTest extends KernelTestCase
         $redditId = 't3_wqjpqx';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
         $post = $content->getPost();
-        $this->assertEquals('Discussion', $post->getFlairText());
+
+        $flairText = $post->getFlairText();
+        $this->assertInstanceOf(FlairText::class, $flairText);
+        $this->assertEquals('Discussion', $flairText->getPlainText());
+        $this->assertEquals('Discussion', $flairText->getDisplayText());
     }
 
     /**
@@ -66,6 +72,10 @@ class FlairTextTest extends KernelTestCase
         $redditId = 't1_iocadb2';
         $content = $this->manager->syncContentFromApiByFullRedditId($context, $redditId);
         $comment = $this->commentRepository->findOneBy(['redditId' => 'iocadb2']);
-        $this->assertEquals('“Here’s Johnny!” ', $comment->getFlairText());
+
+        $flairText = $comment->getFlairText();
+        $this->assertInstanceOf(FlairText::class, $flairText);
+        $this->assertEquals('“Here’s Johnny!” ', $flairText->getPlainText());
+        $this->assertEquals('“Here’s Johnny!” ', $flairText->getDisplayText());
     }
 }

@@ -8,7 +8,9 @@ use App\Entity\Award;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
 use App\Entity\CommentAward;
+use App\Entity\FlairText;
 use App\Entity\Post;
+use App\Helper\FlairTextHelper;
 use App\Helper\RedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentAwardRepository;
@@ -27,6 +29,7 @@ class CommentDenormalizer implements DenormalizerInterface
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AwardDenormalizer $awardDenormalizer,
         private readonly RedditIdHelper $redditIdHelper,
+        private readonly FlairTextHelper $flairTextHelper,
     ) {
     }
 
@@ -116,7 +119,7 @@ class CommentDenormalizer implements DenormalizerInterface
     private function updateComment(Comment $comment, array $commentData): Comment
     {
         $comment->setScore((int) $commentData['score']);
-        $comment->setFlairText($commentData['author_flair_text'] ?? null);
+        $comment = $this->flairTextHelper->processCommentFlairText($comment, $commentData);
 
         $text = $commentData['body'];
         $commentAuthorText = $comment->getCommentAuthorTextByText($text);

@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Entity\FlairText;
 use App\Entity\Post;
 use App\Entity\Subreddit;
 use App\Entity\Tag;
+use App\Repository\FlairTextRepository;
 use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -51,15 +53,13 @@ class SearchForm extends AbstractType
                 ],
             ])
             ->add('flairTexts', EntityType::class, [
-                'class' => Post::class,
+                'class' => FlairText::class,
                 'placeholder' => 'Filter By Flairs',
-                'choice_label' => 'flairText',
-                'choice_value' => 'flairText',
-                'query_builder' => function (PostRepository $repository) {
-                    return $repository->createQueryBuilder('p')
-                        ->distinct()
-                        ->where("p.flairText IS NOT NULL AND p.flairText != ''")
-                        ->orderBy('p.flairText');
+                'choice_label' => 'displayText',
+                'choice_value' => 'displayText',
+                'query_builder' => function (FlairTextRepository $repository) {
+                    return $repository->createQueryBuilder('f')
+                        ->orderBy('f.displayText', 'ASC');
                 },
                 'attr' => [
                     'data-model' => 'flairTexts',

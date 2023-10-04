@@ -58,9 +58,6 @@ class Post
     #[ORM\Column(type: 'boolean', options: ['default' => 0])]
     private $isArchived = false;
 
-    #[ORM\Column(type: 'string', length: 150, nullable: true)]
-    private $flairText;
-
     #[ORM\ManyToOne(targetEntity: Subreddit::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private $subreddit;
@@ -73,6 +70,9 @@ class Post
 
     #[ORM\OneToMany(mappedBy: 'parentPost', targetEntity: MoreComment::class, cascade: ['persist', 'remove'])]
     private $moreComments;
+
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    private ?FlairText $flairText = null;
 
     public function __construct()
     {
@@ -355,18 +355,6 @@ class Post
         return $this;
     }
 
-    public function getFlairText(): ?string
-    {
-        return $this->flairText;
-    }
-
-    public function setFlairText(?string $flairText): self
-    {
-        $this->flairText = $flairText;
-
-        return $this;
-    }
-
     /**
      * Search for an existing Post Author Text that is associated to an Author
      * Text containing the provided `text`.
@@ -466,6 +454,18 @@ class Post
                 $moreComment->setParentPost(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFlairText(): ?FlairText
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?FlairText $flairText): static
+    {
+        $this->flairText = $flairText;
 
         return $this;
     }

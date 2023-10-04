@@ -50,9 +50,6 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentAward::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private $commentAwards;
 
-    #[ORM\Column(type: 'string', length: 150, nullable: true)]
-    private $flairText;
-
     #[ORM\Column(type: 'text')]
     private $redditUrl;
 
@@ -67,6 +64,9 @@ class Comment
 
     #[ORM\Column(type: 'string', length: 15, nullable: true)]
     private $parentCommentRedditId;
+
+    #[ORM\ManyToOne(inversedBy: 'comments')]
+    private ?FlairText $flairText = null;
 
     public function __construct()
     {
@@ -295,18 +295,6 @@ class Comment
         return $count;
     }
 
-    public function getFlairText(): ?string
-    {
-        return $this->flairText;
-    }
-
-    public function setFlairText(?string $flairText): self
-    {
-        $this->flairText = $flairText;
-
-        return $this;
-    }
-
     /**
      * Search for an existing Comment Author Text that is associated to an Author
      * Text containing the provided `text`.
@@ -428,6 +416,18 @@ class Comment
     public function setParentCommentRedditId(?string $parentCommentRedditId): self
     {
         $this->parentCommentRedditId = $parentCommentRedditId;
+
+        return $this;
+    }
+
+    public function getFlairText(): ?FlairText
+    {
+        return $this->flairText;
+    }
+
+    public function setFlairText(?FlairText $flairText): static
+    {
+        $this->flairText = $flairText;
 
         return $this;
     }

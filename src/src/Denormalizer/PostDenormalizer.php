@@ -6,12 +6,14 @@ namespace App\Denormalizer;
 use App\Entity\Asset;
 use App\Entity\AuthorText;
 use App\Entity\Award;
+use App\Entity\FlairText;
 use App\Entity\Kind;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
 use App\Entity\PostAward;
 use App\Entity\Subreddit;
 use App\Entity\Type;
+use App\Helper\FlairTextHelper;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\PostAwardRepository;
@@ -45,6 +47,7 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AssetDenormalizer $assetDenormalizer,
+        private readonly FlairTextHelper $flairTextHelper,
     ) {
     }
 
@@ -138,7 +141,7 @@ class PostDenormalizer implements DenormalizerInterface
         $post->setScore((int)$postData['score']);
 
         $post->setIsArchived($postData['archived']);
-        $post->setFlairText($postData['link_flair_text'] ?? null);
+        $post = $this->flairTextHelper->processPostFlairText($post, $postData);
 
         $typeName = $post->getType()->getName();
 
