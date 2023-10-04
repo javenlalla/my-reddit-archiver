@@ -6,13 +6,16 @@ namespace App\DataFixtures;
 use App\Entity\AuthorText;
 use App\Entity\Comment;
 use App\Entity\CommentAuthorText;
+use App\Entity\FlairText;
 use App\Entity\Post;
 use App\Entity\Content;
 use App\Entity\PostAuthorText;
 use App\Entity\Subreddit;
+use App\Helper\FlairTextHelper;
 use App\Helper\RedditIdHelper;
 use App\Helper\SanitizeHtmlHelper;
 use App\Repository\CommentRepository;
+use App\Repository\FlairTextRepository;
 use App\Repository\KindRepository;
 use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
@@ -45,6 +48,8 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         private readonly RedditIdHelper $redditIdHelper,
         private readonly ContainerBagInterface $params,
         private readonly EntityManagerInterface $entityManager,
+        private readonly FlairTextHelper $flairTextHelper,
+        private readonly FlairTextRepository $flairTextRepository,
     ) {
     }
 
@@ -76,6 +81,23 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
             }
         }
         fclose($subredditsDataFile);
+        $manager->flush();
+
+        // Create Flair Texts.
+        $persistedFlairTexts = [];
+        $postsDataFile = fopen('/var/www/mra/resources/data-fixtures-source-files/posts.csv', 'r');
+        while (($postRow = fgetcsv($postsDataFile)) !== FALSE) {
+            // Skip header row (first row).
+            if ($postRow[0] !== 'redditKindId') {
+                $flairText = $this->hydrateFlairTextFromCsvRow($postRow);
+
+                if (in_array($flairText->getReferenceId(), $persistedFlairTexts) === false) {
+                    $manager->persist($flairText);
+                    $persistedFlairTexts[] = $flairText->getReferenceId();
+                }
+            }
+        }
+        fclose($postsDataFile);
         $manager->flush();
 
         // Create Contents.
@@ -164,13 +186,14 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         $post->setUrl($postRow[5]);
         $post->setAuthor($postRow[6]);
         $post->setRedditPostUrl($postRow[8]);
-        // $post->setFlairText($postRow[11] ?? null);
 
         $type = $this->typeRepository->findOneBy(['name' => $postRow[1]]);
         $post->setType($type);
 
         $subreddit = $this->subredditRepository->findOneBy(['name' => $postRow[7]]);
         $post->setSubreddit($subreddit);
+
+        $post = $this->flairTextHelper->processPostFlairText($post, [FlairText::POST_FLAIR_TEXT_KEY => $postRow[11]]);
 
         if (!empty($postRow[9])) {
             $authorText = new AuthorText();
@@ -350,5 +373,29 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
 
         $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->executeStatement();
+    }
+
+    /**
+     * Read the Posts .csv file and extract the Flair Texts for initializing.
+     *
+     * @param  array  $postRow
+     *
+     * @return FlairText
+     */
+    private function hydrateFlairTextFromCsvRow(array $postRow): FlairText
+    {
+        $subreddit = $this->subredditRepository->findOneBy(['name' => $postRow[7]]);
+        $flairTextValue = $postRow[11];
+
+        $referenceId = $this->flairTextHelper->generateReferenceId($flairTextValue, $subreddit);
+        $flairText = $this->flairTextRepository->findOneBy(['referenceId' => $referenceId]);
+        if (empty($flairText)) {
+            $flairText = new FlairText();
+            $flairText->setPlainText($flairTextValue);
+            $flairText->setDisplayText($flairTextValue);
+            $flairText->setReferenceId($referenceId);
+        }
+
+        return $flairText;
     }
 }

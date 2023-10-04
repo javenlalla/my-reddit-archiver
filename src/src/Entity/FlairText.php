@@ -10,6 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: FlairTextRepository::class)]
 class FlairText
 {
+    const POST_FLAIR_TEXT_KEY = 'link_flair_text';
+
+    const COMMENT_FLAIR_TEXT_KEY = 'author_flair_text';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

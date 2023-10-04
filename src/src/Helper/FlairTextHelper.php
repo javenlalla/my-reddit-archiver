@@ -44,7 +44,7 @@ class FlairTextHelper
      */
     public function processPostFlairText(Post $post, array $postData): Post
     {
-        $flairTextValue = $postData['link_flair_text'] ?? null;
+        $flairTextValue = $postData[FlairText::POST_FLAIR_TEXT_KEY] ?? null;
         if (!empty($flairTextValue)) {
             $flairText = $this->initFlairText($flairTextValue, $post->getSubreddit());
 
@@ -64,7 +64,7 @@ class FlairTextHelper
      */
     public function processCommentFlairText(Comment $comment, array $commentData): Comment
     {
-        $flairTextValue = $commentData['author_flair_text'] ?? null;
+        $flairTextValue = $commentData[FlairText::COMMENT_FLAIR_TEXT_KEY] ?? null;
         if (!empty($flairTextValue)) {
             $flairText = $this->initFlairText($flairTextValue, $comment->getParentPost()->getSubreddit());
 
