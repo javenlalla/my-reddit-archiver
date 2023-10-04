@@ -16,11 +16,9 @@ use App\Entity\Type;
 use App\Helper\FlairTextHelper;
 use App\Helper\TypeHelper;
 use App\Helper\SanitizeHtmlHelper;
-use App\Repository\FlairTextRepository;
 use App\Repository\PostAwardRepository;
 use App\Repository\PostRepository;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
@@ -49,8 +47,6 @@ class PostDenormalizer implements DenormalizerInterface
         private readonly TypeHelper $typeHelper,
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly AssetDenormalizer $assetDenormalizer,
-        private readonly FlairTextRepository $flairTextRepository,
-        private readonly EntityManagerInterface $entityManager,
         private readonly FlairTextHelper $flairTextHelper,
     ) {
     }
@@ -145,7 +141,7 @@ class PostDenormalizer implements DenormalizerInterface
         $post->setScore((int)$postData['score']);
 
         $post->setIsArchived($postData['archived']);
-        $post = $this->processFlairText($post, $postData);
+        $post = $this->flairTextHelper->processPostFlairText($post, $postData);
 
         $typeName = $post->getType()->getName();
 
@@ -323,36 +319,5 @@ class PostDenormalizer implements DenormalizerInterface
         return isset($postData['gallery_data'] )
             && isset($postData['media_metadata'])
         ;
-    }
-
-    /**
-     * Analyze the Post's Flair Text and persist as necessary.
-     *
-     * @param  Post  $post
-     * @param  array  $postData
-     *
-     * @return Post
-     */
-    private function processFlairText(Post $post, array $postData): Post
-    {
-        $flairTextValue = $postData['link_flair_text'] ?? null;
-        if (!empty($flairTextValue)) {
-            $referenceId = $this->flairTextHelper->generateReferenceId($flairTextValue, $post->getSubreddit());
-            $flairText = $this->flairTextRepository->findOneBy(['referenceId' => $referenceId]);
-
-            if (empty($flairText)) {
-                $flairText = new FlairText();
-                $flairText->setPlainText($flairTextValue);
-                $flairText->setDisplayText($flairTextValue);
-                $flairText->setReferenceId($referenceId);
-
-                $this->entityManager->persist($flairText);
-                $this->entityManager->flush();
-            }
-
-            $post->setFlairText($flairText);
-        }
-
-        return $post;
     }
 }
