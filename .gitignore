@@ -17,3 +17,5 @@ src/.yarn/*
 !src/.yarn/releases
 !src/.yarn/sdks
 !src/.yarn/versions
+src/database/*
+!src/database/.gitkeep
