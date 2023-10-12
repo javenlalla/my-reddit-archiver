@@ -98,7 +98,7 @@ If the `docker-compose` method is preferred for running the application, proceed
         image: javenlalla/mra
         volumes:
           - </path/to/media-folder>:/var/www/mra/public/r-media
-          - </path/to/database-folder>:/var/www/mra/database
+          - </path/to/database-folder>:/database
         environment:
           REDDIT_USERNAME: MyRedditUsername
           REDDIT_PASSWORD: "MyRedditPassword"

@@ -92,6 +92,9 @@ RUN chmod u+x /entrypoint.sh
 RUN mkdir -p /var/log/supervisor
 COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Additional folder setup.
+RUN mkdir /database
+
 # Opinionated terminal styling choice.
 RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
 

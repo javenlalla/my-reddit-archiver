@@ -24,8 +24,7 @@ echo "REDDIT_USERNAME=${REDDIT_USERNAME}" >> .env
 echo "REDDIT_PASSWORD=${REDDIT_PASSWORD}" >> .env
 echo "REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}" >> .env
 echo "REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}" >> .env
-export DATABASE_URL="sqlite:///%kernel.project_dir%/database/app.db"
-echo "DATABASE_URL=${DATABASE_URL}" >> .env
+echo "DATABASE_URL=sqlite:////database/app.db" >> .env
 echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
 
 if [[ $APP_ENV != "prod" ]]; then
