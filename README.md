@@ -87,8 +87,28 @@ Notes:
 
 If the `docker-compose` method is preferred for running the application, proceed with the following steps.
 
-1. Ensure the `.env` file has been created and configured ([Environment Variables(#environment-variables)]).
-2. Download or copy the  `docker-compose.sample.yml` file from this repository's root and modify as needed.
+1. Create a `docker-compose.yml`:
+
+    ```yaml
+    version: '3.9'
+
+    services:
+      mra:
+        container_name: mra
+        image: javenlalla/mra
+        volumes:
+          - </path/to/media-folder>:/var/www/mra/public/r-media
+          - </path/to/database-folder>:/var/www/mra/database
+        environment:
+          REDDIT_USERNAME: MyRedditUsername
+          REDDIT_PASSWORD: "MyRedditPassword"
+          REDDIT_CLIENT_ID: "MyAppClientID"
+          REDDIT_CLIENT_SECRET: "MyAppClientSecret"
+        ports:
+          - "2080:80"
+    ```
+
+2. Adjust the `volumes` paths, `environment` variables, and `port` as needed.
 3. Start application.
 
     ```bash
