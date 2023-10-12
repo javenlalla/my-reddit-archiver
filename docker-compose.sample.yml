@@ -9,16 +9,3 @@ services:
     env_file: .env
     ports:
       - "3580:80" # Adjust port as needed.
-
-  # If desired to use this database, uncomment below and ensure the designated environment values are configured within the .env file.
-  # mra-db:
-  #   container_name: mra-db
-  #   image: mariadb:10
-  #   env_file: .env
-  #   environment:
-  #     MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-  #     MARIADB_USER: ${DB_USERNAME}
-  #     MARIADB_PASSWORD: ${DB_PASSWORD}
-  #     MARIADB_DATABASE: ${DB_DATABASE}
-  #   volumes:
-  #     - </path/to/db>:/var/lib/mysql

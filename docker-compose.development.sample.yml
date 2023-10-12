@@ -17,17 +17,3 @@ services:
       # PHP_IDE_CONFIG: "serverName=mra.local.com"
     ports:
       - "2180:80" # Adjust port as needed.
-
-  mra-db-dev:
-    container_name: mra-db-dev
-    image: mariadb:10.8.6
-    env_file: .env
-    environment:
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_USER: ${DB_USERNAME}
-      MARIADB_PASSWORD: ${DB_PASSWORD}
-      MARIADB_DATABASE: ${DB_DATABASE}
-    volumes:
-      - ./development/db:/var/lib/mysql
-    ports:
-      - "3306:3306" # Adjust port as needed.
