@@ -12,7 +12,6 @@ Archive Saved posts under your Reddit account.
   - [Setup](#setup)
     - [Environment Variables](#environment-variables)
     - [docker run](#docker-run)
-      - [Initialize Database (Optional)](#initialize-database-optional)
     - [docker-compose](#docker-compose)
   - [Execute Sync](#execute-sync)
   - [Logging](#logging)
@@ -59,10 +58,6 @@ The first step is to set the `Environment Variables` required by the application
 | REDDIT_PASSWORD       |                      | Your Reddit password.                            |
 | REDDIT_CLIENT_ID      |                      | The Client ID of the Reddit App you created.     |
 | REDDIT_CLIENT_SECRET  |                      | The Client Secret of the Reddit App you created. |
-| DB_HOST               | mra-db               | Database host.                                   |
-| DB_DATABASE           | archive_db           | Database name to house your local Reddit.        |
-| DB_USERNAME           | my_archiver          | Database username.                               |
-| DB_PASSWORD           | my_archiver_password | Database password.                               |
 
 For convenience, an `.env.sample` file is provided in the root of this repository. Copy that file to `.env` and update the placeholder values to real values.
 
@@ -71,7 +66,6 @@ For convenience, an `.env.sample` file is provided in the root of this repositor
 If the `docker run` method is preferred for running the application, proceed with this section. If the `docker-compose` method is preferred, skip to [docker-compose(#docker-compose)].
 
 Once the `.env` file has been created and configured, start the application with the following command.
-If there is no existing database available for use, see [Initialize Database](#initialize-database-optional) first, prior to spinning up the application.
 
 Note: The volume mount is needed for backup/persistent storage of downloaded media assets from Reddit Posts.
 
@@ -79,6 +73,7 @@ Note: The volume mount is needed for backup/persistent storage of downloaded med
   docker run -d \
   --env-file=.env \
   --volume </path/to/media>:/var/www/mra/public/r-media \
+  --volume </path/to/database-folder>:/var/www/mra/database \
   -p 3580:80 \
   --name mra \
   javenlalla/mra
@@ -87,46 +82,6 @@ Note: The volume mount is needed for backup/persistent storage of downloaded med
 Notes:
 
 - Update the host port as necessary
-- If a new database is needed (because an existing one is not available, for example), see the following section on initializing a database and connecting it to the application
-
-#### Initialize Database (Optional)
-
-1. Create a network first to allow communication between the application and the database.
-
-    ```bash
-    docker network create mra_net
-    ```
-
-1. Initialize the database. Modify the database `Environment Variables` as desired.
-     - Note: The volume mount is recommended for backup/persistent storage of database.
-
-    ```bash
-    docker run -d \
-    --net mra_net \
-    -e MYSQL_ROOT_PASSWORD=my_archiver_secure_root_pw \
-    -e MYSQL_DATABASE=archive_db \
-    -e MYSQL_USER=my_archiver \
-    -e MYSQL_PASSWORD=my_archiver_password \
-    --volume </path/to/db>:/var/lib/mysql \
-    --name="mra-db" \
-    mariadb:10
-    ```
-
-2. Update the `.env` file accordingly with the database values used in the previous command.
-
-    - Note: `DB_HOST` will be `mra-db` or whatever value was provided to the `--name` parameter of the previous command.
-
-3. Spin up the application connected to the database.
-
-    ```bash
-    docker run -d \
-    --net mra_net \
-    --env-file=.env \
-    --volume </path/to/media>:/var/www/mra/public/r-media \
-    -p 3580:80 \
-    --name mra \
-    javenlalla/mra
-    ```
 
 ### docker-compose
 

@@ -33,7 +33,6 @@ RUN apt update && apt install -y \
     unzip \
     nginx \
     redis \
-    mariadb-client \
     supervisor \
     # libicu-dev is a dependency required by the `intl` extension.
     libicu-dev \
@@ -42,7 +41,6 @@ RUN apt update && apt install -y \
 
 RUN docker-php-ext-install \
     pdo \
-    pdo_mysql \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem

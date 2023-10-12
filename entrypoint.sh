@@ -17,12 +17,6 @@ do
   fi
 done
 
-DB_HOST=${DB_HOST:-mra-db}
-DB_DATABASE=${DB_DATABASE:-archive_db}
-DB_USERNAME=${DB_USERNAME:-my_archiver}
-DB_PASSWORD=${DB_PASSWORD:-my_archiver_password}
-DB_PORT=${DB_PORT:-3306}
-
 # Configure the .env file.
 > .env
 echo "APP_PUBLIC_PATH=${APP_PUBLIC_PATH}" >> .env
@@ -30,7 +24,7 @@ echo "REDDIT_USERNAME=${REDDIT_USERNAME}" >> .env
 echo "REDDIT_PASSWORD=${REDDIT_PASSWORD}" >> .env
 echo "REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}" >> .env
 echo "REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}" >> .env
-export DATABASE_URL="mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?serverVersion=mariadb-10.8.6&charset=utf8mb4"
+export DATABASE_URL="sqlite:///%kernel.project_dir%/database/app.db"
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
 echo "MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0" >> .env
 
@@ -71,21 +65,7 @@ else
   composer install
 fi
 
-# Wait for the database to be accessible before proceeding.
-echo "Attempting to reach database ${DB_HOST}:${DB_PORT} with user ${DB_USERNAME}."
-timeout 15 bash <<EOT
-while ! (mysql -h${DB_HOST} -P${DB_PORT} -u${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}) >/dev/null;
-  do sleep 1;
-done;
-EOT
-
-RESULT=$?
-if [ $RESULT -ne 0 ]; then
-  echo "Unable to reach database. Exiting" 1>&2;
-  exit $RESULT
-fi
-
-# Once database is reachable, execute any pending migrations and console commands.
+# Execute any pending database migrations and console commands.
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console app:persist-reddit-account
 
