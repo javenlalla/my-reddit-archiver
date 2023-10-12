@@ -92,4 +92,7 @@ RUN chmod u+x /entrypoint.sh
 RUN mkdir -p /var/log/supervisor
 COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Additional folder setup.
+RUN mkdir /database
+
 ENTRYPOINT ["/entrypoint.sh"]
