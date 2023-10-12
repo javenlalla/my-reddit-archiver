@@ -105,7 +105,7 @@ If the `docker-compose` method is preferred for running the application, proceed
           REDDIT_CLIENT_ID: "MyAppClientID"
           REDDIT_CLIENT_SECRET: "MyAppClientSecret"
         ports:
-          - "2080:80"
+          - "3580:80"
     ```
 
 2. Adjust the `volumes` paths, `environment` variables, and `port` as needed.
