@@ -6,6 +6,7 @@ services:
     image: javenlalla/mra
     volumes:
       - </path/to/media>:/var/www/mra/public/r-media
+      - </path/to/database>:/var/www/mra/database
     env_file: .env
     ports:
       - "3580:80" # Adjust port as needed.
