@@ -52,11 +52,11 @@ class ApiCallLogRepository extends ServiceEntityRepository
     {
         $sql = '
             SELECT
-                DATE_FORMAT(created_at, \'%H:%i\') AS minuteCalled,
+                strftime(\'%H:%S\', created_at) AS minuteCalled,
                 count(a.id) AS totalCalls
             FROM api_call_log a
             GROUP BY
-                UNIX_TIMESTAMP(a.created_at) DIV 60
+                strftime(\'%s\', a.created_at)/60
             ORDER BY
                 minuteCalled
         ';
