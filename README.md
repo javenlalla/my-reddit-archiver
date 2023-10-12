@@ -73,6 +73,7 @@ Note: The volume mount is needed for backup/persistent storage of downloaded med
   docker run -d \
   --env-file=.env \
   --volume </path/to/media>:/var/www/mra/public/r-media \
+  --volume </path/to/database-folder>:/var/www/mra/database \
   -p 3580:80 \
   --name mra \
   javenlalla/mra
