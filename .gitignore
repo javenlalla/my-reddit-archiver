@@ -19,3 +19,4 @@ src/.yarn/*
 !src/.yarn/versions
 src/database/*
 !src/database/.gitkeep
+database
