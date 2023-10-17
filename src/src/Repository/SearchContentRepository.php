@@ -21,6 +21,34 @@ class SearchContentRepository extends ServiceEntityRepository
         parent::__construct($registry, SearchContent::class);
     }
 
+    /**
+     * Perform a Search against the Search Contents by constructing and
+     * executing a query based on the provided search parameters.
+     *
+     * @param  string|null  $searchQuery
+     * @param  array  $subreddits
+     * @param  array  $flairTexts
+     * @param  array  $tags
+     * @param  int  $perPage
+     * @param  int  $page
+     *
+     * @return array
+     */
+    public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): array
+    {
+        $qb = $this->createQueryBuilder('s');
+
+        if (!empty($searchQuery)) {
+            $qb->andWhere('s.title LIKE :searchQuery OR s.contentText LIKE :searchQuery')
+                ->setParameter('searchQuery', '%' . $searchQuery . '%');
+        }
+
+        $qb->setFirstResult($perPage * ($page - 1));
+        $qb->setMaxResults($perPage);
+
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return SearchContent[] Returns an array of SearchContent objects
 //     */

@@ -76,7 +76,7 @@ class Results
     }
 
     /**
-     * @param  array  $results
+     * @param  Content[]  $results
      */
     public function setResults(array $results): void
     {
