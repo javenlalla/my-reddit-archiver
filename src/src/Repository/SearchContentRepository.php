@@ -34,7 +34,7 @@ class SearchContentRepository extends ServiceEntityRepository
      * @param  int  $perPage
      * @param  int  $page
      *
-     * @return array
+     * @return Content[]
      */
     public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): array
     {
