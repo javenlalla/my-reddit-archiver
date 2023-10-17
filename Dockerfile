@@ -32,7 +32,6 @@ RUN apt update && apt install -y \
     libzip-dev \
     unzip \
     nginx \
-    redis \
     supervisor \
     # libicu-dev is a dependency required by the `intl` extension.
     libicu-dev \
@@ -44,9 +43,6 @@ RUN docker-php-ext-install \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
-
-RUN pecl install -o -f redis \
-    && docker-php-ext-enable redis
 
 RUN docker-php-ext-install zip
 
