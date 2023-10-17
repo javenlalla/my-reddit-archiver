@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Tests\unit\Service\Typesense;
 
+use App\Entity\Content;
 use App\Entity\Tag;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
@@ -66,6 +67,7 @@ class SearchTest extends KernelTestCase
         $searchResults = $this->searchService->search($searchQuery);
         $this->assertEquals(Search::DEFAULT_LIMIT, $searchResults->getPerPage());
         $this->assertEquals(1, $searchResults->getTotal());
+        $this->assertInstanceOf(Content::class, $searchResults->getResults()[0]);
     }
 
     /**

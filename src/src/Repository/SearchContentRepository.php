@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Content;
 use App\Entity\SearchContent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -36,7 +38,10 @@ class SearchContentRepository extends ServiceEntityRepository
      */
     public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): array
     {
-        $qb = $this->createQueryBuilder('s');
+        $qb = $this->createQueryBuilder('s')
+            ->select('c')
+            ->innerJoin(Content::class, 'c', Join::WITH, 's.content = c.id')
+        ;
 
         if (!empty($searchQuery)) {
             $qb->andWhere('s.title LIKE :searchQuery OR s.contentText LIKE :searchQuery')
@@ -48,29 +53,4 @@ class SearchContentRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
-
-//    /**
-//     * @return SearchContent[] Returns an array of SearchContent objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?SearchContent
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }
