@@ -48,6 +48,7 @@ class SearchContentRepository extends ServiceEntityRepository
                 ->setParameter('searchQuery', '%' . $searchQuery . '%');
         }
 
+        $qb->orderBy('s.createdAt', 'DESC');
         $qb->setFirstResult($perPage * ($page - 1));
         $qb->setMaxResults($perPage);
 
