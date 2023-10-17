@@ -91,6 +91,12 @@ final class Version20231007122422 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_75EA56E0E3BD61CE ON messenger_messages (available_at)');
         $this->addSql('CREATE INDEX IDX_75EA56E016BA31DB ON messenger_messages (delivered_at)');
 
+        /***Search Content***/
+        $this->addSql('CREATE TABLE search_content (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, subreddit_id INTEGER NOT NULL, flair_text_id INTEGER DEFAULT NULL, content_id INTEGER NOT NULL, content_text CLOB NOT NULL, CONSTRAINT FK_7314DF3331DBE174 FOREIGN KEY (subreddit_id) REFERENCES subreddit (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_7314DF339620E4C5 FOREIGN KEY (flair_text_id) REFERENCES flair_text (id) NOT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT FK_7314DF3384A0A3ED FOREIGN KEY (content_id) REFERENCES content (id) NOT DEFERRABLE INITIALLY IMMEDIATE)');
+        $this->addSql('CREATE INDEX IDX_7314DF3331DBE174 ON search_content (subreddit_id)');
+        $this->addSql('CREATE INDEX IDX_7314DF339620E4C5 ON search_content (flair_text_id)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_7314DF3384A0A3ED ON search_content (content_id)');
+
         // Insert setup data.
         // Kinds.
         $this->addSql('INSERT INTO kind (reddit_kind_id, name) VALUES
@@ -147,5 +153,6 @@ final class Version20231007122422 extends AbstractMigration
         $this->addSql('DROP TABLE tag');
         $this->addSql('DROP TABLE type');
         $this->addSql('DROP TABLE messenger_messages');
+        $this->addSql('DROP TABLE search_content');
     }
 }
