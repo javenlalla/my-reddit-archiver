@@ -30,7 +30,7 @@ class HealthcheckController extends AbstractController
      * result of each check.
      *
      * @param  EntityManagerInterface  $em
-     * @param  CacheInterface  $cachePool
+     * @param  CacheInterface  $appCachePool
      * @param  TypesenseApi  $typesenseApi
      * @param  Api  $redditApi
      * @param  RateLimiterFactory  $redditApiLimiter
@@ -40,7 +40,7 @@ class HealthcheckController extends AbstractController
     #[Route('/healthcheck', name: 'healthcheck')]
     public function healthcheck(
         EntityManagerInterface $em,
-        CacheInterface $cachePool,
+        CacheInterface $appCachePool,
         TypesenseApi $typesenseApi,
         Api $redditApi,
         RateLimiterFactory $redditApiLimiter,
@@ -61,7 +61,7 @@ class HealthcheckController extends AbstractController
 
         try {
             $healthChecks['database-connected'] = $this->verifyDatabaseConnection($em);
-            $healthChecks['cache-connected'] = $this->verifyCacheConnection($cachePool);
+            $healthChecks['cache-connected'] = $this->verifyCacheConnection($appCachePool);
             $healthChecks['typesense-connected'] = $this->verifyTypesenseConnection($typesenseApi);
             $healthChecks['reddit-credentials-set'] = $this->verifyRedditCredentialsSet($redditApi);
             $healthChecks['rate-limit'] = $this->verifyRateLimit($redditApiLimiter);

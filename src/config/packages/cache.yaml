@@ -8,24 +8,21 @@ framework:
         # Other options include:
 
         # Redis
-        app: cache.adapter.redis
-        default_redis_provider: 'redis://%env(default:app.redis.host:REDIS_HOST)%'
-
-        # APCu (not recommended with heavy random-write workloads as memory fragmentation can cause perf issues)
-        #app: cache.adapter.apcu
+        app: cache.adapter.doctrine_dbal
+        default_pdo_provider: 'doctrine.dbal.default_connection'
 
         # Namespaced pools use the above "app" backend by default
         pools:
-            cache.pool.redis:
-                adapter: cache.adapter.redis
-                default_lifetime: 604800 # @TODO: Temporarily increased to one week for development purposes. Previous value for one hour: 3600
+            app.cache.pool:
+                adapter: cache.app
+                default_lifetime: 600
 
             reddit_api_rate_limiter.cache:
-                adapter: cache.adapter.redis
+                adapter: cache.app
 
 when@test:
     framework:
         cache:
             pools:
-                cache.pool.redis:
+                app.cache.pool:
                     adapter: cache.adapter.array

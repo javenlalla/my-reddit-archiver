@@ -66,7 +66,7 @@ class Api
     public function __construct(
         private readonly HttpClientInterface $client,
         private readonly ApiUserRepository $apiUserRepository,
-        private readonly CacheInterface $cachePoolRedis,
+        private readonly CacheInterface $appCachePool,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly string $username,
         private readonly string $password,
@@ -97,7 +97,7 @@ class Api
 
         $cacheKey = md5($endpoint);
 
-        return $this->cachePoolRedis->get($cacheKey, function(ItemInterface $item) use ($context, $endpoint) {
+        return $this->appCachePool->get($cacheKey, function(ItemInterface $item) use ($context, $endpoint) {
             $response = $this->executeCall($context, self::METHOD_GET, $endpoint)->toArray();
 
             return $response['data'];
@@ -124,7 +124,7 @@ class Api
         }
 
         $cacheKey = md5($cacheKeyData);
-        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $redditId, $sort, $limit, $byComment) {
+        return $this->appCachePool->get($cacheKey, function() use ($context, $redditId, $sort, $limit, $byComment) {
             $commentsUrl = sprintf(self::POST_COMMENTS_ENDPOINT, $redditId);
             if ($byComment instanceof Comment) {
                 $commentsUrl .= '&comment=' . $byComment->getRedditId();
@@ -178,7 +178,7 @@ class Api
 
             $cacheKey = md5('more-children-'. implode(',', $body));
 
-            $retrievedChildren = $this->cachePoolRedis->get($cacheKey, function() use ($context, $body) {
+            $retrievedChildren = $this->appCachePool->get($cacheKey, function() use ($context, $body) {
                 $options = [
                     'body' => $body,
                 ];
@@ -209,7 +209,7 @@ class Api
         $jsonUrl = $this->sanitizePostLinkToJsonFormat($postLink);
         $cacheKey = md5('link-'.$jsonUrl);
 
-        return $this->cachePoolRedis->get($cacheKey, function() use ($context, $jsonUrl) {
+        return $this->appCachePool->get($cacheKey, function() use ($context, $jsonUrl) {
             return
                 $this->executeCall($context, self::METHOD_GET, $jsonUrl)
                 ->toArray();
