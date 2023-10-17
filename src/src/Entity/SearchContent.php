@@ -28,6 +28,9 @@ class SearchContent
     #[ORM\JoinColumn(nullable: false)]
     private ?Content $content = null;
 
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $title = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -77,6 +80,18 @@ class SearchContent
     public function setContent(Content $content): static
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
 
         return $this;
     }
