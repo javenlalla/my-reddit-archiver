@@ -48,6 +48,11 @@ class SearchContentRepository extends ServiceEntityRepository
                 ->setParameter('searchQuery', '%' . $searchQuery . '%');
         }
 
+        if (!empty($subreddits)) {
+            $qb->andWhere('s.subreddit IN (:subreddits)')
+                ->setParameter('subreddits', $subreddits);
+        }
+
         $qb->orderBy('s.createdAt', 'DESC');
         $qb->setFirstResult($perPage * ($page - 1));
         $qb->setMaxResults($perPage);

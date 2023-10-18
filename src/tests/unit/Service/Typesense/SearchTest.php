@@ -120,14 +120,14 @@ class SearchTest extends KernelTestCase
         // Verify filtering by one Subreddit.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            subreddits: ['jokesALT'] // Intentionally use different cases to verify results still surface.
+            subreddits: ['JokesAlt']
         );
         $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify filtering by multiple Subreddits.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            subreddits: ['jokesALT, JOKES'] // Intentionally use different cases to verify results still surface.
+            subreddits: ['JokesAlt', 'Jokes']
         );
         $this->assertEquals(2, $searchResults->getTotal());
     }

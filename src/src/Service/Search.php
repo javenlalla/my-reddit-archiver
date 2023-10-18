@@ -109,7 +109,7 @@ class Search
         $comment = $content->getComment();
 
         $searchContent->setTitle($post->getTitle());
-        $searchContent->setSubreddit($post->getSubreddit());
+        $searchContent->setSubreddit($post->getSubreddit()->getName());
         $searchContent->setCreatedAt($post->getCreatedAt());
         if ($comment instanceof Comment) {
             $searchContent->setCreatedAt($comment->getLatestCommentAuthorText()->getCreatedAt());
