@@ -105,9 +105,10 @@ class SearchContentRepository extends ServiceEntityRepository
      */
     private function getSearchResultsCount(QueryBuilder $qb): int
     {
-        $qb->select('COUNT(c.id)');
+        $countQb = clone $qb;
+        $countQb->select('COUNT(c.id)');
 
-        return $qb->getQuery()
+        return $countQb->getQuery()
             ->getSingleScalarResult()
             ;
     }
