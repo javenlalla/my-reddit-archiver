@@ -41,16 +41,6 @@ fi
 export APP_SECRET=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
 echo "APP_SECRET=${APP_SECRET}" >> .env
 
-# Configure Typesense.
-TYPESENSE_API_KEY=$(openssl rand -base64 40 | tr -d /=+ | cut -c -32)
-> /etc/typesense/typesense-config.ini
-echo "TYPESENSE_API_KEY=${TYPESENSE_API_KEY}" >> .env
-echo "[server]" >> /etc/typesense/typesense-config.ini
-echo "" >> /etc/typesense/typesense-config.ini
-echo "api-key = ${TYPESENSE_API_KEY}" >> /etc/typesense/typesense-config.ini
-echo "data-dir = /etc/typesense/typesense-data" >> /etc/typesense/typesense-config.ini
-echo "enable-cors = true" >> /etc/typesense/typesense-config.ini
-
 # Install and configure composer dependencies.
 if [[ $APP_ENV = "prod" ]]; then
     echo "Installing composer dependencies."
