@@ -6,8 +6,6 @@ namespace App\EventListener;
 use App\Entity\Content;
 use App\Service\Search;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
-use Http\Client\Exception;
-use Typesense\Exceptions\TypesenseClientError;
 
 class ContentSearchIndexListener
 {
@@ -22,8 +20,6 @@ class ContentSearchIndexListener
      * @param  LifecycleEventArgs  $event
      *
      * @return void
-     * @throws Exception
-     * @throws TypesenseClientError
      */
     public function postPersist(Content $content, LifecycleEventArgs $event): void
     {
@@ -37,8 +33,6 @@ class ContentSearchIndexListener
      * @param  LifecycleEventArgs  $event
      *
      * @return void
-     * @throws Exception
-     * @throws TypesenseClientError
      */
     public function postUpdate(Content $content, LifecycleEventArgs $event): void
     {

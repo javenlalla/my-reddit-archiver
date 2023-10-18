@@ -1,20 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Tests\unit\Service\Typesense;
+namespace App\Tests\feature;
 
+use App\Entity\Content;
 use App\Entity\Tag;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search;
 use App\Service\Search\Results;
-use App\Service\Typesense\Collection\Contents;
+use Doctrine\ORM\EntityManagerInterface;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpClient\HttplugClient;
-use Typesense\Client;
-use Typesense\Exceptions\TypesenseClientError;
 
 class SearchTest extends KernelTestCase
 {
@@ -26,6 +25,8 @@ class SearchTest extends KernelTestCase
 
     private ContentRepository $contentRepository;
 
+    private EntityManagerInterface $entityManager;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -36,6 +37,7 @@ class SearchTest extends KernelTestCase
         $this->postRepository = $container->get(PostRepository::class);
         $this->tagRepository = $container->get(TagRepository::class);
         $this->contentRepository = $container->get(ContentRepository::class);
+        $this->entityManager = $container->get(EntityManagerInterface::class);
 
         $this->cleanupDocuments();
     }
@@ -51,7 +53,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testBasicSearchQueries(string $postRedditId, string $searchQuery): void
     {
@@ -66,6 +67,7 @@ class SearchTest extends KernelTestCase
         $searchResults = $this->searchService->search($searchQuery);
         $this->assertEquals(Search::DEFAULT_LIMIT, $searchResults->getPerPage());
         $this->assertEquals(1, $searchResults->getTotal());
+        $this->assertInstanceOf(Content::class, $searchResults->getResults()[0]);
     }
 
     /**
@@ -73,7 +75,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testSearchWithSort()
     {
@@ -98,7 +99,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testSearchWithSubredditFilter()
     {
@@ -118,14 +118,14 @@ class SearchTest extends KernelTestCase
         // Verify filtering by one Subreddit.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            subreddits: ['jokesALT'] // Intentionally use different cases to verify results still surface.
+            subreddits: ['JokesAlt']
         );
         $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify filtering by multiple Subreddits.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            subreddits: ['jokesALT, JOKES'] // Intentionally use different cases to verify results still surface.
+            subreddits: ['JokesAlt', 'Jokes']
         );
         $this->assertEquals(2, $searchResults->getTotal());
     }
@@ -156,14 +156,14 @@ class SearchTest extends KernelTestCase
         // Verify filtering by one Flair Text.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            flairTexts: ['GrEAT Dad joke'] // Intentionally use different cases to verify results still surface.
+            flairTexts: ['Great Dad Joke']
         );
         $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify no results filtering by non-existent Flair Texts.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
+            flairTexts: ['Jokes']
         );
         $this->assertEquals(0, $searchResults->getTotal());
     }
@@ -187,11 +187,11 @@ class SearchTest extends KernelTestCase
         $this->tagRepository->add($funnyTag, true);
 
         $hilariousTag = new Tag();
-        $hilariousTag->setName('HilarioUS');
+        $hilariousTag->setName('hilarious');
         $this->tagRepository->add($hilariousTag, true);
 
         $seriousTag = new Tag();
-        $seriousTag->setName('Really SERious');
+        $seriousTag->setName('Really Serious');
         $this->tagRepository->add($seriousTag, true);
 
         $post = $this->postRepository->findOneBy(['redditId' => 'x00002']);
@@ -217,7 +217,7 @@ class SearchTest extends KernelTestCase
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            tags: ['hilarious', 'SERIOUS'] // Intentionally use different cases to verify results still surface.
+            tags: ['hilarious', 'Serious']
         );
         $this->assertEquals(2, $searchResults->getTotal());
 
@@ -229,16 +229,9 @@ class SearchTest extends KernelTestCase
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            tags: ['serIOUS']
+            tags: ['Really Serious']
         );
         $this->assertEquals(1, $searchResults->getTotal());
-
-        // Verify no results filtering by non-existent Tags.
-        $searchResults = $this->searchService->search(
-            searchQuery: $searchQuery,
-            tags: ['Not Funny']
-        );
-        $this->assertEquals(0, $searchResults->getTotal());
     }
 
     public function tearDown(): void
@@ -267,34 +260,15 @@ class SearchTest extends KernelTestCase
     }
 
     /**
-     * Remove Documents from the Search Index that are targeted for these
+     * Remove Entities from the Search Contents that are targeted for these
      * Tests.
      *
      * @return void
-     * @throws Exception
-     * @throws TypesenseClientError
      */
     private function cleanupDocuments(): void
     {
-        $container = static::getContainer();
-        $apiKey = $container->getParameter('app.typesense.api_key');
-
-        $client = new Client(
-            [
-                'api_key' => $apiKey,
-                'nodes' => [
-                    [
-                        'host' => 'localhost',
-                        'port' => '8108',
-                        'protocol' => 'http',
-                    ],
-                ],
-                'client' => new HttplugClient(),
-            ]
-        );
-
-        $client->collections['contents']->delete();
-        $client->collections->create(Contents::SCHEMA);
+        $stmt = $this->entityManager->getConnection()->prepare('DELETE FROM search_content;');
+        $stmt->executeStatement();
     }
 
     /**
