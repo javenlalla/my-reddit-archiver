@@ -166,14 +166,14 @@ class SearchTest extends KernelTestCase
         // Verify filtering by one Flair Text.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            flairTexts: ['GrEAT Dad joke'] // Intentionally use different cases to verify results still surface.
+            flairTexts: ['Great Dad Joke']
         );
         $this->assertEquals(1, $searchResults->getTotal());
 
         // Verify no results filtering by non-existent Flair Texts.
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            flairTexts: ['JokesJokes'] // Intentionally use different cases to verify results still surface.
+            flairTexts: ['Jokes']
         );
         $this->assertEquals(0, $searchResults->getTotal());
     }

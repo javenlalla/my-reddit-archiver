@@ -76,6 +76,11 @@ class SearchContentRepository extends ServiceEntityRepository
                 ->setParameter('subreddits', $subreddits);
         }
 
+        if (!empty($flairTexts)) {
+            $qb->andWhere('s.flairText IN (:flairTexts)')
+                ->setParameter('flairTexts', $flairTexts);
+        }
+
         $searchTotalResults = $this->getSearchResultsCount($qb);
 
         $qb->orderBy('s.createdAt', 'DESC');
