@@ -17,9 +17,8 @@ class SearchContent
     #[ORM\Column(type: Types::TEXT)]
     private ?string $contentText = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Subreddit $subreddit = null;
+    #[ORM\Column(type: 'string', length: 50)]
+    private $subreddit;
 
     #[ORM\ManyToOne]
     private ?FlairText $flairText = null;
@@ -51,12 +50,12 @@ class SearchContent
         return $this;
     }
 
-    public function getSubreddit(): ?Subreddit
+    public function getSubreddit(): ?string
     {
         return $this->subreddit;
     }
 
-    public function setSubreddit(?Subreddit $subreddit): static
+    public function setSubreddit(string $subreddit): self
     {
         $this->subreddit = $subreddit;
 
