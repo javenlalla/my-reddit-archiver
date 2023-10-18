@@ -49,7 +49,7 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): Results
     {
-        $contentsFound = $this->searchContentRepository->search($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
+        return $this->searchContentRepository->search($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
         $results = new Results();
 
         $results->setPerPage($perPage);

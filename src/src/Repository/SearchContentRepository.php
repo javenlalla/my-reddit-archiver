@@ -4,8 +4,12 @@ namespace App\Repository;
 
 use App\Entity\Content;
 use App\Entity\SearchContent;
+use App\Service\Search\Results;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -51,9 +55,11 @@ class SearchContentRepository extends ServiceEntityRepository
      * @param  int  $perPage
      * @param  int  $page
      *
-     * @return Content[]
+     * @return Results
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): array
+    public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): Results
     {
         $qb = $this->createQueryBuilder('s')
             ->select('c')
@@ -70,10 +76,39 @@ class SearchContentRepository extends ServiceEntityRepository
                 ->setParameter('subreddits', $subreddits);
         }
 
+        $searchTotalResults = $this->getSearchResultsCount($qb);
+
         $qb->orderBy('s.createdAt', 'DESC');
         $qb->setFirstResult($perPage * ($page - 1));
         $qb->setMaxResults($perPage);
 
-        return $qb->getQuery()->getResult();
+        $searchQueryResults = $qb->getQuery()->getResult();
+
+        $results = new Results();
+
+        $results->setPerPage($perPage);
+        $results->setPage($page);
+        $results->setTotal($searchTotalResults);
+        $results->setResults($searchQueryResults);
+
+        return $results;
+    }
+
+    /**
+     * Get the total count of results from the provided Search query.
+     *
+     * @param  QueryBuilder  $qb
+     *
+     * @return int
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    private function getSearchResultsCount(QueryBuilder $qb): int
+    {
+        $qb->select('COUNT(c.id)');
+
+        return $qb->getQuery()
+            ->getSingleScalarResult()
+            ;
     }
 }
