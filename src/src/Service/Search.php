@@ -116,7 +116,7 @@ class Search
         }
 
         $flairText = $this->getSearchFlairTextFromContent($post, $comment);
-        if ($flairText instanceof FlairText) {
+        if (!empty($flairText)) {
             $searchContent->setFlairText($flairText);
         }
 
@@ -229,16 +229,21 @@ class Search
      * @param  Post  $post
      * @param  Comment|null  $comment
      *
-     * @return FlairText|null
+     * @return string|null
      */
-    private function getSearchFlairTextFromContent(Post $post, ?Comment $comment): ?FlairText
+    private function getSearchFlairTextFromContent(Post $post, ?Comment $comment): ?string
     {
+        $flairText = null;
         if ($comment instanceof Comment && !empty($comment->getFlairText())) {
-            return $comment->getFlairText();
+            $flairText = $comment->getFlairText();
         }
 
         if (!empty($post->getFlairText())) {
-            return $post->getFlairText();
+            $flairText = $post->getFlairText();
+        }
+
+        if ($flairText instanceof FlairText) {
+            return $flairText->getPlainText();
         }
 
         return null;

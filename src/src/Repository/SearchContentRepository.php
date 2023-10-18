@@ -24,6 +24,23 @@ class SearchContentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Delete a Search Content Entity.
+     *
+     * @param  SearchContent  $entity
+     * @param  bool  $flush
+     *
+     * @return void
+     */
+    public function remove(SearchContent $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    /**
      * Perform a Search against the Search Contents by constructing and
      * executing a query based on the provided search parameters.
      *

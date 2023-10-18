@@ -20,8 +20,8 @@ class SearchContent
     #[ORM\Column(type: 'string', length: 50)]
     private $subreddit;
 
-    #[ORM\ManyToOne]
-    private ?FlairText $flairText = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $flairText = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
@@ -62,12 +62,12 @@ class SearchContent
         return $this;
     }
 
-    public function getFlairText(): ?FlairText
+    public function getFlairText(): ?string
     {
         return $this->flairText;
     }
 
-    public function setFlairText(?FlairText $flairText): static
+    public function setFlairText(string $flairText): static
     {
         $this->flairText = $flairText;
 
