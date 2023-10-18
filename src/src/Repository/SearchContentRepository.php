@@ -81,6 +81,11 @@ class SearchContentRepository extends ServiceEntityRepository
                 ->setParameter('flairTexts', $flairTexts);
         }
 
+        if (!empty($tags)) {
+            $qb->andWhere(':tags MEMBER OF c.tags')
+                ->setParameter('tags', $tags);
+        }
+
         $searchTotalResults = $this->getSearchResultsCount($qb);
 
         $qb->orderBy('s.createdAt', 'DESC');

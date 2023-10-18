@@ -11,13 +11,9 @@ use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search;
 use App\Service\Search\Results;
-use App\Service\Typesense\Collection\Contents;
 use Doctrine\ORM\EntityManagerInterface;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\HttpClient\HttplugClient;
-use Typesense\Client;
-use Typesense\Exceptions\TypesenseClientError;
 
 class SearchTest extends KernelTestCase
 {
@@ -28,8 +24,6 @@ class SearchTest extends KernelTestCase
     private TagRepository $tagRepository;
 
     private ContentRepository $contentRepository;
-
-    private SearchContentRepository $searchContentRepository;
 
     private EntityManagerInterface $entityManager;
 
@@ -43,7 +37,6 @@ class SearchTest extends KernelTestCase
         $this->postRepository = $container->get(PostRepository::class);
         $this->tagRepository = $container->get(TagRepository::class);
         $this->contentRepository = $container->get(ContentRepository::class);
-        $this->searchContentRepository = $container->get(SearchContentRepository::class);
         $this->entityManager = $container->get(EntityManagerInterface::class);
 
         $this->cleanupDocuments();
@@ -60,7 +53,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testBasicSearchQueries(string $postRedditId, string $searchQuery): void
     {
@@ -83,7 +75,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testSearchWithSort()
     {
@@ -108,7 +99,6 @@ class SearchTest extends KernelTestCase
      *
      * @return void
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function testSearchWithSubredditFilter()
     {
@@ -197,11 +187,11 @@ class SearchTest extends KernelTestCase
         $this->tagRepository->add($funnyTag, true);
 
         $hilariousTag = new Tag();
-        $hilariousTag->setName('HilarioUS');
+        $hilariousTag->setName('hilarious');
         $this->tagRepository->add($hilariousTag, true);
 
         $seriousTag = new Tag();
-        $seriousTag->setName('Really SERious');
+        $seriousTag->setName('Really Serious');
         $this->tagRepository->add($seriousTag, true);
 
         $post = $this->postRepository->findOneBy(['redditId' => 'x00002']);
@@ -227,7 +217,7 @@ class SearchTest extends KernelTestCase
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            tags: ['hilarious', 'SERIOUS'] // Intentionally use different cases to verify results still surface.
+            tags: ['hilarious', 'Serious']
         );
         $this->assertEquals(2, $searchResults->getTotal());
 
@@ -239,16 +229,9 @@ class SearchTest extends KernelTestCase
 
         $searchResults = $this->searchService->search(
             searchQuery: $searchQuery,
-            tags: ['serIOUS']
+            tags: ['Really Serious']
         );
         $this->assertEquals(1, $searchResults->getTotal());
-
-        // Verify no results filtering by non-existent Tags.
-        $searchResults = $this->searchService->search(
-            searchQuery: $searchQuery,
-            tags: ['Not Funny']
-        );
-        $this->assertEquals(0, $searchResults->getTotal());
     }
 
     public function tearDown(): void

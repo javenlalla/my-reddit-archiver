@@ -11,6 +11,7 @@ use App\Entity\PostAuthorText;
 use App\Entity\SearchContent;
 use App\Repository\ContentRepository;
 use App\Repository\SearchContentRepository;
+use App\Repository\TagRepository;
 use App\Service\Search\Results;
 use App\Service\Typesense\Api;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +30,7 @@ class Search
         private readonly Api $searchApi,
         private readonly CacheInterface $cache,
         private readonly SearchContentRepository $searchContentRepository,
+        private readonly TagRepository $tagRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -49,7 +51,12 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): Results
     {
-        return $this->searchContentRepository->search($searchQuery, $subreddits, $flairTexts, $tags, $perPage, $page);
+        $tagEntities = [];
+        if (!empty($tags)) {
+            $tagEntities = $this->tagRepository->findByNames($tags);
+        }
+
+        return $this->searchContentRepository->search($searchQuery, $subreddits, $flairTexts, $tagEntities, $perPage, $page);
         $results = new Results();
 
         $results->setPerPage($perPage);

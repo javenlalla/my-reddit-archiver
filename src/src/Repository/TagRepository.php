@@ -63,4 +63,20 @@ class TagRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    /**
+     * Find Tag Entities by the provided array of Tag names.
+     *
+     * @param  string[]  $tagNames
+     *
+     * @return array
+     */
+    public function findByNames(array $tagNames): array
+    {
+        return $this->createQueryBuilder('t')
+           ->andWhere('t.name IN (:tagNames)')
+           ->setParameter('tagNames', $tagNames)
+           ->getQuery()
+           ->getResult()
+        ;
+    }
 }
