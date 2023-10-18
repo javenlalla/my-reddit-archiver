@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Tests\unit\Service\Typesense;
+namespace App\Tests\feature;
 
 use App\Entity\Content;
 use App\Entity\Tag;
