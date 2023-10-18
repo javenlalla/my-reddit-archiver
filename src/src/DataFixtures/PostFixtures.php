@@ -21,7 +21,6 @@ use App\Repository\PostRepository;
 use App\Repository\SubredditRepository;
 use App\Repository\TypeRepository;
 use App\Service\Reddit\Manager;
-use App\Service\Typesense\Collection\Contents;
 use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,7 +30,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Typesense\Client;
 
 class PostFixtures extends Fixture implements ContainerAwareInterface
 {
@@ -332,24 +330,8 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
      */
     private function clearSearchIndex()
     {
-        $apiKey = $this->params->get('app.typesense.api_key');
-
-        $client = new Client(
-            [
-                'api_key' => $apiKey,
-                'nodes' => [
-                    [
-                        'host' => 'localhost',
-                        'port' => '8108',
-                        'protocol' => 'http',
-                    ],
-                ],
-                'client' => new HttplugClient(),
-            ]
-        );
-
-        $client->collections['contents']->delete();
-        $client->collections->create(Contents::SCHEMA);
+        $stmt = $this->entityManager->getConnection()->prepare('DELETE FROM search_content;');
+        $stmt->executeStatement();
     }
 
     /**

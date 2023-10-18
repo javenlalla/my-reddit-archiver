@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\Reddit\Api;
-use App\Service\Typesense\Api as TypesenseApi;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
@@ -13,8 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
-use Typesense\Exceptions\ConfigError;
-use Typesense\Exceptions\TypesenseClientError;
 
 class HealthcheckController extends AbstractController
 {
@@ -31,7 +28,6 @@ class HealthcheckController extends AbstractController
      *
      * @param  EntityManagerInterface  $em
      * @param  CacheInterface  $appCachePool
-     * @param  TypesenseApi  $typesenseApi
      * @param  Api  $redditApi
      * @param  RateLimiterFactory  $redditApiLimiter
      *
@@ -41,14 +37,12 @@ class HealthcheckController extends AbstractController
     public function healthcheck(
         EntityManagerInterface $em,
         CacheInterface $appCachePool,
-        TypesenseApi $typesenseApi,
         Api $redditApi,
         RateLimiterFactory $redditApiLimiter,
     ) {
         $healthChecks = [
             'database-connected' => false,
             'cache-connected' => false,
-            'typesense-connected' => false,
             'reddit-credentials-set' => false,
             'error' => null,
             'rate-limit' => [
@@ -62,7 +56,6 @@ class HealthcheckController extends AbstractController
         try {
             $healthChecks['database-connected'] = $this->verifyDatabaseConnection($em);
             $healthChecks['cache-connected'] = $this->verifyCacheConnection($appCachePool);
-            $healthChecks['typesense-connected'] = $this->verifyTypesenseConnection($typesenseApi);
             $healthChecks['reddit-credentials-set'] = $this->verifyRedditCredentialsSet($redditApi);
             $healthChecks['rate-limit'] = $this->verifyRateLimit($redditApiLimiter);
         } catch (InvalidArgumentException | Exception $e) {
@@ -135,27 +128,6 @@ class HealthcheckController extends AbstractController
         }
 
         throw new Exception(sprintf('Unexpected response from Reddit API with configured account credentials: %s', var_export($savedPosts, true)));
-    }
-
-    /**
-     * Verify the Typesense server can be reached and returns the Contents
-     * Collection.
-     *
-     * @param  TypesenseApi  $typesenseApi
-     *
-     * @return bool
-     * @throws \Http\Client\Exception
-     * @throws ConfigError
-     * @throws TypesenseClientError
-     */
-    private function verifyTypesenseConnection(TypesenseApi $typesenseApi): bool
-    {
-        $contentsCollection = $typesenseApi->getContentsCollection();
-        if (!empty($contentsCollection)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

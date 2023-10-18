@@ -19,7 +19,6 @@ use Symfony\Component\Form\FormView;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
-use Typesense\Exceptions\TypesenseClientError;
 
 #[AsLiveComponent('archive_search')]
 class ArchiveSearchComponent extends AbstractController
@@ -94,7 +93,6 @@ class ArchiveSearchComponent extends AbstractController
      *
      * @return Results
      * @throws Exception
-     * @throws TypesenseClientError
      */
     public function getSearchResults(): Results
     {

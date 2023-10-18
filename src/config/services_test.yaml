@@ -4,9 +4,6 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true
 
-    App\Service\Typesense\Search:
-        public: true
-
     App\Service\Reddit\Manager\BatchSync:
         public: true
 
