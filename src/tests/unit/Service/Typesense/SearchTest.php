@@ -7,10 +7,12 @@ use App\Entity\Content;
 use App\Entity\Tag;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
+use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search;
 use App\Service\Search\Results;
 use App\Service\Typesense\Collection\Contents;
+use Doctrine\ORM\EntityManagerInterface;
 use Http\Client\Exception;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\HttplugClient;
@@ -27,6 +29,10 @@ class SearchTest extends KernelTestCase
 
     private ContentRepository $contentRepository;
 
+    private SearchContentRepository $searchContentRepository;
+
+    private EntityManagerInterface $entityManager;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -37,6 +43,8 @@ class SearchTest extends KernelTestCase
         $this->postRepository = $container->get(PostRepository::class);
         $this->tagRepository = $container->get(TagRepository::class);
         $this->contentRepository = $container->get(ContentRepository::class);
+        $this->searchContentRepository = $container->get(SearchContentRepository::class);
+        $this->entityManager = $container->get(EntityManagerInterface::class);
 
         $this->cleanupDocuments();
     }
@@ -269,34 +277,15 @@ class SearchTest extends KernelTestCase
     }
 
     /**
-     * Remove Documents from the Search Index that are targeted for these
+     * Remove Entities from the Search Contents that are targeted for these
      * Tests.
      *
      * @return void
-     * @throws Exception
-     * @throws TypesenseClientError
      */
     private function cleanupDocuments(): void
     {
-        $container = static::getContainer();
-        $apiKey = $container->getParameter('app.typesense.api_key');
-
-        $client = new Client(
-            [
-                'api_key' => $apiKey,
-                'nodes' => [
-                    [
-                        'host' => 'localhost',
-                        'port' => '8108',
-                        'protocol' => 'http',
-                    ],
-                ],
-                'client' => new HttplugClient(),
-            ]
-        );
-
-        $client->collections['contents']->delete();
-        $client->collections->create(Contents::SCHEMA);
+        $stmt = $this->entityManager->getConnection()->prepare('DELETE FROM search_content;');
+        $stmt->executeStatement();
     }
 
     /**
