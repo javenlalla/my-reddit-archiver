@@ -8,7 +8,6 @@ use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search\Indexer;
 use App\Service\Search\Results;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 
