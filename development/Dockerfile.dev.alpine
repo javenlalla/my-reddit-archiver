@@ -100,10 +100,10 @@ COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 
-# Configure Supervisor.
+# Install Supervisor and update configuration files location.
 RUN apk --no-cache add supervisor \
     && mkdir -p /var/log/supervisor
-COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./build/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./build/supervisord/cron.alpine.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
