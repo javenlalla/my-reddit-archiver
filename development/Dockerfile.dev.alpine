@@ -2,7 +2,6 @@ FROM node:20.8-alpine AS node
 
 FROM php:8.1.7-fpm-alpine
 
-ENV APP_ENV=dev
 ENV APP_PUBLIC_PATH=/var/www/mra/public
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
