@@ -92,5 +92,4 @@ RUN mkdir /database
 # Opinionated terminal styling choice.
 RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
 
-# ENTRYPOINT ["/entrypoint.sh"]
-CMD ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["/entrypoint.sh"]
