@@ -67,5 +67,4 @@ fi
 
 # Container is set up. Start services.
 echo "Starting services."
-# /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
-/usr/bin/supervisord
+/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
