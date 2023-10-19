@@ -73,6 +73,10 @@ RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
 
+# Cron setup. Production image only.
+# ADD build/cron/crontab.txt /crontab.txt
+# RUN /usr/bin/crontab /crontab.txt
+
 # Install Nginx.
 RUN apk --no-cache add nginx
 COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
@@ -85,6 +89,7 @@ RUN chmod u+x /entrypoint.sh
 RUN apk --no-cache add supervisor \
     && mkdir -p /var/log/supervisor
 COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./build/supervisord/cron.alpine.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
 RUN mkdir /database

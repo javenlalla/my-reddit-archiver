@@ -95,6 +95,7 @@ RUN chmod u+x /entrypoint.sh
 # Configure Supervisor.
 RUN mkdir -p /var/log/supervisor
 COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./build/supervisord/cron.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
 RUN mkdir /database
