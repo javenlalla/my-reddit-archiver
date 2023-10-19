@@ -1,3 +1,5 @@
+FROM node:20.8-alpine AS node
+
 FROM php:8.1.7-fpm-alpine
 
 ENV APP_ENV=dev
@@ -6,7 +8,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN apk --no-cache add \
     libxml2-dev \
-    libmemcached-dev \
     cyrus-sasl-dev \
     curl \
     curl-dev \
@@ -15,16 +16,12 @@ RUN apk --no-cache add \
     bash \
     git \
     openssh \
-    rsync \
-    mysql-client \
     patch \
     pcre-dev \
     ncurses \
     findutils \
     zlib-dev \
     libzip-dev \
-    # mariadb-connector-c needed for caching_sha2_password plugin if connecting to a MySQL 8.0 database.
-    mariadb-connector-c \
     # icu-dev is a dependency required by the `intl` extension.
     icu-dev \
     # ffmpeg is needed for combining Reddit video and audio asset files.
@@ -36,7 +33,6 @@ RUN apk --no-cache add \
 
 RUN docker-php-ext-install \
     pdo \
-    pdo_mysql \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
@@ -48,15 +44,22 @@ RUN docker-php-source extract \
     && apk del .phpize-deps-configure \
     && docker-php-source delete
 
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install -o -f redis \
-    && docker-php-ext-enable redis \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+RUN docker-php-ext-install zip
 
-# COPY ./scripts/* /usr/bin/
+# Install Node and Yarn.
+# https://medium.com/geekculture/how-to-install-a-specific-node-js-version-in-an-alpine-docker-image-3edc1c2c64be
+# https://yarnpkg.com/getting-started/install
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+RUN rm /usr/local/bin/yarn \
+    && rm /usr/local/bin/yarnpkg \
+    && corepack enable \
+    && corepack prepare yarn@stable --activate
 
+# Configure php.
 COPY ./development/php.ini /usr/local/etc/php/php.ini
 
 # Install Composer.
@@ -64,12 +67,9 @@ COPY ./development/php.ini /usr/local/etc/php/php.ini
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 
-# Opinionated terminal styling choice.
-RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
-
 # Install Symfony installer.    
-RUN wget https://get.symfony.com/cli/installer -O - | bash && \
-    mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# RUN wget https://get.symfony.com/cli/installer -O - | bash \
+#     && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
 
 RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
 RUN apk add symfony-cli
@@ -78,10 +78,20 @@ RUN apk add symfony-cli
 RUN apk --no-cache add nginx
 COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
 
-# Install Redis.
-RUN apk --no-cache add redis
-
-COPY ./development/entrypoint.dev.sh /entrypoint.sh
+# Configure Entrypoint.
+COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Configure Supervisor.
+RUN apk --no-cache add supervisor \
+    && mkdir -p /var/log/supervisor
+COPY ./build/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Additional folder setup.
+RUN mkdir /database
+
+# Opinionated terminal styling choice.
+RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
+
+# ENTRYPOINT ["/entrypoint.sh"]
+CMD ["tail", "-f", "/dev/null"]
