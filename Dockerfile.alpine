@@ -15,6 +15,7 @@ FROM node:20.8-alpine AS node
 # Build core image.
 FROM php:8.1.7-fpm-alpine
 
+ENV APP_ENV=prod
 ENV APP_PUBLIC_PATH=/var/www/mra/public
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -51,13 +52,6 @@ RUN docker-php-ext-install \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
 
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
-
 RUN docker-php-ext-install zip
 
 # Install Node and Yarn.
@@ -74,23 +68,22 @@ RUN rm /usr/local/bin/yarn \
     && corepack prepare yarn@stable --activate
 
 # Configure php.
-COPY ./development/php.ini /usr/local/etc/php/php.ini
+COPY ./build/php.prod.ini /usr/local/etc/php/php.ini
 
 # Install Composer.
 # https://stackoverflow.com/a/58694421
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
 
-# Install Symfony installer.    
-# RUN wget https://get.symfony.com/cli/installer -O - | bash \
-#     && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# Copy application to image.
+RUN mkdir /var/www/mra/
+COPY src /var/www/mra
+WORKDIR /var/www/mra
+RUN rm -rf var
 
-RUN curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.alpine.sh' | bash
-RUN apk add symfony-cli
-
-# Cron setup. Production image only.
-# ADD build/cron/crontab.txt /crontab.txt
-# RUN /usr/bin/crontab /crontab.txt
+# Cron setup.
+ADD build/cron/crontab.txt /crontab.txt
+RUN /usr/bin/crontab /crontab.txt
 
 # Install Nginx.
 RUN apk --no-cache add nginx
@@ -108,8 +101,5 @@ COPY ./build/supervisord/cron.alpine.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
 RUN mkdir /database
-
-# Opinionated terminal styling choice.
-RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
 
 ENTRYPOINT ["/entrypoint.sh"]
