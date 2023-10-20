@@ -1,0 +1,105 @@
+# Build the Reddit Go CLI tool.
+FROM golang:1.20.1-buster AS reddit-go-cli-build
+
+WORKDIR /app
+
+RUN git clone https://github.com/javenlalla/reddit-cli.git
+WORKDIR reddit-cli
+
+RUN go mod download
+RUN go build -o /reddit-sync
+
+# Build Node.
+FROM node:20.8-alpine AS node
+
+# Build core image.
+FROM php:8.1.7-fpm-alpine
+
+ENV APP_ENV=prod
+ENV APP_PUBLIC_PATH=/var/www/mra/public
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY --from=reddit-go-cli-build /reddit-sync /usr/bin/reddit-sync
+
+RUN apk --no-cache add \
+    libxml2-dev \
+    cyrus-sasl-dev \
+    curl \
+    curl-dev \
+    libmcrypt-dev \
+    gmp-dev \
+    bash \
+    git \
+    openssh \
+    patch \
+    pcre-dev \
+    ncurses \
+    findutils \
+    zlib-dev \
+    libzip-dev \
+    # icu-dev is a dependency required by the `intl` extension.
+    icu-dev \
+    # ffmpeg is needed for combining Reddit video and audio asset files.
+    ffmpeg \
+    # linux-headers is needed to avoid Xdebug installation error:
+    # configure: error: rtnetlink.h is required, install the linux-headers package: apk add --update linux-headers
+    # ERROR: `/tmp/pear/temp/xdebug/configure --with-php-config=/usr/local/bin/php-config' failed
+    linux-headers
+
+RUN docker-php-ext-install \
+    pdo \
+    intl \
+    # sysvsem is required for the RateLimiter Semaphore store.
+    sysvsem
+
+RUN docker-php-ext-install zip
+
+# Install Node and Yarn.
+# https://medium.com/geekculture/how-to-install-a-specific-node-js-version-in-an-alpine-docker-image-3edc1c2c64be
+# https://yarnpkg.com/getting-started/install
+COPY --from=node /usr/lib /usr/lib
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+RUN rm /usr/local/bin/yarn \
+    && rm /usr/local/bin/yarnpkg \
+    && corepack enable \
+    && corepack prepare yarn@stable --activate
+
+# Configure php.
+COPY ./build/php.prod.ini /usr/local/etc/php/php.ini
+
+# Install Composer.
+# https://stackoverflow.com/a/58694421
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+RUN echo "export PATH=$HOME/.composer/vendor/bin:$PATH" >> $HOME/.profile
+
+# Copy application to image.
+RUN mkdir /var/www/mra/
+COPY src /var/www/mra
+WORKDIR /var/www/mra
+RUN rm -rf var
+
+# Cron setup.
+ADD build/cron/crontab.txt /crontab.txt
+RUN /usr/bin/crontab /crontab.txt
+
+# Install Nginx.
+RUN apk --no-cache add nginx
+COPY build/nginx-site.conf /etc/nginx/http.d/default.conf
+
+# Configure Entrypoint.
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod u+x /entrypoint.sh
+
+# Install Supervisor and update configuration files location.
+RUN apk --no-cache add supervisor \
+    && mkdir -p /var/log/supervisor
+COPY ./build/supervisord.conf /etc/supervisor/supervisord.conf
+COPY ./build/supervisord/cron.alpine.conf /etc/supervisor/conf.d/cron.conf
+
+# Additional folder setup.
+RUN mkdir /database
+
+ENTRYPOINT ["/entrypoint.sh"]
