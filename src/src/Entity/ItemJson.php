@@ -51,6 +51,12 @@ class ItemJson
 
     public function getJsonBodyArray(): array
     {
-        return json_decode($this->getJsonBody(), true);
+        $jsonBodyArray = json_decode($this->getJsonBody(), true);
+
+        if (!empty($jsonBodyArray['data']['permalink'])) {
+            $jsonBodyArray['data']['permalink'] = str_replace('\/', '/', $jsonBodyArray['data']['permalink']);
+        }
+
+        return $jsonBodyArray;
     }
 }
