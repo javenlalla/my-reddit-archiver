@@ -8,11 +8,14 @@ use Exception;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Path;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class Downloader
 {
     public function __construct(
         private readonly Filesystem $filesystem,
+        private readonly HttpClientInterface $httpClient,
     ) {
     }
 
@@ -47,16 +50,19 @@ class Downloader
      * @param  string  $targetFilepath
      *
      * @return void
-     * @throws Exception
+     * @throws TransportExceptionInterface
      */
     public function downloadSourceToLocalFile(string $sourceUrl, string $targetFilepath): void
     {
         if ($this->filesystem->exists($targetFilepath) === false) {
-            $cmd = sprintf('reddit-sync downloadAsset -u="%s" -t="%s"', $sourceUrl, $targetFilepath);
-            $cmdResult = exec($cmd, output: $cmdOutput, result_code: $resultCode);
+            $response = $this->httpClient->request('GET', $sourceUrl);
+            if (200 !== $response->getStatusCode()) {
+                throw new Exception(sprintf('Unable to reach URL for download: %s', $sourceUrl));
+            }
 
-            if ($resultCode !== 0) {
-                throw new Exception(sprintf('Unexpected command output downloading asset `%s` to local destination `%s`: %s::%s::%s. Command: %s', $sourceUrl, $targetFilepath, var_export($cmdResult, true), var_export($cmdOutput, true), var_export($resultCode, true), $cmd));
+            $fileHandler = fopen($targetFilepath, 'w');
+            foreach ($this->httpClient->stream($response) as $chunk) {
+                fwrite($fileHandler, $chunk->getContent());
             }
         }
     }
