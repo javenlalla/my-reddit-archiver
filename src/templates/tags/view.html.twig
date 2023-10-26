@@ -2,6 +2,82 @@
 
 {% block main_content %}
 
-    {{ component('tags_management', {form: form}) }}
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fa-solid fa-tags"></i>
+            Create Tag
+        </div>
+
+        <div class="card-body">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            {{ form_start(form) }}
+            <div class="row">
+                <div class="mb-3 col-6">
+                    <!--Text Input Field-->
+                    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                    {% if form.name.vars.errors|length > 0 %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.name.vars.errors[0].message }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="mb-6 col-6" data-loading="hide">
+                    <!--Submit Button-->
+                    {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="mb-6 col-6" data-loading="show">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="search-result-content">
+                        {% if tags %}
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Tag</th>
+                                    <th scope="col">Number of Contents</th>
+                                    <th scope="col">Manage</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for tag in tags %}
+                                    <tr>
+                                        <th scope="row">{{ tag.name }}</th>
+                                        <td>{{ tag.contents.count }}</td>
+                                        <td><i class="fa-solid fa-pen-to-square"></i></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <h4>No Tags exist.</h4>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
