@@ -21,7 +21,13 @@ class TagsController extends AbstractController
     #[Route('/tags', name: 'tags')]
     public function viewTags(Request $request, TagRepository $tagRepository): Response
     {
-        $form = $this->createForm(TagForm::class);
+        $tag = null;
+        $editTagName = $request->get('tag');
+        if (!empty($editTagName)) {
+            $tag = $tagRepository->findOneBy(['name' => $editTagName]);
+        }
+
+        $form = $this->createForm(TagForm::class, $tag);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -31,7 +37,7 @@ class TagsController extends AbstractController
 
             $this->addFlash(
                 'success',
-                sprintf('Tag `%s` has been created.', $tag->getName())
+                sprintf('Tag `%s` has been saved.', $tag->getName())
             );
 
             return $this->redirectToRoute('tags');
