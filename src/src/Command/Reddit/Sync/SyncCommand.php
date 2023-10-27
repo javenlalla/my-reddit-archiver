@@ -277,8 +277,10 @@ class SyncCommand extends Command
         string $group
     ): array {
         $limit = $input->getOption('limit');
-        if (empty($limit) || !is_int($limit)) {
+        if (empty($limit) || !is_numeric($limit)) {
             $limit = self::DEFAULT_LIMIT;
+        } else {
+            $limit = (int) $limit;
         }
 
         if ($group !== self::PROFILE_GROUP_ALL) {
