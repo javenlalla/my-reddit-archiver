@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Service\Reddit;
 
 use App\Entity\Comment;
+use App\Entity\ProfileContentGroup;
 use App\Event\RedditApiCallEvent;
 use App\Repository\ApiUserRepository;
 use App\Service\Reddit\Api\Context;
@@ -34,6 +35,14 @@ class Api
     const UNAUTHENTICATED_POST_COMMENTS_ENDPOINT = 'https://www.reddit.com/comments/%s/.json?raw_json=1';
 
     const SAVED_POSTS_ENDPOINT = 'https://oauth.reddit.com/user/%s/saved';
+
+    const PROFILE_GROUP_ENDPOINTS = [
+        ProfileContentGroup::PROFILE_GROUP_SAVED => 'https://oauth.reddit.com/user/%s/saved',
+        ProfileContentGroup::PROFILE_GROUP_COMMENTS => 'https://oauth.reddit.com/user/%s/comments',
+        ProfileContentGroup::PROFILE_GROUP_UPVOTED => 'https://oauth.reddit.com/user/%s/upvoted',
+        ProfileContentGroup::PROFILE_GROUP_DOWNVOTED => 'https://oauth.reddit.com/user/%s/downvoted',
+        ProfileContentGroup::PROFILE_GROUP_SUBMITTED => 'https://oauth.reddit.com/user/%s/submitted',
+    ];
 
     const MORE_CHILDREN_ENDPOINT = 'https://oauth.reddit.com/api/morechildren/';
 
@@ -102,6 +111,35 @@ class Api
 
             return $response['data'];
         });
+    }
+
+    /**
+     * Retrieve the Contents under the specified group in the user's profile.
+     *
+     * @param  Context  $context
+     * @param  string  $profileGroup
+     * @param  int  $limit
+     * @param  string  $after
+     *
+     * @return array
+     */
+    public function getContentsByProfileGroup(Context $context, string $profileGroup, int $limit = 100, string $after = ''): array
+    {
+        if (!isset(self::PROFILE_GROUP_ENDPOINTS[$profileGroup])) {
+            return [];
+        }
+
+        $endpointBase = self::PROFILE_GROUP_ENDPOINTS[$profileGroup];
+
+        $endpoint = sprintf($endpointBase, $this->username);
+        $endpoint = $endpoint . sprintf('?limit=%d', $limit);
+        if (!empty($after)) {
+            $endpoint = $endpoint . sprintf('&after=%s', $after);
+        }
+
+        $response = $this->executeCall($context, self::METHOD_GET, $endpoint)->toArray();
+
+        return $response['data'];
     }
 
     /**

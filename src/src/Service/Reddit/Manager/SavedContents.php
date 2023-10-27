@@ -208,14 +208,14 @@ class SavedContents
         $moreContentsAvailable = true;
         $after = '';
         while ($moreContentsAvailable) {
-            $savedContents = $this->redditApi->getSavedContents($context, limit: self::BATCH_SIZE, after: $after);
+            $contents = $this->redditApi->getContentsByProfileGroup($context, profileGroup: $profileGroup, limit: self::BATCH_SIZE, after: $after);
 
-            if (!empty($savedContents['children'])) {
-                $this->addContentsToPendingSync($context, $savedContents['children']);
+            if (!empty($contents['children'])) {
+                $this->addContentsToPendingSync($context, $contents['children']);
             }
 
-            if (!empty($savedContents['after'])) {
-                $after = $savedContents['after'];
+            if (!empty($contents['after'])) {
+                $after = $contents['after'];
             } else {
                 $moreContentsAvailable = false;
             }
