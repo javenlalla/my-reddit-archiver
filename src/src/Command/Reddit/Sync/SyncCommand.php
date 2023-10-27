@@ -37,6 +37,8 @@ class SyncCommand extends Command
 
     const PROFILE_GROUP_ALL = 'all';
 
+    const DEFAULT_LIMIT = -1;
+
     public function __construct(
         private readonly BatchSync $batchSyncManager,
         private readonly SavedContents $savedContentsManager,
@@ -69,6 +71,12 @@ class SyncCommand extends Command
             mode: InputOption::VALUE_NONE,
             description: 'Flag to refresh the list of Contents pending sync by comparing to the Contents on Reddit\'s side.',
         );
+
+        $this->addOption(
+            name: 'limit',
+            mode: InputOption::VALUE_OPTIONAL,
+            description: 'Limit the number of Contents to sync down from Reddit.',
+        );
     }
 
     /**
@@ -92,21 +100,9 @@ class SyncCommand extends Command
 
         $context = new Context('SyncCommand:execute');
         $time = time();
-        if ($group !== self::PROFILE_GROUP_ALL) {
-            $output->writeln('<info>Updating list of Contents pending sync.</info>');
-            $this->savedContentsManager->refreshPendingEntitiesByProfileGroup($context, $group);
-        } else {
-            $output->writeln(sprintf('<info>Updating list of %s Contents pending sync.</info>', ucfirst($group)));
-            $this->savedContentsManager->refreshAllPendingEntities($context);
-        }
-        $output->writeln(sprintf('<info>Updated pending list in %d seconds.</info>', (time() - $time)));
 
-        if ($group !== self::PROFILE_GROUP_ALL) {
-            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, $group, -1);
-        } else {
-            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, limit: -1);
-        }
-        $output->writeln(sprintf('<info>Retrieved %d pending Contents to sync.</info>', count($pendingContents)));
+        $this->refreshPendingContents($context, $output, $group, $time);
+        $pendingContents = $this->getContentsPendingSync($context, $input, $output, $group);
 
         $output->writeln('<info>Syncing pending Content</info>');
         $count = 0;
@@ -232,5 +228,66 @@ class SyncCommand extends Command
         $command = $this->getApplication()->find('reddit:search:index');
 
         $command->run(new ArrayInput([]), $output);
+    }
+
+    /**
+     * Pull the latest list of Contents from the user's profile under the
+     * specified group.
+     *
+     * @param  Context  $context
+     * @param  OutputInterface  $output
+     * @param  string  $group
+     * @param  int  $time
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function refreshPendingContents(
+        Context $context,
+        OutputInterface $output,
+        string $group,
+        int $time
+    ) {
+        if ($group !== self::PROFILE_GROUP_ALL) {
+            $output->writeln('<info>Updating list of Contents pending sync.</info>');
+            $this->savedContentsManager->refreshPendingEntitiesByProfileGroup($context, $group);
+        } else {
+            $output->writeln(sprintf('<info>Updating list of %s Contents pending sync.</info>', ucfirst($group)));
+            $this->savedContentsManager->refreshAllPendingEntities($context);
+        }
+        $output->writeln(sprintf('<info>Updated pending list in %d seconds.</info>', (time() - $time)));
+    }
+
+    /**
+     * Retrieve the Contents that have been pulled from Reddit but have not yet
+     * been synced.
+     *
+     * @param  Context  $context
+     * @param  InputInterface  $input
+     * @param  OutputInterface  $output
+     * @param  string  $group
+     *
+     * @return array
+     * @throws InvalidArgumentException
+     */
+    private function getContentsPendingSync(
+        Context $context,
+        InputInterface $input,
+        OutputInterface $output,
+        string $group
+    ): array {
+        $limit = $input->getOption('limit');
+        if (empty($limit) || !is_int($limit)) {
+            $limit = self::DEFAULT_LIMIT;
+        }
+
+        if ($group !== self::PROFILE_GROUP_ALL) {
+            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, $group, $limit);
+        } else {
+            $pendingContents = $this->savedContentsManager->getContentsPendingSync($context, limit: $limit);
+        }
+        $output->writeln(sprintf('<info>Retrieved %d pending Contents to sync.</info>', count($pendingContents)));
+
+        return $pendingContents;
     }
 }
