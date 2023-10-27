@@ -152,7 +152,9 @@ class SyncCommand extends Command
             $this->reportMemoryUsage($output);
         }
 
-        $this->runSearchIndexing($output);
+        if ($count > 0) {
+            $this->runSearchIndexing($output);
+        }
 
         return Command::SUCCESS;
     }
