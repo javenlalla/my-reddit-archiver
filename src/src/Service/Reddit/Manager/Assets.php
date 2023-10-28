@@ -202,13 +202,7 @@ class Assets
      */
     private function getPublicAssetsDirectoryPath(bool $absolutePath = false): string
     {
-        $path = self::REDDIT_MEDIA_ASSETS_DIRECTORY_PATH;
-
-        if ($absolutePath === true) {
-            $path = $this->publicDirectoryAbsolutePath . $path;
-        }
-
-        return $path;
+        return self::REDDIT_MEDIA_ASSETS_DIRECTORY_PATH;
     }
 
     /**

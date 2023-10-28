@@ -81,5 +81,6 @@ COPY ./build/supervisord/cron.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
 RUN mkdir /database
+RUN mkdir /r-media
 
 ENTRYPOINT ["/entrypoint.sh"]

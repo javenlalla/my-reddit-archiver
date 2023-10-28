@@ -95,6 +95,7 @@ COPY ./build/supervisord/cron.alpine.conf /etc/supervisor/conf.d/cron.conf
 
 # Additional folder setup.
 RUN mkdir /database
+RUN mkdir /r-media
 
 # Opinionated terminal styling choice.
 RUN echo "export PS1='\[\e[36m\]\u:\W$ \[\e[0m\]'" >> $HOME/.profile
