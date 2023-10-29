@@ -25,6 +25,3 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
-
-/public/r-media/*
-!/public/r-media/.gitkeep
