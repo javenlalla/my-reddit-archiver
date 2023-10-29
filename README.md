@@ -72,8 +72,8 @@ Note: The volume mount is needed for backup/persistent storage of downloaded med
 ```bash
   docker run -d \
   --env-file=.env \
-  --volume </path/to/media>:/var/www/mra/public/r-media \
-  --volume </path/to/database-folder>:/var/www/mra/database \
+  --volume </path/to/media>:/r-media \
+  --volume </path/to/database-folder>:/database \
   -p 3580:80 \
   --name mra \
   javenlalla/mra
@@ -97,7 +97,7 @@ If the `docker-compose` method is preferred for running the application, proceed
         container_name: mra
         image: javenlalla/mra
         volumes:
-          - </path/to/media-folder>:/var/www/mra/public/r-media
+          - </path/to/media-folder>:/r-media
           - </path/to/database-folder>:/database
         environment:
           REDDIT_USERNAME: MyRedditUsername

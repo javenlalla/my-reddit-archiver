@@ -8,6 +8,7 @@ services:
       dockerfile: ./development/Dockerfile.dev
     volumes:
       - ./src:/var/www/mra
+      - ./r-media:/r-media
       - ./database:/database
       - /var/www/mra/var/
     working_dir: /var/www/mra
