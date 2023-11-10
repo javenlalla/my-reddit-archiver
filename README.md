@@ -1,10 +1,11 @@
 # My Reddit Archiver
 
-Archive Saved posts under your Reddit account.
+Self-hosted web application to archive your Reddit profile's Comments and Saved, Upvoted, and Downvoted Posts locally.
 
 > Note: This project is currently under active development. There will be data structure and/or bc-breaking changes until the first official release is pushed.
 
 - [My Reddit Archiver](#my-reddit-archiver)
+  - [Features](#features)
   - [Prerequisites](#prerequisites)
     - [Create Reddit Client ID And Secret](#create-reddit-client-id-and-secret)
       - [Limitations](#limitations)
@@ -13,14 +14,30 @@ Archive Saved posts under your Reddit account.
     - [Environment Variables](#environment-variables)
     - [docker run](#docker-run)
     - [docker-compose](#docker-compose)
+    - [SSL](#ssl)
   - [Execute Sync](#execute-sync)
   - [Logging](#logging)
     - [Container Logs](#container-logs)
-    - [Cron Logs](#cron-logs)
   - [Updating](#updating)
     - [Update | docker run](#update--docker-run)
     - [Update | docker-compose](#update--docker-compose)
   - [Development](#development)
+
+## Features
+
+<p align="center">
+  <img title="Archive Dashboard Overview" src="docs/assets/dashboard_overview.jpg" width="460" />
+  <img title="Post Detail View" src="docs/assets/post_detail_view.jpg" width="460" />
+</p>
+
+- Create a local Archive of your Reddit profile content
+- Pull down Comments and Saved/Upvoted/Downvoted Posts to your Archive
+- Search your Archive
+- Filter by Subreddit
+- Filter by Flair Texts of Posts
+- Create custom Tags for Posts
+  - Filter by Tags
+- Track API calls and usage to Reddit's API
 
 ## Prerequisites
 
@@ -65,23 +82,36 @@ For convenience, an `.env.sample` file is provided in the root of this repositor
 
 If the `docker run` method is preferred for running the application, proceed with this section. If the `docker-compose` method is preferred, skip to [docker-compose(#docker-compose)].
 
-Once the `.env` file has been created and configured, start the application with the following command.
+If leveraging a Once the `.env` file has been created and configured, start the application with the following command.
 
-Note: The volume mount is needed for backup/persistent storage of downloaded media assets from Reddit Posts.
+Note: The volume mounts are needed for backup/persistent storage of the archive database and downloaded media assets from Reddit Posts.
+
+With `.env` file:
 
 ```bash
-  docker run -d \
+docker run -d \
   --env-file=.env \
   --volume </path/to/media>:/r-media \
   --volume </path/to/database-folder>:/database \
-  -p 3580:80 \
+  -p HOST_PORT:80 \
   --name mra \
   javenlalla/mra
 ```
 
-Notes:
+Inline Environment variables:
 
-- Update the host port as necessary
+```bash
+docker run -d \
+  -e REDDIT_USERNAME='MyRedditUsername' \
+  -e REDDIT_PASSWORD='MyRedditPassword' \
+  -e REDDIT_CLIENT_ID='MyAppClientID' \
+  -e REDDIT_CLIENT_SECRET='MyAppClientSecret' \
+  --volume </path/to/media>:/r-media \
+  --volume </path/to/database-folder>:/database \
+  -p HOST_PORT:80 \
+  --name mra \
+  javenlalla/mra
+```
 
 ### docker-compose
 
@@ -115,6 +145,10 @@ If the `docker-compose` method is preferred for running the application, proceed
     docker-compose up -d
     ```
 
+### SSL
+
+Because the application server runs on port 80 within its container, it is **highly** recommended to put MRA behind a secured reverse proxy such as [Nginx Proxy Manager](https://github.com/NginxProxyManager/nginx-proxy-manager) or [Traefik](https://github.com/traefik/traefik).
+
 ## Execute Sync
 
 Once the application is configured and running, use the following command to execute the syncing of the Reddit profile's `Saved` Posts down to the local system:
@@ -131,14 +165,6 @@ View the container logs using the following Docker command:
 
 ```bash
 docker logs mra
-```
-
-### Cron Logs
-
-The cron logs can be viewed using the following command:
-
-```bash
-docker exec -it mra sh -c "tail -f /var/log/cron-execution.log"
 ```
 
 ## Updating
