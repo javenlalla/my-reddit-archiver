@@ -15,36 +15,46 @@
 
 ## Setup
 
-1. Create and configure an `.env.dev` from the provided `.env.sample` file.
+1. Clone repository.
+2. Create Development-specific `docker-compose.yml`
 
-    ```bash
-    cp .env.sample .env
+    ```yaml
+    version: '3.9'
+
+    services:
+      mra-dev:
+        container_name: mra-dev
+        build:
+          context: .
+          dockerfile: ./development/Dockerfile.dev.alpine
+          # Buster image also available if preferred.
+          # dockerfile: ./development/Dockerfile.dev.buster
+        volumes:
+          - ./src:/var/www/mra
+          - ./r-media:/r-media
+          - ./database:/database
+          - /var/www/mra/var/
+        working_dir: /var/www/mra
+        environment:
+          REDDIT_USERNAME: MyRedditUsername
+          REDDIT_PASSWORD: "MyRedditPassword"
+          REDDIT_CLIENT_ID: "MyAppClientID"
+          REDDIT_CLIENT_SECRET: "MyAppClientSecret"
+          # If using Jetbrains/PHPStorm, define this value according to your IDE setup for debugging.
+          # See the following page for information: https://www.jetbrains.com/help/phpstorm/debugging-a-php-cli-script.html
+          # environment:
+          # PHP_IDE_CONFIG: "serverName=mra.local.com"
+        ports:
+          - "2180:80" # Adjust port as needed.
     ```
 
-2. Create a `docker-compose.yml` file:
-
-    ```bash
-    cp docker-compose.development.sample.yml docker-compose.development.yml
-    ```
-
-3. Modify as needed.
-4. Start application:
-
-    ```bash
-    docker-compose -f docker-compose.development.yml up -d
-    ```
-
-5. Install the frontend dependencies:
-
-    ```bash
-    docker exec -it mra-dev yarn install
-    ```
-
-6. Build the frontend UI:
-
-    ```bash
-    docker exec -it mra-dev-fe yarn watch
-    ```
+3. Update the Environment variables in the `environment` section.
+4. [Optional] Configure the Environment variable for `PHP_IDE_CONFIG` as needed.
+5. [Optional] Adjust host port as needed.
+6. Start container `docker-compose up -d`
+7. Install `yarn` dependencies
+   1. `docker exec -it mra-dev yarn install`
+   2. `docker exec -it mra-dev yarn build`
 
 ### Hook Into Containers
 

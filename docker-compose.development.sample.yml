@@ -12,7 +12,10 @@ services:
       - ./database:/database
       - /var/www/mra/var/
     working_dir: /var/www/mra
-    env_file: .env
+    REDDIT_USERNAME: MyRedditUsername
+      REDDIT_PASSWORD: "MyRedditPassword"
+      REDDIT_CLIENT_ID: "MyAppClientID"
+      REDDIT_CLIENT_SECRET: "MyAppClientSecret"
     # If using Jetbrains/PHPStorm, define this value according to your IDE setup for debugging.
     # See the following page for information: https://www.jetbrains.com/help/phpstorm/debugging-a-php-cli-script.htmlQ
     # environment:
