@@ -68,6 +68,8 @@ class Api
 
     const DEFAULT_HOT_LIMIT = 10;
 
+    const DEFAULT_OS = "docker-client";
+
     private string $accessToken;
 
     private string $userAgent;
@@ -343,6 +345,9 @@ class Api
             $options['headers'] = [];
         }
 
+        if (empty($this->userAgent)) {
+            $this->setUserAgent();
+        }
         $options['headers']['User-Agent'] = $this->userAgent;
 
         $response = $this->client->request($method, $endpoint, $options);
@@ -457,13 +462,29 @@ class Api
     }
 
     /**
-     * Set a unique User Agent for API requests using the current Username.
+     * As per requirements outlined by Reddit: https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki
+     * Construct a User Agent in the following format:
+     *      <platform>:<app ID>:<version string> (by /u/<reddit username>)
      *
      * @return void
      */
     private function setUserAgent()
     {
-        $this->userAgent = sprintf('User-Agent from %s', $this->username);
+        $os = PHP_OS;
+        if (empty($os)) {
+            $os = self::DEFAULT_OS;
+        }
+
+        // @TODO: Make the following values dynamic.
+        $appId = 'mra-dev';
+        $version = 'v' . '0.0.1';
+
+        $this->userAgent = sprintf("%s:%s:%s (by /u/%s)",
+            strtolower($os),
+            $appId,
+            $version,
+            $this->username,
+        );
     }
 
     /**
