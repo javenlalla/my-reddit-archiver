@@ -6,6 +6,9 @@ FROM php:8.1.7-fpm-alpine
 
 ENV APP_PUBLIC_PATH=/var/www/mra/public
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_ID=mra-dev
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 
 RUN apk --no-cache add \
     libxml2-dev \

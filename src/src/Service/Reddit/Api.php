@@ -68,7 +68,9 @@ class Api
 
     const DEFAULT_HOT_LIMIT = 10;
 
-    const DEFAULT_OS = "docker-client";
+    const DEFAULT_OS = 'docker-client';
+
+    const USER_AGENT_FORMAT = '%s:%s:%s (by /u/%s)';
 
     private string $accessToken;
 
@@ -83,6 +85,8 @@ class Api
         private readonly string $password,
         private readonly string $clientId,
         private readonly string $clientSecret,
+        private readonly string $appId,
+        private readonly string $appVersion,
     ) {
         $this->setUserAgent();
     }
@@ -475,14 +479,10 @@ class Api
             $os = self::DEFAULT_OS;
         }
 
-        // @TODO: Make the following values dynamic.
-        $appId = 'mra-dev';
-        $version = 'v' . '0.0.1';
-
-        $this->userAgent = sprintf("%s:%s:%s (by /u/%s)",
+        $this->userAgent = sprintf(self::USER_AGENT_FORMAT,
             strtolower($os),
-            $appId,
-            $version,
+            $this->appId,
+            $this->appVersion,
             $this->username,
         );
     }

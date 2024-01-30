@@ -26,6 +26,8 @@
         container_name: mra-dev
         build:
           context: .
+          args:
+            APP_VERSION: 0.0.9
           dockerfile: ./development/Dockerfile.dev.alpine
           # Buster image also available if preferred.
           # dockerfile: ./development/Dockerfile.dev.buster
