@@ -15,7 +15,7 @@ Self-hosted web application to archive your Reddit profile's Comments and Saved,
     - [docker run](#docker-run)
     - [docker-compose](#docker-compose)
     - [SSL](#ssl)
-  - [Execute Sync](#execute-sync)
+  - [Syncing](#syncing)
   - [Logging](#logging)
     - [Container Logs](#container-logs)
   - [Updating](#updating)
@@ -82,7 +82,7 @@ For convenience, an `.env.sample` file is provided in the root of this repositor
 
 If the `docker run` method is preferred for running the application, proceed with this section. If the `docker-compose` method is preferred, skip to [docker-compose(#docker-compose)].
 
-If leveraging a Once the `.env` file has been created and configured, start the application with the following command.
+Run the appropriate command below based on if using a `.env` file or inline Environment Variables.
 
 Note: The volume mounts are needed for backup/persistent storage of the archive database and downloaded media assets from Reddit Posts.
 
@@ -149,13 +149,12 @@ If the `docker-compose` method is preferred for running the application, proceed
 
 Because the application server runs on port 80 within its container, it is **highly** recommended to put MRA behind a secured reverse proxy such as [Nginx Proxy Manager](https://github.com/NginxProxyManager/nginx-proxy-manager) or [Traefik](https://github.com/traefik/traefik).
 
-## Execute Sync
+## Syncing
 
-Once the application is configured and running, use the following command to execute the syncing of the Reddit profile's `Saved` Posts down to the local system:
+Syncing is executed automatically in the following cases:
 
-```bash
-docker exec -it mra ./sync-api
-```
+1. On container start/spin-up
+2. Twice an hour at :00 and :30
 
 ## Logging
 
