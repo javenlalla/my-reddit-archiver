@@ -27,7 +27,7 @@
         build:
           context: .
           args:
-            APP_VERSION: 0.0.9
+            APP_VERSION: 0.1.0
           dockerfile: ./development/Dockerfile.dev.alpine
           # Buster image also available if preferred.
           # dockerfile: ./development/Dockerfile.dev.buster
