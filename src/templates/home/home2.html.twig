@@ -1,0 +1,115 @@
+{% extends 'layout.html.twig' %}
+
+{% block main_content %}
+
+    <div>
+
+        <div class="row">
+            <div class="col">
+                {{ form_start(form) }}
+                <div class="my-custom-class-for-errors">
+                    {{ form_errors(form) }}
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="search-form form-control mb-3">
+                            <div class="row">
+                                <div>
+                                    {{ form_widget(form.query) }}
+
+                                    <small>{{ form_help(form.query) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.query) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.subreddits) }}
+
+                                    <small>{{ form_help(form.subreddits) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.subreddits) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.flairTexts) }}
+
+                                    <small>{{ form_help(form.flairTexts) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.flairTexts) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.tags) }}
+
+                                    <small>{{ form_help(form.tags) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.tags) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col mt-3 text-center color--white" data-loading="hide">
+                                    <h6 class="mb-0">{{ searchResults.total|number_format(0, ',') }} Results</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+{#        {% set currentPaginator = this.paginator(searchResults.total) %}#}
+
+        <div class="row">
+            <div class="col text-center font-size--36 color--white" data-loading>
+                {{ include('icons/loading_icon.html.twig') }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" data-loading="hide">
+                {% if searchResults.total > 0 %}
+                    {{ include('contents/_pagination.html.twig', {
+                        query: query,
+                        subreddits: subreddits,
+                        flairTexts: flairTexts,
+                        tags: tags,
+                        perPage: perPage,
+                        paginator: paginator,
+                    }) }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" data-loading="hide">
+                {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" data-loading="hide">
+                {% if searchResults.total > 0 %}
+                    {{ include('contents/_pagination.html.twig', {
+                        query: query,
+                        subreddits: subreddits,
+                        flairTexts: flairTexts,
+                        tags: tags,
+                        perPage: perPage,
+                        paginator: paginator,
+                    }) }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

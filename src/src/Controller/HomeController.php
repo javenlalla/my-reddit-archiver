@@ -3,7 +3,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\FlairText;
+use App\Entity\Subreddit;
+use App\Entity\Tag;
+use App\Form\SearchForm;
+use App\Form\SearchFormV2;
+use App\Service\Pagination;
 use App\Service\Search;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +28,44 @@ class HomeController extends AbstractController
             'tags' => $request->get('tags', []),
             'perPage' => (int) $request->get('perPage', Search::DEFAULT_LIMIT),
             'page' => (int) $request->get('page', 1),
+        ]);
+    }
+
+    #[Route('/v2/search', name: 'search.v2')]
+    public function searchUpdated(Request $request, Search $searchService, Pagination $paginationService, EntityManagerInterface $em): Response
+    {
+        $form = $this->createForm(SearchFormV2::class, [
+            'subreddits' => [],
+            'flairTexts' => [],
+            'tags' => [],
+        ], ['csrf_protection' => false]);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var SearchForm $searchCriteria */
+            $searchCriteria = $form->getData();
+
+            $searchResults = $searchService->search(
+                $searchCriteria['query'],
+                // $this->subreddits,
+                // $this->flairTexts,
+                // $this->tags,
+                // $this->perPage,
+                // $this->page,
+            );
+        } else {
+            $searchResults = $searchService->search(null);
+        }
+
+        $paginator = $paginationService->createNewPaginator(
+            $searchResults->getTotal(),
+            $searchResults->getPerPage(),
+            $searchResults->getPage(),
+        );
+
+        return $this->render('home/home2.html.twig', [
+            'form' => $form,
+            'searchResults' => $searchResults,
+            'paginator' => $paginator,
         ]);
     }
 }
