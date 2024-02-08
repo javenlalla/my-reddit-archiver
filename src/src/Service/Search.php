@@ -6,6 +6,7 @@ namespace App\Service;
 use App\Entity\Content;
 use App\Entity\FlairText;
 use App\Entity\Subreddit;
+use App\Entity\Tag;
 use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search\Indexer;
@@ -72,8 +73,8 @@ class Search
             }
         }
 
-        $tagEntities = [];
-        if (!empty($tags)) {
+        $tagEntities = $tags;
+        if (!empty($tags) && is_string($tags[0]) === true) {
             $tagEntities = $this->tagRepository->findByNames($tags);
         }
 

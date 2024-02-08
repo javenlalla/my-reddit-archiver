@@ -2,11 +2,20 @@
 
 {% block main_content %}
 
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+
     <div>
 
         <div class="row">
             <div class="col">
-                {{ form_start(form) }}
+                {{ form_start(form, { 'attr' : {
+                    'autocomplete': 'off',
+                    'hx-get': '/v2/search',
+                    'hx-trigger': 'submit',
+                    'hx-target': '#search-results',
+                    'hx-select': '#search-results'
+                }}) }}
                 <div class="my-custom-class-for-errors">
                     {{ form_errors(form) }}
                 </div>
@@ -28,7 +37,9 @@
 
                             <div class="row">
                                 <div class="col-sm-4 mt-3">
-                                    {{ form_widget(form.subreddits) }}
+                                    {{ form_widget(form.subreddits, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
 
                                     <small>{{ form_help(form.subreddits) }}</small>
 
@@ -37,7 +48,9 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4 mt-3">
-                                    {{ form_widget(form.flairTexts) }}
+                                    {{ form_widget(form.flairTexts, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
 
                                     <small>{{ form_help(form.flairTexts) }}</small>
 
@@ -46,7 +59,9 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4 mt-3">
-                                    {{ form_widget(form.tags) }}
+                                    {{ form_widget(form.tags, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
 
                                     <small>{{ form_help(form.tags) }}</small>
 
@@ -69,35 +84,37 @@
         </div>
 {#        {% set currentPaginator = this.paginator(searchResults.total) %}#}
 
-        <div class="row">
-            <div class="col text-center font-size--36 color--white" data-loading>
-                {{ include('icons/loading_icon.html.twig') }}
+        <div id="search-results">
+            <div class="row">
+                <div class="col text-center font-size--36 color--white" data-loading>
+                    {{ include('icons/loading_icon.html.twig') }}
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col" data-loading="hide">
-                {% if searchResults.total > 0 %}
-                    {{ include('contents/_pagination2.html.twig', {
-                        paginator: paginator,
-                    }) }}
-                {% endif %}
+            <div class="row">
+                <div class="col" data-loading="hide">
+                    {% if searchResults.total > 0 %}
+                        {{ include('contents/_pagination2.html.twig', {
+                            paginator: paginator,
+                        }) }}
+                    {% endif %}
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col" data-loading="hide">
-                {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
+            <div class="row">
+                <div class="col" data-loading="hide">
+                    {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
+                </div>
             </div>
-        </div>
 
-        <div class="row">
-            <div class="col" data-loading="hide">
-                {% if searchResults.total > 0 %}
-                    {{ include('contents/_pagination2.html.twig', {
-                        paginator: paginator,
-                    }) }}
-                {% endif %}
+            <div class="row">
+                <div class="col" data-loading="hide">
+                    {% if searchResults.total > 0 %}
+                        {{ include('contents/_pagination2.html.twig', {
+                            paginator: paginator,
+                        }) }}
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

@@ -91,6 +91,8 @@ class SearchFormV2 extends AbstractType
             ->add('submit', SubmitType::class, [
                 'label' => 'Search',
             ])
+            // Note: for an HTMX request, both the Method and Action must be defined
+            // here as well in order to be processed correctly by the Symfony form handling.
             ->setMethod('GET')
             ->setAction('/v2/search')
         ;
