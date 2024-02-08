@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Content;
+use App\Entity\FlairText;
+use App\Entity\Subreddit;
 use App\Repository\SearchContentRepository;
 use App\Repository\TagRepository;
 use App\Service\Search\Indexer;
@@ -52,12 +54,30 @@ class Search
      */
     public function search(?string $searchQuery, array $subreddits = [], array $flairTexts = [], array $tags = [], int $perPage = self::DEFAULT_LIMIT, int $page = 1): Results
     {
+        $subredditNames = $subreddits;
+        if (!empty($subreddits) && $subreddits[0] instanceof Subreddit) {
+            $subredditNames = [];
+
+            foreach ($subreddits as $subreddit) {
+                $subredditNames[] = $subreddit->getName();
+            }
+        }
+
+        $flairTextNames = $flairTexts;
+        if (!empty($flairTexts) && $flairTexts[0] instanceof FlairText) {
+            $flairTextNames = [];
+
+            foreach ($flairTexts as $flairText) {
+                $flairTextNames[] = $flairText->getDisplayText();
+            }
+        }
+
         $tagEntities = [];
         if (!empty($tags)) {
             $tagEntities = $this->tagRepository->findByNames($tags);
         }
 
-        return $this->searchContentRepository->search($searchQuery, $subreddits, $flairTexts, $tagEntities, $perPage, $page);
+        return $this->searchContentRepository->search($searchQuery, $subredditNames, $flairTextNames, $tagEntities, $perPage, $page);
     }
 
     /**

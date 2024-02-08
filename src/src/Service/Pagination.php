@@ -26,10 +26,12 @@ class Pagination
      * @param  int  $totalItems
      * @param  int  $itemsPerPage
      * @param  int  $currentPage
+     * @param  string  $uriPath Target URI path, excluding query parameters.
+     * @param  array  $queryParams Query parameters formatted as paramName => paramValue
      *
      * @return Paginator
      */
-    public function createNewPaginator(int $totalItems, int $itemsPerPage, int $currentPage): Paginator
+    public function createNewPaginator(int $totalItems, int $itemsPerPage, int $currentPage, string $uriPath, array $queryParams = []): Paginator
     {
         $paginator = new Paginator();
         $paginator->setCurrentPage($currentPage);
@@ -59,6 +61,8 @@ class Pagination
             $currentPage,
             ...$nextPageNumbers,
         ]);
+
+        $paginator->setUriPath($uriPath, $queryParams);
 
         return $paginator;
     }

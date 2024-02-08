@@ -120,6 +120,7 @@ class ArchiveSearchComponent extends AbstractController
             $totalResults,
             $this->perPage,
             $this->page,
+            '/',
         );
     }
 }

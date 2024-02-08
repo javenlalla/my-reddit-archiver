@@ -78,12 +78,7 @@
         <div class="row">
             <div class="col" data-loading="hide">
                 {% if searchResults.total > 0 %}
-                    {{ include('contents/_pagination.html.twig', {
-                        query: query,
-                        subreddits: subreddits,
-                        flairTexts: flairTexts,
-                        tags: tags,
-                        perPage: perPage,
+                    {{ include('contents/_pagination2.html.twig', {
                         paginator: paginator,
                     }) }}
                 {% endif %}
@@ -99,12 +94,7 @@
         <div class="row">
             <div class="col" data-loading="hide">
                 {% if searchResults.total > 0 %}
-                    {{ include('contents/_pagination.html.twig', {
-                        query: query,
-                        subreddits: subreddits,
-                        flairTexts: flairTexts,
-                        tags: tags,
-                        perPage: perPage,
+                    {{ include('contents/_pagination2.html.twig', {
                         paginator: paginator,
                     }) }}
                 {% endif %}

@@ -31,13 +31,12 @@ class SearchFormV2 extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new Length(['min' => 3]),
-                    new NotBlank(),
                 ],
             ])
             ->add('subreddits', EntityType::class, [
                 'class' => Subreddit::class,
                 'choice_label' => 'name',
-                'choice_value' => 'id',
+                'choice_value' => 'name',
                 'placeholder' => 'Filter By Sub-Reddits',
                 'query_builder' => function (SubredditRepository $repository) {
                     return $repository->createQueryBuilder('s')
@@ -57,7 +56,7 @@ class SearchFormV2 extends AbstractType
                 'class' => FlairText::class,
                 'placeholder' => 'Filter By Flairs',
                 'choice_label' => 'displayText',
-                'choice_value' => 'id',
+                'choice_value' => 'displayText',
                 'query_builder' => function (FlairTextRepository $repository) {
                     return $repository->createQueryBuilder('f')
                         ->orderBy('f.displayText', 'ASC');
@@ -76,7 +75,7 @@ class SearchFormV2 extends AbstractType
                 'placeholder' => 'Filter By Tags',
                 'class' => Tag::class,
                 'choice_label' => 'name',
-                'choice_value' => 'id',
+                'choice_value' => 'name',
                 'attr' => [
                     'data-model' => 'tags',
                 ],

@@ -38,28 +38,31 @@ class HomeController extends AbstractController
             'subreddits' => [],
             'flairTexts' => [],
             'tags' => [],
-        ], ['csrf_protection' => false]);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var SearchForm $searchCriteria */
-            $searchCriteria = $form->getData();
+        ], [
+            'csrf_protection' => false,
+            'allow_extra_fields' => true,
+        ]);
 
-            $searchResults = $searchService->search(
-                $searchCriteria['query'],
-                // $this->subreddits,
-                // $this->flairTexts,
-                // $this->tags,
-                // $this->perPage,
-                // $this->page,
-            );
-        } else {
-            $searchResults = $searchService->search(null);
-        }
+        $page = (int) $request->get('page', 1);
+        $form->handleRequest($request);
+        /** @var SearchForm $searchCriteria */
+        $searchCriteria = $form->getData();
+
+        $searchResults = $searchService->search(
+            $searchCriteria['query'] ?? null,
+            $searchCriteria['subreddits'],
+            $searchCriteria['flairTexts'],
+            $searchCriteria['tags'],
+            $request->get('perPage', Search::DEFAULT_LIMIT),
+            page: $page,
+        );
 
         $paginator = $paginationService->createNewPaginator(
             $searchResults->getTotal(),
             $searchResults->getPerPage(),
             $searchResults->getPage(),
+            $request->getBasePath(),
+            $request->query->all(),
         );
 
         return $this->render('home/home2.html.twig', [
