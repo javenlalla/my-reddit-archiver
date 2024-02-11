@@ -109,6 +109,22 @@ blockquote>p {
     color: black;
 }
 
+#search-results-loader {
+    font-size: 36px;
+}
+
+.hx-loader {
+    display: none;
+}
+
+.htmx-request .hx-loader {
+    display: inline;
+}
+
+.htmx-request.hx-loader {
+    display: inline;
+}
+
 /*
 Remove all styling from a button.
 Source: https://stackoverflow.com/a/45890842

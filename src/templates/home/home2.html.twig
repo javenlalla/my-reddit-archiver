@@ -2,11 +2,7 @@
 
 {% block main_content %}
 
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
-
     <div>
-
         <div class="row">
             <div class="col">
                 {{ form_start(form, { 'attr' : {
@@ -14,7 +10,10 @@
                     'hx-get': '/v2/search',
                     'hx-trigger': 'submit',
                     'hx-target': '#search-results',
-                    'hx-select': '#search-results'
+                    'hx-select': '#search-results',
+                    'hx-indicator': '#search-results-loader',
+                    'hx-swap': 'outerHTML',
+                    '_': 'on htmx:beforeRequest toggle .d-none on #search-results__container until htmx:afterOnLoad',
                 }}) }}
                 <div class="my-custom-class-for-errors">
                     {{ form_errors(form) }}
@@ -83,36 +82,40 @@
             </div>
         </div>
 
-        <div id="search-results">
-            <div class="row">
-                <div class="col text-center font-size--36 color--white" data-loading>
-                    {{ include('icons/loading_icon.html.twig') }}
-                </div>
-            </div>
+        <div class="row text-center">
+            <span id="search-results-loader" class="hx-loader color--white">
+                {{ include('icons/loading_icon.html.twig') }}
+            </span>
+        </div>
 
-            <div class="row">
-                <div class="col" data-loading="hide">
-                    {% if searchResults.total > 0 %}
-                        {{ include('contents/_pagination2.html.twig', {
-                            paginator: paginator,
-                        }) }}
-                    {% endif %}
-                </div>
-            </div>
+        <div id="search-results__container">
+            <div id="search-results" class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {% if searchResults.total > 0 %}
+                                {{ include('contents/_pagination2.html.twig', {
+                                    paginator: paginator,
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
 
-            <div class="row">
-                <div class="col" data-loading="hide">
-                    {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
-                </div>
-            </div>
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
+                        </div>
+                    </div>
 
-            <div class="row">
-                <div class="col" data-loading="hide">
-                    {% if searchResults.total > 0 %}
-                        {{ include('contents/_pagination2.html.twig', {
-                            paginator: paginator,
-                        }) }}
-                    {% endif %}
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {% if searchResults.total > 0 %}
+                                {{ include('contents/_pagination2.html.twig', {
+                                    paginator: paginator,
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
