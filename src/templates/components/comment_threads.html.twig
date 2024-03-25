@@ -1,34 +1,9 @@
-<div {{ attributes }}>
-    {% set syncButton %}
-        <button class="btn btn-secondary btn-sm comments-thread__sync-button"
-                type="button"
-                data-model="comments"
-                data-action="live#action"
-                data-action-name="syncComments"
-                data-loading="action(syncComments)|hide"
-        >Sync Comments</button>
-
-        <span class="comments-thread__sync-button" data-loading="action(syncComments)|show">
-            {{ include('icons/loading_icon.html.twig') }}
-        </span>
-    {% endset %}
-
+<div>
     <div class="row">
         <div class="col">
-            <div class="search-result-content border-radius--top-25em border-radius--bottom-25em">
-                {% if this.comments|length > 0 %}
-                    {{ syncButton }}
-
-                    {{ include('contents/comments/_comment_threads.html.twig', {
-                        comments: this.comments,
-                    }) }}
-                {% else %}
-                    {{ syncButton }}
-                    <br/>
-
-                    <span class="font-size--12 comments-thread__sync-button" data-loading="action(syncComments)|hide"><em>No comments yet.</em></span>
-                {% endif %}
-            </div>
+            {{ include('contents/comments/_comments_threads.html.twig', {
+                comments: this.comments,
+            }) }}
         </div>
     </div>
 </div>

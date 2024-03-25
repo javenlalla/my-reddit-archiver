@@ -1,0 +1,31 @@
+{% set syncButton %}
+    <button class="btn btn-secondary btn-sm comments-thread__sync-button"
+            type="button"
+            hx-post={{ url('contents_sync_comments', { id: content.id }) }}
+            hx-vals={{ "{\"token\":\"#{csrf_token('sync-comments' ~ content.id)}\"}" }}
+            hx-indicator="#syncing-comments-loader"
+            _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad"
+            hx-select="#comment-threads"
+            hx-target="#comment-threads"
+            hx-swap="outerHTML"
+    >Sync Comments</button>
+
+    <span id="syncing-comments-loader" class="comments-thread__sync-button hx-loader">
+            {{ include('icons/loading_icon.html.twig') }}
+        </span>
+{% endset %}
+
+<div id="comment-threads" class="search-result-content border-radius--top-25em border-radius--bottom-25em">
+    {% if comments|length > 0 %}
+        {{ syncButton }}
+
+        {{ include('contents/comments/_comment_threads.html.twig', {
+            comments: comments,
+        }) }}
+    {% else %}
+        {{ syncButton }}
+        <br/>
+
+        <span class="font-size--12 comments-thread__sync-button" data-loading="action(syncComments)|hide"><em>No comments yet.</em></span>
+    {% endif %}
+</div>

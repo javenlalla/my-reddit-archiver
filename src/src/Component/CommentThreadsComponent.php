@@ -8,18 +8,12 @@ use App\Entity\Post;
 use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\Comments;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
-use Symfony\UX\LiveComponent\Attribute\LiveAction;
-use Symfony\UX\LiveComponent\DefaultActionTrait;
-use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\TwigComponent\Attribute\AsTwigComponent;
 use Symfony\UX\TwigComponent\Attribute\PreMount;
 
-#[AsLiveComponent('comment_threads')]
+#[AsTwigComponent('comment_threads')]
 class CommentThreadsComponent extends AbstractController
 {
-    use DefaultActionTrait;
-
-    #[LiveProp(writable: true)]
     public Content $content;
 
     public array $comments = [];
@@ -43,16 +37,6 @@ class CommentThreadsComponent extends AbstractController
         $data['comments'] = $this->getCommentsByPost($post);
 
         return $data;
-    }
-
-    #[LiveAction]
-    public function syncComments()
-    {
-        $context = new Context(Context::SOURCE_USER_SYNC_COMMENTS);
-        $syncedComments = $this->commentsManager->syncCommentsByContent($context, $this->content)->toArray();
-
-        $post = $this->content->getPost();
-        $this->comments = $this->getCommentsByPost($post);
     }
 
     /**
