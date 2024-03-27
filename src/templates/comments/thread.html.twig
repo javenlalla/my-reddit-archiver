@@ -1,4 +1,4 @@
-<div {{ attributes }}>
+<div id={{ "comment-#{comment.id}" }}>
     <div style="border-left: 2px solid #dedede; padding-left: 5px; margin-left: 10px;">
         <span style="font-size: 10px; font-weight: bold; color: #1c1c1c">
             <span><i class="fa-solid fa-circle-user"></i></span> {{ comment.author }}
@@ -20,7 +20,8 @@
         {{ include('contents/list/_content_footer.html.twig', {
             postScore: comment.score,
             commentsCount: comment.replies.count,
-            redditLink: comment.redditUrl
+            redditLink: comment.redditUrl,
+            disableTags: true,
         }) }}
 
         {{ include('contents/comments/_comment_threads.html.twig', {
@@ -28,16 +29,18 @@
         }) }}
 
         {% if not comment.moreComments.isEmpty %}
-            <span class="text-secondary fst-italic font-size--10"
-                  role="button"
-                  data-action="click->live#action"
-                  data-action-name="syncLoadMore(redditId={{ comment.moreComments[0].redditId }})"
-                  data-loading="action(syncLoadMore)|hide"
+            <span class="text-secondary fst-italic font-size--10" role="button"
+                hx-post={{ url('comments_load_more', { commentId: comment.id, moreCommentId: comment.moreComments[0].redditId }) }}
+                hx-vals={{ "{\"token\":\"#{csrf_token('load-more' ~ comment.id)}\"}" }}
+                _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad"
+                hx-target={{ "#comment-#{comment.id}" }}
+                hx-swap="outerHTML"
+                hx-indicator={{ "#load-more-loader-#{comment.id}" }}
             >
                 Load More ({{ comment.moreComments|length }})
             </span>
 
-            <span data-loading="action(syncLoadMore)|show">
+            <span id={{ "load-more-loader-#{comment.id}" }} class="hx-loader">
                 {{ include('icons/loading_icon.html.twig') }}
             </span>
         {% endif %}

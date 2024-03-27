@@ -1,5 +1,5 @@
 {% for comment in comments %}
-    {{ component('comment_thread', {
-        comment: comment,
+    {{ include('comments/thread.html.twig', {
+        comments: comments,
     }) }}
 {% endfor %}
