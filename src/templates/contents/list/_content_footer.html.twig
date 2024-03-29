@@ -1,10 +1,11 @@
 <div class="row">
     <div class="col font-size--10">
         {% if content is defined and disableTags|default(false) == false %}
-            {{ component('content_tags', {
-                content: content,
-                key: content.id,
-            }) }}
+            <div id={{ "tags-inline-#{content.id}" }}>
+                {{ include('tags/inline.html.twig', {
+                    content: content
+                }) }}
+            </div>
         {% endif %}
     </div>
 

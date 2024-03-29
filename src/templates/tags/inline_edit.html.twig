@@ -1,0 +1,52 @@
+<div class="row mt-2 mb-2">
+    <div class="col-lg-4">
+        <div>
+            {{ form_start(contentTagsForm, {'attr': {'id': "tags-inline-form-#{content.id}"}}) }}
+            <div class="my-custom-class-for-errors">
+                {{ form_errors(contentTagsForm) }}
+            </div>
+
+            {{ form_widget(contentTagsForm.tags) }}
+
+            <small>{{ form_help(contentTagsForm.tags) }}</small>
+
+            <div class="form-error">
+                {{ form_errors(contentTagsForm.tags) }}
+            </div>
+
+            {{ form_end(contentTagsForm) }}
+        </div>
+
+        <div class="row justify-center">
+            <div class="col">
+                <button class="btn--no-style mt-1"
+                    hx-get={{ url('tags_inline', { contentId: content.id }) }}
+                    hx-indicator={{ "#inline-tags-cancel-loader-#{content.id}" }}
+                    _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad"
+                    hx-target={{ "#tags-inline-#{content.id}" }}
+                    hx-swap="innerHTML"
+                ><i class="text-danger font-size--24 fa-regular fa-rectangle-xmark"></i>
+                </button>
+
+                <span id={{ "inline-tags-cancel-loader-#{content.id}" }} class="text-info font-size--24 hx-loader">
+                    {{ include('icons/loading_icon.html.twig') }}
+                </span>
+            </div>
+            <div class="col text-end">
+                <button class="btn--no-style mt-1"
+                    hx-post={{ url('tags_inline_edit', { contentId: content.id }) }}
+                    hx-indicator={{ "#inline-tags-save-loader-#{content.id}" }}
+                    _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad"
+                    hx-target={{ "#tags-inline-#{content.id}" }}
+                    hx-include={{ "#tags-inline-form-#{content.id}" }}
+                    hx-swap="innerHTML"
+                ><i class="text-success font-size--24 fa-regular fa-square-check"></i>
+                </button>
+
+                <span id={{ "inline-tags-save-loader-#{content.id}" }} class="text-info font-size--24 hx-loader">
+                    {{ include('icons/loading_icon.html.twig') }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

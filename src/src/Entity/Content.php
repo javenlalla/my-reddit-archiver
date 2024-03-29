@@ -119,6 +119,25 @@ class Content
     }
 
     /**
+     * Loop through the Content's Tags and verify if the provided Tag is
+     * associated to the Content, by its name.
+     *
+     * @param  string  $tagName
+     *
+     * @return bool
+     */
+    public function hasTagName(string $tagName): bool
+    {
+        foreach ($this->getTags() as $tag) {
+            if ($tag->getName() === $tagName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Determine if this Content is a Comment Content.
      *
      * @return bool

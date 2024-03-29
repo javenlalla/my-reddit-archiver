@@ -1,0 +1,15 @@
+{% for tag in content.tags %}
+    <span class="badge rounded-pill bg-info">{{ tag.name }}</span>
+{% endfor %}
+
+<button class="btn--no-style"
+    hx-get={{ url('tags_inline_edit', { contentId: content.id }) }}
+    hx-indicator={{ "#inline-tags-loader-#{content.id}" }}
+    _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad"
+    hx-target={{ "#tags-inline-#{content.id}" }}
+    hx-swap="innerHTML"
+><i class="color--light-gray fa-solid fa-tags"></i></button>
+
+<span id={{ "inline-tags-loader-#{content.id}" }} class="comments-thread__sync-button hx-loader">
+    {{ include('icons/loading_icon.html.twig') }}
+</span>
