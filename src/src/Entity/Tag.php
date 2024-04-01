@@ -25,6 +25,12 @@ class Tag
     #[ORM\ManyToMany(targetEntity: Content::class, mappedBy: 'tags')]
     private $contents;
 
+    #[ORM\Column(length: 6)]
+    private ?string $labelColor = null;
+
+    #[ORM\Column(length: 6)]
+    private ?string $labelFontColor = null;
+
     public function __construct()
     {
         $this->contents = new ArrayCollection();
@@ -70,6 +76,30 @@ class Tag
         if ($this->contents->removeElement($content)) {
             $content->removeTag($this);
         }
+
+        return $this;
+    }
+
+    public function getLabelColor(): ?string
+    {
+        return $this->labelColor;
+    }
+
+    public function setLabelColor(string $labelColor): static
+    {
+        $this->labelColor = $labelColor;
+
+        return $this;
+    }
+
+    public function getLabelFontColor(): ?string
+    {
+        return $this->labelFontColor;
+    }
+
+    public function setLabelFontColor(string $labelFontColor): static
+    {
+        $this->labelFontColor = $labelFontColor;
 
         return $this;
     }

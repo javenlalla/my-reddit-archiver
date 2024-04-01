@@ -34,6 +34,12 @@ class FlairText
     #[ORM\OneToMany(mappedBy: 'flairText', targetEntity: Comment::class)]
     private Collection $comments;
 
+    #[ORM\Column(length: 6)]
+    private ?string $labelColor = null;
+
+    #[ORM\Column(length: 6)]
+    private ?string $labelFontColor = null;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -137,6 +143,30 @@ class FlairText
                 $comment->setFlairText(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getLabelColor(): ?string
+    {
+        return $this->labelColor;
+    }
+
+    public function setLabelColor(string $labelColor): static
+    {
+        $this->labelColor = $labelColor;
+
+        return $this;
+    }
+
+    public function getLabelFontColor(): ?string
+    {
+        return $this->labelFontColor;
+    }
+
+    public function setLabelFontColor(string $labelFontColor): static
+    {
+        $this->labelFontColor = $labelFontColor;
 
         return $this;
     }

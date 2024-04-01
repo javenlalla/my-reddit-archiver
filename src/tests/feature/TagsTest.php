@@ -41,10 +41,14 @@ class TagsTest extends KernelTestCase
 
         $tagOne = new Tag();
         $tagOne->setName('TestTagOne');
+        $tagOne->setLabelColor(substr(md5(microtime()),rand(0,26), 6));
+        $tagOne->setLabelFontColor(substr(md5(microtime()),rand(0,26), 6));
         $this->tagRepository->add($tagOne, true);
 
         $tagTwo = new Tag();
         $tagTwo->setName('Testing Tag 2');
+        $tagTwo->setLabelColor(substr(md5(microtime()),rand(0,26), 6));
+        $tagTwo->setLabelFontColor(substr(md5(microtime()),rand(0,26), 6));
         $this->tagRepository->add($tagTwo, true);
 
         $content = $post->getContent();

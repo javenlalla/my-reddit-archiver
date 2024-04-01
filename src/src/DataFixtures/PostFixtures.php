@@ -376,6 +376,8 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
             $flairText->setPlainText($flairTextValue);
             $flairText->setDisplayText($flairTextValue);
             $flairText->setReferenceId($referenceId);
+            $flairText->setLabelColor(substr(md5(microtime()),rand(0,26), 6));
+            $flairText->setLabelFontColor(substr(md5(microtime()),rand(0,26), 6));
         }
 
         return $flairText;

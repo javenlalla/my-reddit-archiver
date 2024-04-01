@@ -4,6 +4,7 @@
   - [Setup](#setup)
     - [Hook Into Containers](#hook-into-containers)
   - [Testing](#testing)
+    - [Create .env.test](#create-envtest)
     - [Configure Test Database](#configure-test-database)
     - [Run Tests](#run-tests)
   - [Database Changes](#database-changes)
@@ -70,22 +71,38 @@ docker exec -it mra-dev sh
 
 In order to execute the PHPUnit tests, the test database must be instantiated and populated. The following sections provide the commands to set up the test database and run the tests.
 
+### Create .env.test
+
+Create the `test` environment `.env` file:
+
+```bash
+cp .env.test.sample .env.test
+```
+
+Be sure to provide a randomized secret value to the `APP_SECRET` variable.
+
 ### Configure Test Database
 
-1. Create the database and schema.
+Run the following commands within the container to create and configure the `test` database:
 
-    ```bash
-    # Within the container:
-    php bin/console --env=test doctrine:database:create
-    php bin/console --env=test doctrine:schema:create
-    ```
+> **WARNING**: Ensure the `DATABASE_URL` value in the `.env.test` value has been set to a different Sqlite database file than the Production file. Something like `app_test.db` would suffice.
 
-2. Load the data fixtures.
+```bash
+# Hook into container first.
+docker exec -it mra-dev bash
 
-    ```bash
-    # Within the
-    php bin/console --env=test doctrine:fixtures:load
-    ```
+# Drop any existing database.
+php bin/console --env=test doctrine:database:drop --force
+
+# Create the database.
+php bin/console --env=test doctrine:database:create
+
+# Run migrations to create the expected tables and schemas.
+php bin/console --env=test doctrine:migrations:migrate --no-interaction
+
+# Load test data.
+php bin/console --env=test doctrine:fixtures:load --no-interaction --append
+```
 
 ### Run Tests
 

@@ -50,6 +50,8 @@ class FlairTextTest extends KernelTestCase
         $this->assertInstanceOf(FlairText::class, $flairText);
         $this->assertEquals('Discussion', $flairText->getPlainText());
         $this->assertEquals('Discussion', $flairText->getDisplayText());
+        $this->assertEquals(6, strlen($flairText->getLabelColor()));
+        $this->assertEquals(6, strlen($flairText->getLabelFontColor()));
     }
 
     /**
@@ -77,5 +79,7 @@ class FlairTextTest extends KernelTestCase
         $this->assertInstanceOf(FlairText::class, $flairText);
         $this->assertEquals('“Here’s Johnny!” ', $flairText->getPlainText());
         $this->assertEquals('“Here’s Johnny!” ', $flairText->getDisplayText());
+        $this->assertEquals(6, strlen($flairText->getLabelColor()));
+        $this->assertEquals(6, strlen($flairText->getLabelFontColor()));
     }
 }

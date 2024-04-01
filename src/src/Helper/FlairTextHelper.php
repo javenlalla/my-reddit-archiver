@@ -93,11 +93,24 @@ class FlairTextHelper
             $flairText->setPlainText($textValue);
             $flairText->setDisplayText($textValue);
             $flairText->setReferenceId($referenceId);
+            $flairText->setLabelColor($this->generateRandomColorHex());
+            $flairText->setLabelFontColor($this->generateRandomColorHex());
 
             $this->entityManager->persist($flairText);
             $this->entityManager->flush();
         }
 
         return $flairText;
+    }
+
+    /**
+     * Generate a random string of 6 characters to serve has a Hex color
+     * representation.
+     *
+     * @return string
+     */
+    private function generateRandomColorHex(): string
+    {
+        return substr(md5(microtime()),rand(0,26), 6);
     }
 }
