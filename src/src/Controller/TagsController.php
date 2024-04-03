@@ -22,7 +22,7 @@ class TagsController extends AbstractController
      *
      * @return Response
      */
-    #[Route('/', name: 'tags')]
+    #[Route('/', name: 'index')]
     public function viewTags(Request $request, TagRepository $tagRepository): Response
     {
         $tag = null;
