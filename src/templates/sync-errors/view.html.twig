@@ -2,10 +2,16 @@
 
 {% block main_content %}
 
-    <div class="row">
-        <div class="col">
-            <div class="search-result-content">
-                {{ component('sync_errors_management') }}
+    <div class="card mb-4">
+        <div class="card-header">
+            Sync Errors
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    {{ component('sync_errors_management') }}
+                </div>
             </div>
         </div>
     </div>
