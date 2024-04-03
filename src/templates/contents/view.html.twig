@@ -31,7 +31,12 @@
                         {% endfor %}
 
                         {% if content.post.flairText %}
-                            <span class="badge bg-primary">{{ content.post.flairText.displayText }}</span>
+                            {{ include('helpers/custom_label.html.twig', {
+                                labelColor: content.post.flairText.labelColor,
+                                labelFontColor: content.post.flairText.labelFontColor ,
+                                labelText: content.post.flairText.displayText,
+                                customClasses: 'mb-1',
+                            }) }}
                         {% endif %}
                     </div>
                 </div>

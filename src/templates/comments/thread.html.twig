@@ -5,7 +5,12 @@
         </span>
 
         {% if comment.flairText %}
-            <span class="font-size--8 badge bg-info">{{ comment.flairText.displayText }}</span>
+            {{ include('helpers/custom_label.html.twig', {
+                labelColor: comment.flairText.labelColor,
+                labelFontColor: comment.flairText.labelFontColor ,
+                labelText: comment.flairText.displayText,
+                customClasses: 'font-size--8',
+            }) }}
         {% endif %}
 
         {% for commentAward in comment.commentAwards %}

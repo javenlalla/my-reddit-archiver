@@ -1,5 +1,9 @@
 {% for tag in content.tags %}
-    <span class="badge rounded-pill bg-info">{{ tag.name }}</span>
+    {{ include('helpers/custom_label.html.twig', {
+        labelColor: tag.labelColor,
+        labelFontColor: tag.labelFontColor ,
+        labelText: tag.name,
+    }) }}
 {% endfor %}
 
 <button class="btn--no-style"

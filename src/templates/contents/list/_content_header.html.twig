@@ -16,7 +16,12 @@
                 }) }}
             {% endfor %}
             {% if content.comment.flairText %}
-                <span class="font-size--8 badge bg-info">{{ content.comment.flairText.displayText }}</span>
+                {{ include('helpers/custom_label.html.twig', {
+                    labelColor: content.comment.flairText.labelColor,
+                    labelFontColor: content.comment.flairText.labelFontColor ,
+                    labelText: content.comment.flairText.displayText,
+                    customClasses: 'font-size--8 mb-1',
+                }) }}
             {% endif %}
         {% else %}
             {% for postAward in content.post.postAwards %}
@@ -26,7 +31,12 @@
                 }) }}
             {% endfor %}
             {% if content.post.flairText %}
-                <span class="font-size--8 badge bg-primary">{{ content.post.flairText.displayText }}</span>
+                {{ include('helpers/custom_label.html.twig', {
+                    labelColor: content.post.flairText.labelColor,
+                    labelFontColor: content.post.flairText.labelFontColor ,
+                    labelText: content.post.flairText.displayText,
+                    customClasses: 'font-size--8 mb-1',
+                }) }}
             {% endif %}
         {% endif %}
     </div>
