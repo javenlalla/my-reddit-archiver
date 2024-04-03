@@ -64,9 +64,9 @@
                                 <tbody>
                                 {% for tag in tags %}
                                     <tr>
-                                        <th scope="row">{{ tag.name }}</th>
-                                        <td>{{ tag.contents.count }}</td>
-                                        <td><a href="{{ path('tags_index', {tag: tag.name}) }}" class="color--black"><i class="fa-solid fa-pen-to-square"></i></a></td>
+                                        <td style="padding: 10px;"><span class="p-1" style="background-color: #{{tag.labelColor}}; color: #{{tag.labelFontColor}}">{{ tag.name }}</span></td>
+                                        <td style="padding: 10px;">{{ tag.contents.count }}</td>
+                                        <td style="padding: 10px;"><a href="{{ path('tags_index', {tag: tag.name}) }}" class="color--black"><i class="fa-solid fa-pen-to-square"></i></a></td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
