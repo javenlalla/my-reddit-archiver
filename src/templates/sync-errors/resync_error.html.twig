@@ -1,0 +1,23 @@
+<br/>
+    <span class="font-size--8 text-danger">{{ resyncError.getMessage|u.truncate(50, '...') }}</span>
+<br/>
+
+{% set modalBody %}
+    <span class="text-danger">{{ resyncError.getMessage }}</span>
+    <br/>
+
+    {% for key, traceLine in resyncError.getTrace %}
+        <br/><span>#{{ key + 1 }} {{ traceLine.file }}: {{ traceLine.line }} - {{ traceLine.function }}</span>
+    {% endfor %}
+{% endset %}
+
+<div class="font-size--12">
+    {{ include('helpers/modal_with_cta.html.twig', {
+        id: "error-#{errorLog.id}-resync-error",
+        title: "Re-Sync Error",
+        body: modalBody,
+        ctaLabel: "More",
+        ctaStyle: "font-size--8 color--light-gray",
+        button: false,
+    }) }}
+</div>

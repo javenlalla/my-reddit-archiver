@@ -56,7 +56,10 @@ class SyncErrorsController extends AbstractController
             // can be deleted.
             $syncErrorLogRepository->remove($syncErrorLog, true);
         } catch (Exception $e) {
-            return new Response($e->getMessage(), 500);
+            return $this->render('sync-errors/resync_error.html.twig', [
+                'errorLog' => $syncErrorLog,
+                'resyncError' => $e,
+            ], new Response(null, 500));
         }
 
         return new Response();

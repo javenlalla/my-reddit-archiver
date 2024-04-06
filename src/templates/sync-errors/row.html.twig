@@ -42,6 +42,8 @@
                 remove .d-none from #{`error-log-success-` + my@error-log-id}
                 add .d-none to #{`error-log-delete-` + my@error-log-id}
                 remove me
+              else if event.detail.xhr.status === 500
+                put event.detail.xhr.response at the end of closest <td/>
               end
             end"
             hx-swap="none"
@@ -72,22 +74,5 @@
         <span id={{ "error-log-success-#{errorLog.id}" }} class="d-none text-success">
             <i class="fa-solid fa-circle-check"></i>
         </span>
-
-        {% if reSyncError|default('') %}
-            <br/>
-            <span class="font-size--8 text-danger">{{ reSyncError|u.truncate(50, '...') }}</span>
-            <br/>
-            {% set body = "<span class=\"text-danger\">#{reSyncError}</span>" %}
-            <div class="font-size--12">
-                {{ include('helpers/modal_with_cta.html.twig', {
-                    id: "error-#{errorLog.id}-resync-error",
-                    title: "Re-Sync Error",
-                    body: body,
-                    ctaLabel: "More",
-                    ctaStyle: "font-size--8 color--light-gray",
-                    button: false,
-                }) }}
-            </div>
-        {% endif %}
     </td>
 </tr>
