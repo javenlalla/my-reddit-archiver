@@ -24,11 +24,9 @@
                             </thead>
                             <tbody>
                             {% for errorLog in errorLogs %}
-                                {{ component('sync_error_row',
-                                    {
-                                        errorLog: errorLog,
-                                    }
-                                ) }}
+                                {{ include('sync-errors/row.html.twig', {
+                                    errorLog: errorLog,
+                                }) }}
                             {% endfor %}
                             </tbody>
                         </table>

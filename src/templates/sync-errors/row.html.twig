@@ -1,4 +1,4 @@
-<tr {{ attributes }}>
+<tr id={{ "error-log-row-#{errorLog.id}" }}>
 
     <th scope="row">{{ errorLog.id }}</th>
     <td>{{ errorLog.createdAt| date('Y-m-d H:i:s') }}</td>
@@ -33,13 +33,47 @@
         }) }}
     </td>
     <td>
-        <button class="btn btn-primary btn-sm" data-action="live#action" data-action-name="resync" data-loading="hide"><i class="fa-solid fa-arrows-rotate"></i></button>
-        <button class="btn btn-danger btn-sm" data-action="live#action" data-action-name="delete" data-loading="hide"><i class="fa-solid fa-trash-can"></i></button>
-        <span data-loading="show" class="text-info font-size--20">
+        <button id={{ "error-log-resync-#{errorLog.id}" }} class="btn btn-primary btn-sm" error-log-id={{ errorLog.id }}
+            hx-post={{ url('sync_errors_resync', { id: errorLog.id }) }}
+            hx-indicator={{ "#error-log-loader-#{errorLog.id}" }}
+            _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad
+            on htmx:beforeSwap
+              if event.detail.xhr.status === 200
+                remove .d-none from #{`error-log-success-` + my@error-log-id}
+                add .d-none to #{`error-log-delete-` + my@error-log-id}
+                remove me
+              end
+            end"
+            hx-swap="none"
+        >
+            <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+
+        <span id={{ "error-log-loader-#{errorLog.id}" }} class="text-info font-size--20 hx-loader">
             {{ include('icons/loading_icon.html.twig') }}
         </span>
 
-        {% if reSyncError %}
+        <button id={{ "error-log-delete-#{errorLog.id}" }} class="btn btn-danger btn-sm" error-log-id={{ errorLog.id }}
+            hx-delete={{ url('sync_errors_delete', { id: errorLog.id }) }}
+            hx-indicator={{ "#error-log-loader-#{errorLog.id}" }}
+            _="on htmx:beforeRequest toggle .d-none until htmx:afterOnLoad
+                on htmx:beforeSwap
+                    if event.detail.xhr.status === 200
+                        remove .d-none from #{`error-log-success-` + my@error-log-id}
+                        add .d-none to #{`error-log-resync-` + my@error-log-id}
+                        remove me
+                    end
+                end"
+            hx-swap="none"
+        >
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+
+        <span id={{ "error-log-success-#{errorLog.id}" }} class="d-none text-success">
+            <i class="fa-solid fa-circle-check"></i>
+        </span>
+
+        {% if reSyncError|default('') %}
             <br/>
             <span class="font-size--8 text-danger">{{ reSyncError|u.truncate(50, '...') }}</span>
             <br/>
