@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Debug;
 
-use App\Form\SearchForm;
+use App\Form\SearchFormDeprecated;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,7 @@ class TemplateLayoutController extends AbstractController
     #[Route('/layout', name: 'layout')]
     public function getLayout(): Response
     {
-        $searchForm = $this->createForm(SearchForm::class);
+        $searchForm = $this->createForm(SearchFormDeprecated::class);
 
         return $this->render('_sidenav.html.twig', [
             'searchForm' => $searchForm->createView(),

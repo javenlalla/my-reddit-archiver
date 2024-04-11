@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Form\SearchForm;
+use App\Form\SearchFormDeprecated;
 use App\Service\Search;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,7 +45,7 @@ class SearchController extends AbstractController
     #[Route('/search-form', name: 'search-form')]
     public function searchForm(Request $request, Search $searchService): Response
     {
-        $searchForm = $this->createForm(SearchForm::class);
+        $searchForm = $this->createForm(SearchFormDeprecated::class);
         $searchForm->handleRequest($request);
 
         if ($searchForm->isSubmitted() && $searchForm->isValid()) {

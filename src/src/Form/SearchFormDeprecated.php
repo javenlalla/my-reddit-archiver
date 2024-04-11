@@ -13,12 +13,11 @@ use App\Repository\SubredditRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SearchType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class SearchFormV2 extends AbstractType
+class SearchFormDeprecated extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -31,6 +30,7 @@ class SearchFormV2 extends AbstractType
                 'required' => false,
                 'constraints' => [
                     new Length(['min' => 3]),
+                    new NotBlank(),
                 ],
             ])
             ->add('subreddits', EntityType::class, [
@@ -88,17 +88,6 @@ class SearchFormV2 extends AbstractType
                     'createOnBlur' => true,
                 ],
             ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Search',
-            ])
-            // Note: for an HTMX request, both the Method and Action must be defined
-            // here as well in order to be processed correctly by the Symfony form handling.
-            ->setMethod('GET')
-            ->setAction('/v2/search')
         ;
-    }
-
-    public function getBlockPrefix(): string {
-        return '';
     }
 }

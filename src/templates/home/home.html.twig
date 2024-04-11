@@ -2,13 +2,124 @@
 
 {% block main_content %}
 
-    {{ component('archive_search', {
-        query: query,
-        subreddits: subreddits,
-        flairTexts: flairTexts,
-        tags: tags,
-        perPage: perPage,
-        page: page,
-    }) }}
+    <div>
+        <div class="row">
+            <div class="col">
+                {{ form_start(form, { 'attr' : {
+                    'autocomplete': 'off',
+                    'hx-get': '/',
+                    'hx-trigger': 'submit',
+                    'hx-target': '#search-results',
+                    'hx-select': '#search-results',
+                    'hx-indicator': '#search-results-loader',
+                    'hx-swap': 'outerHTML',
+                    'hx-push': 'true',
+                    '_': 'on htmx:beforeRequest toggle .d-none on #search-results__container until htmx:afterOnLoad',
+                }}) }}
+                <div class="my-custom-class-for-errors">
+                    {{ form_errors(form) }}
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="search-form form-control mb-3">
+                            <div class="row">
+                                <div>
+                                    {{ form_widget(form.query) }}
+
+                                    <small>{{ form_help(form.query) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.query) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.subreddits, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
+
+                                    <small>{{ form_help(form.subreddits) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.subreddits) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.flairTexts, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
+
+                                    <small>{{ form_help(form.flairTexts) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.flairTexts) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 mt-3">
+                                    {{ form_widget(form.tags, {'attr': {
+                                        '_': 'on change send submit to the closest <form/>',
+                                    }}) }}
+
+                                    <small>{{ form_help(form.tags) }}</small>
+
+                                    <div class="form-error">
+                                        {{ form_errors(form.tags) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col mt-3 text-center color--white" data-loading="hide">
+                                    <h6 class="mb-0">{{ searchResults.total|number_format(0, ',') }} Results</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        <div class="row text-center">
+            <span id="search-results-loader" class="hx-loader color--white">
+                {{ include('icons/loading_icon.html.twig') }}
+            </span>
+        </div>
+
+        <div id="search-results__container">
+            <div id="search-results" class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {% if searchResults.total > 0 %}
+                                {{ include('contents/_pagination2.html.twig', {
+                                    paginator: paginator,
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {{ include('contents/_list.html.twig', {contents: searchResults.results}) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col" data-loading="hide">
+                            {% if searchResults.total > 0 %}
+                                {{ include('contents/_pagination2.html.twig', {
+                                    paginator: paginator,
+                                }) }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}

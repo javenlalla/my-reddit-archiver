@@ -7,7 +7,7 @@ use App\Entity\FlairText;
 use App\Entity\Post;
 use App\Entity\Subreddit;
 use App\Entity\Tag;
-use App\Form\SearchForm;
+use App\Form\SearchFormDeprecated;
 use App\Service\Pagination;
 use App\Service\Pagination\Paginator;
 use App\Service\Search;
@@ -81,7 +81,7 @@ class ArchiveSearchComponent extends AbstractController
             }
         }
 
-        return $this->createForm(SearchForm::class, [
+        return $this->createForm(SearchFormDeprecated::class, [
             'subreddits' => $subredditEntities,
             'flairTexts' => $flairTextEntities,
             'tags' => $tagEntities,
