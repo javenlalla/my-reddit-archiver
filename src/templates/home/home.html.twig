@@ -90,7 +90,7 @@
                     <div class="row">
                         <div class="col" data-loading="hide">
                             {% if searchResults.total > 0 %}
-                                {{ include('contents/_pagination2.html.twig', {
+                                {{ include('contents/_pagination.html.twig', {
                                     paginator: paginator,
                                 }) }}
                             {% endif %}
@@ -106,7 +106,7 @@
                     <div class="row">
                         <div class="col" data-loading="hide">
                             {% if searchResults.total > 0 %}
-                                {{ include('contents/_pagination2.html.twig', {
+                                {{ include('contents/_pagination.html.twig', {
                                     paginator: paginator,
                                 }) }}
                             {% endif %}

@@ -74,7 +74,7 @@
     <div class="row">
         <div class="col" data-loading="hide">
         {% if computed.searchResults.total > 0 %}
-            {{ include('contents/_pagination.html.twig', {
+            {{ include('contents/_pagination.deprecated.html.twig', {
                 query: query,
                 subreddits: subreddits,
                 flairTexts: flairTexts,
@@ -95,7 +95,7 @@
     <div class="row">
         <div class="col" data-loading="hide">
             {% if computed.searchResults.total > 0 %}
-                {{ include('contents/_pagination.html.twig', {
+                {{ include('contents/_pagination.deprecated.html.twig', {
                     query: query,
                     subreddits: subreddits,
                     flairTexts: flairTexts,

@@ -1,31 +1,23 @@
-{% if currentPaginator.pageNumbers|length > 1 %}
+<div class="row">
+    <div class="col text-center text-light pb-3">
+        <h6 class="mb-0">{{ paginator.totalItems|number_format(0, ',') }} Posts</h6>
+    </div>
+</div>
+
+{% if paginator.pageNumbers|length > 1 %}
     <nav aria-label="Archive Listing Navigation">
         <ul class="pagination justify-content-center">
-            {% if currentPaginator.isFirstPageLinkEnabled %}
-                <li class="page-item"><a class="page-link" href="{{ path('home', {
-                        query: query,
-                        subreddits: subreddits,
-                        flairTexts: flairTexts,
-                        tags: tags,
-                        perPage: perPage,
-                        page: 1,
-                    }) }}">1</a></li>
+            {% if paginator.isFirstPageLinkEnabled %}
+                <li class="page-item"><a class="page-link" href="{{ paginator.paginationLink(1) }}">1</a></li>
 
                 <li class="page-item disabled">
                     <span class="page-link">...</span>
                 </li>
             {% endif %}
 
-            {%for pageNumber in currentPaginator.pageNumbers %}
-                {% if not pageNumber is same as page %}
-                    <li class="page-item"><a class="page-link" href="{{ path('home', {
-                            query: query,
-                            subreddits: subreddits,
-                            flairTexts: flairTexts,
-                            tags: tags,
-                            perPage: perPage,
-                            page: pageNumber,
-                        }) }}">{{ pageNumber }}</a></li>
+            {%for pageNumber in paginator.pageNumbers %}
+                {% if not pageNumber is same as paginator.currentPage %}
+                    <li class="page-item"><a class="page-link" href="{{ paginator.paginationLink(pageNumber) }}">{{ pageNumber }}</a></li>
                 {% else %}
                     <li class="page-item active" aria-current="page">
                         <a class="page-link">{{ pageNumber }}</a>
@@ -33,19 +25,12 @@
                 {% endif %}
             {% endfor %}
 
-            {% if currentPaginator.isLastPageLinkEnabled %}
+            {% if paginator.isLastPageLinkEnabled %}
                 <li class="page-item disabled">
                     <span class="page-link">...</span>
                 </li>
 
-                <li class="page-item"><a class="page-link" href="{{ path('home', {
-                        query: query,
-                        subreddits: subreddits,
-                        flairTexts: flairTexts,
-                        tags: tags,
-                        perPage: perPage,
-                        page: currentPaginator.totalPages,
-                    }) }}">{{ currentPaginator.totalPages }}</a></li>
+                <li class="page-item"><a class="page-link" href="{{ paginator.paginationLink(paginator.totalPages) }}">{{ paginator.totalPages }}</a></li>
             {% endif %}
         </ul>
     </nav>
