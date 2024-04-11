@@ -17,6 +17,9 @@ class Paginator
     /** @var int */
     private int $currentPage = 1;
 
+    /** @var int */
+    private int $totalItems = 0;
+
     /** @var int[] */
     private array $pageNumbers = [];
 
@@ -88,6 +91,24 @@ class Paginator
     public function setCurrentPage(int $currentPage): void
     {
         $this->currentPage = $currentPage;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotalItems(): int
+    {
+        return $this->totalItems;
+    }
+
+    /**
+     * @param  int  $totalItems
+     *
+     * @return void
+     */
+    public function setTotalItems(int $totalItems): void
+    {
+        $this->totalItems = $totalItems;
     }
 
     /**
@@ -202,5 +223,41 @@ class Paginator
         }
 
         return sprintf('%s?page=%d', $this->uriPath, $page);
+    }
+
+    /**
+     * Get the start of the current range of items.
+     * For example, for the second page with 10 items per page, `10` should be
+     * returned.
+     *
+     * If currently on the first page, simply return 1 as the range start.
+     *
+     * @return int
+     */
+    public function getRangeStart(): int
+    {
+        if ($this->currentPage === 1) {
+            return 1;
+        }
+
+        return ($this->currentPage - 1) * $this->itemsPerPage;
+    }
+
+    /**
+     * Get the end of the current range of items.
+     * For example, for the second page with 10 items per page, `20` should be
+     * returned.
+     *
+     * If currently on the last page, simply return the total number of items.
+     *
+     * @return int
+     */
+    public function getRangeEnd(): int
+    {
+        if ($this->currentPage === $this->totalPages) {
+            return $this->totalItems;
+        }
+
+        return (($this->currentPage - 1) * $this->itemsPerPage) + $this->itemsPerPage;
     }
 }

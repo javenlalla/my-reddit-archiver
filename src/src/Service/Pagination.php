@@ -36,6 +36,7 @@ class Pagination
         $paginator = new Paginator();
         $paginator->setCurrentPage($currentPage);
         $paginator->setItemsPerPage($itemsPerPage);
+        $paginator->setTotalItems($totalItems);
         $paginator->setTotalPages(
             $this->calculateTotalPages($totalItems, $itemsPerPage)
         );
