@@ -26,7 +26,6 @@ class SearchForm extends AbstractType
             ->add('query', SearchType::class, [
                 'attr' => [
                     'placeholder' => 'Search Archive',
-                    'data-model' => 'debounce(200)|query',
                 ],
                 'required' => false,
                 'constraints' => [
@@ -42,9 +41,6 @@ class SearchForm extends AbstractType
                     return $repository->createQueryBuilder('s')
                         ->orderBy('s.name', 'ASC');
                 },
-                'attr' => [
-                    'data-model' => 'subreddits',
-                ],
                 'required' => false,
                 'autocomplete' => true,
                 'multiple' => true,
@@ -61,9 +57,6 @@ class SearchForm extends AbstractType
                     return $repository->createQueryBuilder('f')
                         ->orderBy('f.displayText', 'ASC');
                 },
-                'attr' => [
-                    'data-model' => 'flairTexts',
-                ],
                 'required' => false,
                 'autocomplete' => true,
                 'multiple' => true,
@@ -76,9 +69,6 @@ class SearchForm extends AbstractType
                 'class' => Tag::class,
                 'choice_label' => 'name',
                 'choice_value' => 'name',
-                'attr' => [
-                    'data-model' => 'tags',
-                ],
                 'required' => false,
                 'autocomplete' => true,
                 'multiple' => true,
@@ -88,10 +78,7 @@ class SearchForm extends AbstractType
                     'createOnBlur' => true,
                 ],
             ])
-            ->add('submit', SubmitType::class, [
-                'label' => 'Search',
-            ])
-            // Note: for an HTMX request, both the Method and Action must be defined
+            // Note: for an HTMX request, both the Method and Action (if different URL) must be defined
             // here as well in order to be processed correctly by the Symfony form handling.
             ->setMethod('GET')
             // ->setAction('/')

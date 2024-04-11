@@ -8,12 +8,12 @@
                 {{ form_start(form, { 'attr' : {
                     'autocomplete': 'off',
                     'hx-get': '/',
-                    'hx-trigger': 'submit',
+                    'hx-trigger': 'submit, keyup[keyCode==13] from:#query',
                     'hx-target': '#search-results',
                     'hx-select': '#search-results',
                     'hx-indicator': '#search-results-loader',
                     'hx-swap': 'outerHTML',
-                    'hx-push': 'true',
+                    'hx-push-url': 'true',
                     '_': 'on htmx:beforeRequest toggle .d-none on #search-results__container until htmx:afterOnLoad',
                 }}) }}
                 <div class="my-custom-class-for-errors">
