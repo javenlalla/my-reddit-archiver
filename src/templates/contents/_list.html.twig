@@ -1,18 +1,18 @@
-{% for content in contents %}
-    <div id="{{ content.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
+{% for searchResult in searchResults %}
+    <div id="{{ searchResult.id }}" class="search-result-content border-radius--top-25em border-radius--bottom-25em border--thin-gray">
         {{ include('contents/list/_content_header.html.twig', {
-            content: content,
+            content: searchResult.content,
         }) }}
 
         {{ include('contents/list/_content_body.html.twig', {
-            content: content,
+            content: searchResult.content,
         }) }}
 
         {{ include('contents/list/_content_footer.html.twig', {
-            content: content,
-            postScore: content.post.score,
-            commentsCount: content.post.comments.count,
-            redditLink: content.post.redditPostUrl,
+            content: searchResult.content,
+            postScore: searchResult.content.post.score,
+            commentsCount: searchResult.content.post.comments.count,
+            redditLink: searchResult.content.post.redditPostUrl,
         }) }}
     </div>
 {% endfor %}

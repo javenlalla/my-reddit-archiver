@@ -2,13 +2,11 @@
 
 namespace App\Repository;
 
-use App\Entity\Content;
 use App\Entity\SearchContent;
 use App\Service\Search\Results;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -62,13 +60,20 @@ class SearchContentRepository extends ServiceEntityRepository
     public function search(?string $searchQuery, array $subreddits, array $flairTexts, array $tags, int $perPage, int $page): Results
     {
         $qb = $this->createQueryBuilder('s')
-            ->select('c')
-            ->innerJoin(Content::class, 'c', Join::WITH, 's.content = c.id')
-        ;
+            ->addSelect('c')
+            ->addSelect('p')
+            ->addSelect('pf')
+            ->addSelect('cm')
+            ->addSelect('cf')
+            ->innerJoin('s.content', 'c')
+            ->innerJoin('c.post', 'p')
+            ->leftJoin('p.flairText', 'pf')
+            ->leftJoin('c.comment', 'cm')
+            ->leftJoin('cm.flairText', 'cf');
 
         if (!empty($searchQuery)) {
             $qb->andWhere('s.title LIKE :searchQuery OR s.contentText LIKE :searchQuery')
-                ->setParameter('searchQuery', '%' . $searchQuery . '%');
+                ->setParameter('searchQuery', '%'.$searchQuery.'%');
         }
 
         if (!empty($subreddits)) {
@@ -119,7 +124,6 @@ class SearchContentRepository extends ServiceEntityRepository
         $countQb->select('COUNT(c.id)');
 
         return $countQb->getQuery()
-            ->getSingleScalarResult()
-            ;
+            ->getSingleScalarResult();
     }
 }

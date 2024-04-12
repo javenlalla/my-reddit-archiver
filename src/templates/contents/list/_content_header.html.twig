@@ -9,12 +9,12 @@
 
     <div class="col search-result-content__header mb-1 text-end">
         {% if content.isCommentContent %}
-            {% for commentAward in content.comment.commentAwards %}
-                {{ component('asset_render', {
-                    asset: commentAward.award.iconAsset,
-                    customClass: "width--16px"
-                }) }}
-            {% endfor %}
+{#            {% for commentAward in content.comment.commentAwards %}#}
+{#                {{ component('asset_render', {#}
+{#                    asset: commentAward.award.iconAsset,#}
+{#                    customClass: "width--16px"#}
+{#                }) }}#}
+{#            {% endfor %}#}
             {% if content.comment.flairText %}
                 {{ include('helpers/custom_label.html.twig', {
                     labelColor: content.comment.flairText.labelColor,
@@ -24,12 +24,12 @@
                 }) }}
             {% endif %}
         {% else %}
-            {% for postAward in content.post.postAwards %}
-                {{ component('asset_render', {
-                    asset: postAward.award.iconAsset,
-                    customClass: "width--16px"
-                }) }}
-            {% endfor %}
+{#            {% for postAward in content.post.postAwards %}#}
+{#                {{ component('asset_render', {#}
+{#                    asset: postAward.award.iconAsset,#}
+{#                    customClass: "width--16px"#}
+{#                }) }}#}
+{#            {% endfor %}#}
             {% if content.post.flairText %}
                 {{ include('helpers/custom_label.html.twig', {
                     labelColor: content.post.flairText.labelColor,
