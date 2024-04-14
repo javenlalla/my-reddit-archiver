@@ -1,0 +1,14 @@
+<span style="cursor: pointer" data-bs-title="Copied!" copy-value={{ copyValue }} _="on click
+    set copyValue to my@copy-value
+    js(me, copyValue)
+        if ('clipboard' in window.navigator) {
+            navigator.clipboard.writeText(copyValue)
+        }
+
+        return new bootstrap.Tooltip(me);
+    end
+    set currentTooltip to it
+    currentTooltip.show()
+    wait 1s
+    currentTooltip.disable()
+"><i class="fa-regular fa-copy"></i></span>

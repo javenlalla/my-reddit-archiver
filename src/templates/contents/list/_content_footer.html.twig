@@ -12,6 +12,9 @@
     <div class="col text-end font-size--10">
         <i class="fa-solid fa-arrows-up-down"></i> {{ postScore|number_format(0, '.', ',') }}
         <span class="ms-1"><i class="fa-regular fa-comment"></i> {{ commentsCount|number_format(0, '.', ',') }}</span>
-        <a href="{{ redditLink }}" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a>
+        <a class="text-reset" href="{{ redditLink }}" target="_blank"><i class="fa-solid fa-up-right-from-square"></i></a>
+        {{ include('helpers/copy_cta.html.twig', {
+            copyValue: redditLink,
+        }) }}
     </div>
 </div>
