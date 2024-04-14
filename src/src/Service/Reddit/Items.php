@@ -92,7 +92,7 @@ class Items
         if (!$itemJson instanceof ItemJson) {
             $itemJson = new ItemJson();
             $itemJson->setRedditId($redditId);
-            $itemJson->setJsonBody(json_encode($itemInfo));
+            $itemJson->setJsonBody(json_encode($itemInfo, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 
             $this->itemJsonRepository->add($itemJson, true);
         }
@@ -139,7 +139,7 @@ class Items
 
             $itemJson = new ItemJson();
             $itemJson->setRedditId($redditId);
-            $itemJson->setJsonBody(json_encode($retrievedInfo));
+            $itemJson->setJsonBody(json_encode($retrievedInfo, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
 
             $this->entityManager->persist($itemJson);
             $batchCount++;

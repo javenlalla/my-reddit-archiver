@@ -351,10 +351,16 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
      */
     private function loadTestData(): void
     {
-        $sql = file_get_contents('/var/www/mra/resources/data-fixtures-source-files/test-item-jsons.sql');
+        $sqlFile = file_get_contents('/var/www/mra/resources/data-fixtures-source-files/test-item-jsons.sql');
+        $queries = explode("\n", $sqlFile);
 
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->executeStatement();
+        $dbConn = $this->entityManager->getConnection();
+        foreach ($queries as $query) {
+            if (trim($query) !== '') {
+                $stmt = $dbConn->prepare($query);
+                $stmt->executeStatement();
+            }
+        }
     }
 
     /**

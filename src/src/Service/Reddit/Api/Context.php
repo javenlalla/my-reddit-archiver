@@ -16,6 +16,8 @@ class Context implements JsonSerializable
 
     const SOURCE_SYNC_ERROR_RESYNC = 'UserTriggered: Sync Error Re-Sync';
 
+    const SOURCE_COMMAND_TEST_DATA_RESYNC = 'UserTriggered: Test Data Re-Sync';
+
     public function __construct(private readonly string $source)
     {
 
