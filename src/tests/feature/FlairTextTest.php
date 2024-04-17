@@ -9,6 +9,9 @@ use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * @group ci-tests
+ */
 class FlairTextTest extends KernelTestCase
 {
     private Manager $manager;

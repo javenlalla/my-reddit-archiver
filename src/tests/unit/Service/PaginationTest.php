@@ -7,6 +7,9 @@ use App\Service\Pagination;
 use App\Service\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * @group ci-tests
+ */
 class PaginationTest extends KernelTestCase
 {
     private Pagination $paginationService;
@@ -34,7 +37,7 @@ class PaginationTest extends KernelTestCase
         bool $firstPageLinkEnabled,
         bool $lastPageLinkEnabled
     ) {
-        $paginator = $this->paginationService->createNewPaginator($totalItems, $itemsPerPage, $currentPage);
+        $paginator = $this->paginationService->createNewPaginator($totalItems, $itemsPerPage, $currentPage, '/testing/uri');
         $this->assertInstanceOf(Paginator::class, $paginator);
 
         $this->assertEquals($totalPages, $paginator->getTotalPages());
@@ -43,6 +46,7 @@ class PaginationTest extends KernelTestCase
         $this->assertEquals($pageNumbers, $paginator->getPageNumbers());
         $this->assertEquals($firstPageLinkEnabled, $paginator->isFirstPageLinkEnabled());
         $this->assertEquals($lastPageLinkEnabled, $paginator->isLastPageLinkEnabled());
+        $this->assertEquals('/testing/uri?page=2', $paginator->paginationLink(2));
     }
 
     /**

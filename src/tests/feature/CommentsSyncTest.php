@@ -45,6 +45,8 @@ class CommentsSyncTest extends KernelTestCase
      * Verify a syncing a Comment by its Reddit ID and confirming its Item Json
      * is also persisted.
      *
+     * @group ci-tests
+     *
      * @return void
      */
     public function testSyncComment(): void

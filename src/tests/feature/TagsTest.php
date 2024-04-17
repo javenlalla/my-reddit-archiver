@@ -9,6 +9,9 @@ use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * @group ci-tests
+ */
 class TagsTest extends KernelTestCase
 {
     private TagRepository $tagRepository;

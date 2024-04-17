@@ -10,6 +10,9 @@ use App\Service\Reddit\Api\Context;
 use App\Service\Reddit\Manager\BatchSync;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * @group ci-tests
+ */
 class BatchSyncTest extends KernelTestCase
 {
     private BatchSync $batchSyncManager;

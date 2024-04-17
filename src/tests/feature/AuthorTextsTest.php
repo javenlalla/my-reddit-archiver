@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Feature;
+namespace App\Tests\feature;
 
 use App\Entity\AuthorText;
 use App\Entity\CommentAuthorText;
@@ -11,6 +11,9 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * @group ci-tests
+ */
 class AuthorTextsTest extends KernelTestCase
 {
     private CommentRepository $commentRepository;

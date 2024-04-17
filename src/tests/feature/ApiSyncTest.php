@@ -33,6 +33,8 @@ class ApiSyncTest extends KernelTestCase
      *
      * https://www.reddit.com/r/shittyfoodporn/comments/vepbt0/my_sisterinlaw_made_vegetarian_meat_loaf/
      *
+     * @group ci-tests
+     *
      * @return void
      */
     public function testBasicSyncFromApi()

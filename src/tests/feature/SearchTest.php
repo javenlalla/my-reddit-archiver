@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Tests\feature;
 
 use App\Entity\Content;
+use App\Entity\SearchContent;
 use App\Entity\Tag;
 use App\Repository\ContentRepository;
 use App\Repository\PostRepository;
@@ -46,6 +47,8 @@ class SearchTest extends KernelTestCase
      * Execute basic search queries and verify the excepted results are surfaced
      * for each query.
      *
+     * @group ci-tests
+     *
      * @dataProvider basicSearchQueriesDataProvider()
      *
      * @param  string  $postRedditId
@@ -67,7 +70,7 @@ class SearchTest extends KernelTestCase
         $searchResults = $this->searchService->search($searchQuery);
         $this->assertEquals(Search::DEFAULT_LIMIT, $searchResults->getPerPage());
         $this->assertEquals(1, $searchResults->getTotal());
-        $this->assertInstanceOf(Content::class, $searchResults->getResults()[0]);
+        $this->assertInstanceOf(SearchContent::class, $searchResults->getResults()[0]);
     }
 
     /**
