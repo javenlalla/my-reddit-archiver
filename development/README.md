@@ -13,7 +13,8 @@
   - [Frontend Development](#frontend-development)
     - [yarn](#yarn)
   - [ffmpeg](#ffmpeg)
-  - [Testing Production Image Locally](#testing-production-image-locally)
+  - [Running Tests](#running-tests)
+  - [Running Production Image Locally](#running-production-image-locally)
 
 ## Setup
 
@@ -162,7 +163,21 @@ ffmpeg -i source_video_file.mp4  -i source_audio_file.mp4  -c:v copy -c:a aac co
 
 The command was sourced from the following page: <https://superuser.com/a/277667>
 
-## Testing Production Image Locally
+## Running Tests
+
+Spin up the `test` container with relevant `docker compose` file:
+
+```bash
+docker compose -f docker-compose.test.yml up -d
+```
+
+Execute PHPUnit tests within the container using the following command as a base example:
+
+```bash
+docker exec mra-test php bin/phpunit --group ci-tests
+```
+
+## Running Production Image Locally
 
 Create a Docker Compose file pointed to the Production `Dockerfile`: `docker-compose.local-prod.yml`
 

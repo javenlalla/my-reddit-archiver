@@ -94,10 +94,20 @@ EOT
 fi
 
 if [[ ! -z $DB_HOST || ! -z $DB_SQLITE_FILENAME || ! -z $DATABASE_URL ]]; then
-    if [ -f /var/www/symf/migrations/Version*.php ]; then
+    if compgen -G "/var/www/mra/migrations/Version*.php" > /dev/null; then
+    # [ -f "/var/www/mra/migrations/Version*.php" ]; then
         # Once database is reachable, execute any pending migrations and console commands.
         echo "Migration files exist. Execute migration."
         php bin/console doctrine:migrations:migrate --no-interaction
+    else
+        echo "No migration files detected. Skipping migration execution."
+    fi
+
+    if [[ $APP_ENV = "test" ]]; then
+        php bin/console doctrine:database:drop --force
+        php bin/console doctrine:database:create
+        php bin/console doctrine:migrations:migrate --no-interaction
+        php bin/console doctrine:fixtures:load --no-interaction --append
     fi
 fi
 
