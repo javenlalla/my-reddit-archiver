@@ -32,10 +32,14 @@ jobs:
           cp docker-compose.test.sample.yml docker-compose.test.yml
       - name: Spin up testing container
         run: docker-compose -f docker-compose.test.yml up -d
-      - name: Wait 2 minutes for the container to spin initialize
-        run: sleep 120s
+      - name: Wait 1 minute and check container status
+        run: sleep 60s
+      - name: Check logs
+        run: docker logs mra-test
+      - name: Wait 1 more minute and check status again
+        run: sleep 60s
       - name: Check logs
         run: docker logs mra-test
       - name: Run automated tests
-        run: docker exec mra-test php bin/phpunit --group ci-tests-small
+        run: docker exec mra-test php bin/phpunit --group ci-tests
         shell: bash
