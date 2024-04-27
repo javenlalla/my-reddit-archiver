@@ -10,4 +10,4 @@ services:
         APP_VERSION: 0.0.9
     working_dir: /var/www/mra
     env_file:
-      - path: "./.env.test"
+      - ./.env.test
