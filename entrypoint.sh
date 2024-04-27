@@ -121,6 +121,12 @@ if [[ "$dev_env" = true ]]; then
     yarn install
 fi
 
+# Initialize the .env.test file to specify `KERNEL_CLASS` which is required for testing.
+if [[ $APP_ENV = "test" ]]; then
+    cp .env .env.test
+    echo "KERNEL_CLASS='App\Kernel'" >> .env.test
+fi
+
 # Fix permissions, espeically to address `var` folder not being writeable for cache and logging.
 if [[ "$dev_env" = true ]]; then
     if [ -d "/var/www/app" ]; then
