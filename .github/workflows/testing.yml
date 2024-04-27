@@ -32,11 +32,7 @@ jobs:
           cp docker-compose.test.sample.yml docker-compose.test.yml
       - name: Spin up testing container
         run: docker-compose -f docker-compose.test.yml up -d
-      - name: Wait 30 seconds and check container status
-        run: sleep 30s
-      - name: Check logs
-        run: docker logs mra-test
-      - name: Wait another 30 seconds and check status again
+      - name: Wait 30 seconds to allow container to initialize
         run: sleep 30s
       - name: Check logs
         run: docker logs mra-test
