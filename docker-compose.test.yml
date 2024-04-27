@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  mra-test:
+    container_name: mra-test
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+      args:
+        APP_VERSION: 0.0.9
+    working_dir: /var/www/mra
+    env_file:
+      - ./.env.test

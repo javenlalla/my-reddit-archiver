@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
  * @group ci-tests
+ * @group ci-tests-small
  */
 class TagsTest extends KernelTestCase
 {

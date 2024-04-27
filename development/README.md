@@ -13,6 +13,8 @@
   - [Frontend Development](#frontend-development)
     - [yarn](#yarn)
   - [ffmpeg](#ffmpeg)
+  - [Running Tests](#running-tests)
+  - [Running Production Image Locally](#running-production-image-locally)
 
 ## Setup
 
@@ -29,9 +31,9 @@
           context: .
           args:
             APP_VERSION: 0.1.0
-          dockerfile: ./development/Dockerfile.dev.alpine
-          # Buster image also available if preferred.
-          # dockerfile: ./development/Dockerfile.dev.buster
+          dockerfile: ./development/Dockerfile.dev.buster
+          # Alpine image also available if preferred.
+          # dockerfile: ./development/Dockerfile.dev.alpine
         volumes:
           - ./src:/var/www/mra
           - ./r-media:/r-media
@@ -160,3 +162,63 @@ ffmpeg -i source_video_file.mp4  -i source_audio_file.mp4  -c:v copy -c:a aac co
 ```
 
 The command was sourced from the following page: <https://superuser.com/a/277667>
+
+## Running Tests
+
+Create a `.env.test` file in the root directory (next to `docker-compose.test.yml`) and provide values to the following variables:
+
+```env
+REDDIT_USERNAME=
+REDDIT_PASSWORD=
+REDDIT_CLIENT_ID=
+REDDIT_CLIENT_SECRET=
+```
+
+Spin up the `test` container with relevant `docker compose` file:
+
+```bash
+docker compose -f docker-compose.test.yml up -d
+```
+
+Execute PHPUnit tests within the container using the following command as a base example:
+
+```bash
+docker exec mra-test php bin/phpunit --group ci-tests
+```
+
+## Running Production Image Locally
+
+Create a Docker Compose file pointed to the Production `Dockerfile`: `docker-compose.local-prod.yml`
+
+```yaml
+version: '3.9'
+
+services:
+  mra-local-prod:
+    container_name: mra-local-prod
+    build:
+      context: .
+      dockerfile: Dockerfile.buster
+      args:
+        APP_VERSION: 0.0.9
+    volumes:
+      - ./src:/var/www/mra
+      - ./r-media:/r-media
+      - ./database:/database
+    working_dir: /var/www/mra
+    environment:
+      REDDIT_USERNAME:
+      REDDIT_PASSWORD:
+      REDDIT_CLIENT_ID:
+      REDDIT_CLIENT_SECRET:
+    ports:
+      - "2183:80"
+```
+
+Spin up/down the container with the following commands:
+
+```bash
+docker compose -f docker-compose.local-prod.yml up -d
+
+docker compose -f docker-compose.local-prod.yml stop
+```

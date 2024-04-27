@@ -1,0 +1,38 @@
+name: ci
+run-name: Running CI Automated Tests
+
+on:
+  push:
+    branches:
+      - "build/ci-pipeline"
+
+jobs:
+  ci-tests:
+    if: "contains(github.event.head_commit.message, '[ci-test]')"
+    runs-on: ubuntu-latest
+    environment: testing
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Create test .env file
+        uses: SpicyPizza/create-envfile@v2.0
+        with:
+          envkey_REDDIT_USERNAME: ${{ secrets.CI_REDDIT_USERNAME }}
+          envkey_REDDIT_PASSWORD: ${{ secrets.CI_REDDIT_PASSWORD }}
+          envkey_REDDIT_CLIENT_ID: ${{ secrets.CI_REDDIT_CLIENT_ID }}
+          envkey_REDDIT_CLIENT_SECRET: ${{ secrets.CI_REDDIT_CLIENT_SECRET }}
+          file_name: .env.test
+          fail_on_empty: false
+      - name: Spin up testing container
+        run: docker-compose -f docker-compose.test.yml up -d
+      - name: Wait 30 seconds to allow container to initialize
+        run: sleep 30s
+      - name: Check logs
+        run: docker logs mra-test
+      - name: Run automated tests
+        run: docker exec mra-test php bin/phpunit --group ci-tests
+        shell: bash

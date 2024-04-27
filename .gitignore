@@ -3,8 +3,10 @@ src/.idea
 src/.env.test
 .env
 .env.dev
+.env.test
 docker-compose.yml
 docker-compose.development.yml
+docker-compose.local-prod.yml
 database-data
 temp
 data/r-media
