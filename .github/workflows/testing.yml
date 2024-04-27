@@ -33,7 +33,7 @@ jobs:
       - name: Spin up testing container
         run: docker-compose -f docker-compose.test.yml up -d
       - name: Check logs
-        run: docker logs mra-testing
+        run: docker logs mra-test
       - name: Run automated tests
-        run: docker exec mra-testing php bin/phpunit --group ci-tests
+        run: docker exec mra-test php bin/phpunit --group ci-tests
         shell: bash
