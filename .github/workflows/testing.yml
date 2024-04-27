@@ -27,9 +27,6 @@ jobs:
           envkey_REDDIT_CLIENT_SECRET: ${{ secrets.CI_REDDIT_CLIENT_SECRET }}
           file_name: .env.test
           fail_on_empty: false
-      - name: Create docker-compose.test.yml file
-        run: |
-          cp docker-compose.test.sample.yml docker-compose.test.yml
       - name: Spin up testing container
         run: docker-compose -f docker-compose.test.yml up -d
       - name: Wait 30 seconds to allow container to initialize
