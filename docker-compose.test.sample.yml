@@ -9,8 +9,5 @@ services:
       args:
         APP_VERSION: 0.0.9
     working_dir: /var/www/mra
-    environment:
-      REDDIT_USERNAME:
-      REDDIT_PASSWORD:
-      REDDIT_CLIENT_ID:
-      REDDIT_CLIENT_SECRET:
+    env_file:
+      - path: ./.env.test
