@@ -165,6 +165,15 @@ The command was sourced from the following page: <https://superuser.com/a/277667
 
 ## Running Tests
 
+Create a `.env.test` file in the root directory (next to `docker-compose.test.yml`) and provide values to the following variables:
+
+```env
+REDDIT_USERNAME=
+REDDIT_PASSWORD=
+REDDIT_CLIENT_ID=
+REDDIT_CLIENT_SECRET=
+```
+
 Spin up the `test` container with relevant `docker compose` file:
 
 ```bash
