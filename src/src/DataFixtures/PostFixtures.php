@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpClient\HttplugClient;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class PostFixtures extends Fixture implements ContainerAwareInterface
+class PostFixtures extends Fixture
 {
     private string $currentEnvironment;
 
@@ -44,24 +44,16 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         private readonly SanitizeHtmlHelper $sanitizeHtmlHelper,
         private readonly Manager $manager,
         private readonly RedditIdHelper $redditIdHelper,
-        private readonly ContainerBagInterface $params,
         private readonly EntityManagerInterface $entityManager,
         private readonly FlairTextHelper $flairTextHelper,
         private readonly FlairTextRepository $flairTextRepository,
+        private readonly KernelInterface $kernel,
     ) {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
     }
 
     public function load(ObjectManager $manager): void
     {
-        $this->setCurrentEnvironment();
+        $this->currentEnvironment = $this->kernel->getEnvironment();
         $this->clearGlobalCache();
         $this->clearSearchIndex();
 
@@ -307,20 +299,6 @@ class PostFixtures extends Fixture implements ContainerAwareInterface
         foreach ($redditIds as $redditId) {
             $this->manager->syncContentFromApiByFullRedditId($redditId);
         }
-    }
-
-    /**
-     * Set the Environment (dev, test, etc.) the Fixture is currently
-     * being executed in.
-     *
-     * @return void
-     */
-    private function setCurrentEnvironment()
-    {
-        /** @var KernelInterface $kernel */
-        $kernel = $this->container->get('kernel');
-
-        $this->currentEnvironment = $kernel->getEnvironment();
     }
 
     /**
