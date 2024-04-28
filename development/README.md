@@ -227,5 +227,8 @@ Dockerfiles to update:
 - `development/Dockerfile.dev.debian`
   - `docker build --tag=mra:update-build -f development/Dockerfile.dev.debian .`
 - `Dockerfile.debian`
+  - Update Production `docker-compose` file to point to `Dockerfile.alpine`
+  - `docker compose -f docker-compose.local-prod.yml up -d --force-recreate --build && docker logs -f mra-local-prod`
 - `Dockerfile.alpine`
+  - Update Production `docker-compose` file to point to `Dockerfile.alpine`
   - `docker compose -f docker-compose.local-prod.yml up -d --force-recreate --build && docker logs -f mra-local-prod`
