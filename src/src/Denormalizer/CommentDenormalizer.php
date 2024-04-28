@@ -34,6 +34,21 @@ class CommentDenormalizer implements DenormalizerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Post && $type === Comment::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Comment::class => true,
+        ];
+    }
+
+    /**
      * @param  Post  $data
      * @param  string  $type
      * @param  string|null  $format
@@ -58,14 +73,6 @@ class CommentDenormalizer implements DenormalizerInterface
         }
 
         return $this->updateComment($comment, $commentData);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Post && $type === Comment::class;
     }
 
     /**

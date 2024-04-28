@@ -24,6 +24,13 @@ class AwardDenormalizer implements DenormalizerInterface
         return is_array($data) && $type === Award::class;
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Award::class => true,
+        ];
+    }
+
     /**
      * Denormalize the provided Award array and return an Award Entity. Check
      * for an existing instance of the Award before creating a new record

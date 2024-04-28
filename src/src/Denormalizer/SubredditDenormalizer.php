@@ -27,6 +27,13 @@ class SubredditDenormalizer implements DenormalizerInterface
         return is_array($data) && $type === Subreddit::class;
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Subreddit::class => true,
+        ];
+    }
+
     /**
      * @param  string  $data  Subreddit full Reddit ID. Ex: t5_2sdu8
      * @param  string  $type

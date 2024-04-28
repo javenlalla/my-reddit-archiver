@@ -40,6 +40,13 @@ class ContentDenormalizer implements DenormalizerInterface
             && is_string($data['kind']);
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
     /**
      * @param  array  $data
      * @param  string  $type

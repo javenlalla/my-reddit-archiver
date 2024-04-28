@@ -21,6 +21,22 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    {
+        // @TODO: Add additional checks to ensure array is compatible with a Comment Entity.
+        return is_array($data) && $type === 'array';
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
+    /**
      * Denormalize the provided Response Data containing a Listing of Comments
      * and return an array of Comment Entities.
      *
@@ -63,15 +79,6 @@ class CommentsAndMoreDenormalizer implements DenormalizerInterface
         }
 
         return $comments;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        // @TODO: Add additional checks to ensure array is compatible with a Comment Entity.
-        return is_array($data) && $type === 'array';
     }
 
     /**

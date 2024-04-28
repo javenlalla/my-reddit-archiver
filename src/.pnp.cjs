@@ -31,9 +31,9 @@ const RAW_RUNTIME_STATE =
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@popperjs/core", "npm:2.11.8"],\
           ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.2"],\
-          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A."],\
-          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A."],\
-          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
           ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
           ["chart.js", "npm:3.9.1"],\
@@ -2625,17 +2625,17 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["@symfony/ux-autocomplete", [\
-      ["file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/cache/@symfony-ux-autocomplete-file-61c4b3b8f7-206be1138c.zip/node_modules/@symfony/ux-autocomplete/",\
+      ["file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/cache/@symfony-ux-autocomplete-file-1f5ee28eab-3aec389400.zip/node_modules/@symfony/ux-autocomplete/",\
         "packageDependencies": [\
-          ["@symfony/ux-autocomplete", "file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A."]\
+          ["@symfony/ux-autocomplete", "file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A."]\
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/__virtual__/@symfony-ux-autocomplete-virtual-e551161e39/0/cache/@symfony-ux-autocomplete-file-61c4b3b8f7-206be1138c.zip/node_modules/@symfony/ux-autocomplete/",\
+      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/__virtual__/@symfony-ux-autocomplete-virtual-1cf7227bbc/0/cache/@symfony-ux-autocomplete-file-1f5ee28eab-3aec389400.zip/node_modules/@symfony/ux-autocomplete/",\
         "packageDependencies": [\
-          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@types/hotwired__stimulus", null],\
           ["@types/tom-select", null],\
@@ -2651,17 +2651,17 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["@symfony/ux-chartjs", [\
-      ["file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/cache/@symfony-ux-chartjs-file-a613700388-239187d51d.zip/node_modules/@symfony/ux-chartjs/",\
+      ["file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/cache/@symfony-ux-chartjs-file-94d3d2ba68-e54e681c67.zip/node_modules/@symfony/ux-chartjs/",\
         "packageDependencies": [\
-          ["@symfony/ux-chartjs", "file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A."]\
+          ["@symfony/ux-chartjs", "file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A."]\
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/__virtual__/@symfony-ux-chartjs-virtual-9f564024fb/0/cache/@symfony-ux-chartjs-file-a613700388-239187d51d.zip/node_modules/@symfony/ux-chartjs/",\
+      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/__virtual__/@symfony-ux-chartjs-virtual-870f526b1e/0/cache/@symfony-ux-chartjs-file-94d3d2ba68-e54e681c67.zip/node_modules/@symfony/ux-chartjs/",\
         "packageDependencies": [\
-          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@types/chart.js", null],\
           ["@types/hotwired__stimulus", null],\
@@ -2677,20 +2677,20 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["@symfony/ux-live-component", [\
-      ["file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/cache/@symfony-ux-live-component-file-f01f4fae7b-990c98dbaa.zip/node_modules/@symfony/ux-live-component/",\
+      ["file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/cache/@symfony-ux-live-component-file-b74826203d-ec287826d8.zip/node_modules/@symfony/ux-live-component/",\
         "packageDependencies": [\
-          ["@symfony/ux-live-component", "file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A."]\
+          ["@symfony/ux-live-component", "file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."]\
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A.", {\
-        "packageLocation": "./.yarn/__virtual__/@symfony-ux-live-component-virtual-71126d3fdf/0/cache/@symfony-ux-live-component-file-f01f4fae7b-990c98dbaa.zip/node_modules/@symfony/ux-live-component/",\
+      ["virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A.", {\
+        "packageLocation": "./.yarn/__virtual__/@symfony-ux-live-component-virtual-263462cd36/0/cache/@symfony-ux-live-component-file-b74826203d-ec287826d8.zip/node_modules/@symfony/ux-live-component/",\
         "packageDependencies": [\
-          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@types/hotwired__stimulus", null],\
-          ["morphdom", "npm:2.7.0"]\
+          ["idiomorph", "npm:0.3.0"]\
         ],\
         "packagePeers": [\
           "@hotwired/stimulus",\
@@ -5899,6 +5899,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["idiomorph", [\
+      ["npm:0.3.0", {\
+        "packageLocation": "./.yarn/cache/idiomorph-npm-0.3.0-79e2dfcf49-b81ed49a87.zip/node_modules/idiomorph/",\
+        "packageDependencies": [\
+          ["idiomorph", "npm:0.3.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["import-local", [\
       ["npm:3.1.0", {\
         "packageLocation": "./.yarn/cache/import-local-npm-3.1.0-8960af5e51-bfcdb63b5e.zip/node_modules/import-local/",\
@@ -6690,15 +6699,6 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-d71b8dcd4b.zip/node_modules/mkdirp/",\
         "packageDependencies": [\
           ["mkdirp", "npm:1.0.4"]\
-        ],\
-        "linkType": "HARD"\
-      }]\
-    ]],\
-    ["morphdom", [\
-      ["npm:2.7.0", {\
-        "packageLocation": "./.yarn/cache/morphdom-npm-2.7.0-66e387e191-69822c15ab.zip/node_modules/morphdom/",\
-        "packageDependencies": [\
-          ["morphdom", "npm:2.7.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -8256,9 +8256,9 @@ const RAW_RUNTIME_STATE =
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@popperjs/core", "npm:2.11.8"],\
           ["@symfony/stimulus-bridge", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:3.2.2"],\
-          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A."],\
-          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A."],\
-          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-autocomplete", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-chartjs", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A."],\
+          ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
           ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
           ["chart.js", "npm:3.9.1"],\

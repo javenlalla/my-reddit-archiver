@@ -1525,32 +1525,32 @@ __metadata:
 
 "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
-  resolution: "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=83550f&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-autocomplete@file:vendor/symfony/ux-autocomplete/assets#vendor/symfony/ux-autocomplete/assets::hash=c05c3b&locator=root-workspace-0b6124%40workspace%3A."
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
     tom-select: ^2.2.2
-  checksum: 10/206be1138c1faecfafa34d73a12352a6004cc1fa3098791a1feae452fe2c1f9d76b82cfbd35674a3628ea1893d8b8dcf9411e3e9a30b49e8a28fccb09e734157
+  checksum: 10/3aec38940018702c09638015aa8dabf7951546690df322aa43097055905cef415f9ef6dc2438e1e972826a2ef70cad148407d2e04235e6abd3905cad214ac1fa
   languageName: node
   linkType: hard
 
 "@symfony/ux-chartjs@file:vendor/symfony/ux-chartjs/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.1.0
-  resolution: "@symfony/ux-chartjs@file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=9b4787&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-chartjs@file:vendor/symfony/ux-chartjs/assets#vendor/symfony/ux-chartjs/assets::hash=e7107b&locator=root-workspace-0b6124%40workspace%3A."
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
-    chart.js: ^3.4.1
-  checksum: 10/239187d51d3df7a19538c4a4938360d778e9f7b5cf132f391becc84fd06b3ad8cb3fec4199446577ca2ff4cfc6dfaffa08b35302f2336f315bd676638b07c4d7
+    chart.js: ^3.4.1 || ^4.0
+  checksum: 10/e54e681c67974c39ace30ff057ab93fb6f3332dd8288a64f5da149a917eca26917e6223034a29cb91770ef4b1cab0ef72209be6cd7545fc87985c57a4a5c8090
   languageName: node
   linkType: hard
 
 "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets::locator=root-workspace-0b6124%40workspace%3A.":
   version: 1.0.0
-  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=18eda1&locator=root-workspace-0b6124%40workspace%3A."
+  resolution: "@symfony/ux-live-component@file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."
   dependencies:
-    morphdom: "npm:^2.6.1"
+    idiomorph: "npm:^0.3.0"
   peerDependencies:
     "@hotwired/stimulus": ^3.0.0
-  checksum: 10/990c98dbaa1e6ea5eb89601a84f4ad3657723d5db0d0e6d1adaa459d5fa2230b7e8e640fb001ed31de1a94996e2a7ad403bb2edd43491f96500b28024dce522a
+  checksum: 10/ec287826d8081e80b09e1f78d6e912ea968ab1c0d776c36dfd8b24a0368e5c261a174abc6ca775066812143906ab0016d207d60427c13d94fce0fdcc0ebf729d
   languageName: node
   linkType: hard
 
@@ -4126,6 +4126,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"idiomorph@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "idiomorph@npm:0.3.0"
+  checksum: 10/b81ed49a870f39ba1eeaea451f946a513fa787f5e8be4e1892a7e6976a3a3a5f430cc6205f563a94f1d2edd0772cf93ec487bc287e6683f9ce0d0a089202fc3d
+  languageName: node
+  linkType: hard
+
 "import-local@npm:^3.0.2":
   version: 3.1.0
   resolution: "import-local@npm:3.1.0"
@@ -4823,13 +4830,6 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: 10/d71b8dcd4b5af2fe13ecf3bd24070263489404fe216488c5ba7e38ece1f54daf219e72a833a3a2dc404331e870e9f44963a33399589490956bff003a3404d3b2
-  languageName: node
-  linkType: hard
-
-"morphdom@npm:^2.6.1":
-  version: 2.7.0
-  resolution: "morphdom@npm:2.7.0"
-  checksum: 10/69822c15ab35b9587bc48ba5a7bc541c8c61fc85e6a356f34ad7b7ce163b966837bd91f353dcbce6f8be47e6574d53b92a7b58c64afc5adfdb5bb0987dba458a
   languageName: node
   linkType: hard
 
