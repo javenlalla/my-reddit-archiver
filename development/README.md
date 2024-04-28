@@ -225,6 +225,7 @@ docker compose -f docker-compose.local-prod.yml stop
 Dockerfiles to update:
 
 - `development/Dockerfile.dev.debian`
+  - `docker build --tag=mra:update-build -f development/Dockerfile.dev.debian .`
 - `development/Dockerfile.dev.alpine`
 - `Dockerfile.debian`
 - `Dockerfile.alpine`
