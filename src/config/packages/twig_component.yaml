@@ -1,0 +1,9 @@
+# Not setting this is deprecated in 2.13 and defaults to `components` in 3.0.
+# Discovered in upgrade to Symfony 6.4.
+# Taken from: https://symfony.com/bundles/ux-twig-component/current/index.html#installation
+twig_component:
+    anonymous_template_directory: 'components/'
+    defaults:
+        # Namespace & directory for components
+        App\Component\: 'components/'
+        # App\Twig\Components\: 'components/'
