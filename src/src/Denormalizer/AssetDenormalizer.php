@@ -71,4 +71,14 @@ class AssetDenormalizer implements DenormalizerInterface
     {
         return $data instanceof Asset;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Asset::class => true,
+        ];
+    }
 }

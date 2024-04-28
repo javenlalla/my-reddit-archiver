@@ -15,6 +15,31 @@ class MediaMetadataDenormalizer implements DenormalizerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    {
+        if (is_array($data) && $type === Asset::class) {
+            $reversedData = array_reverse($data);
+            $firstElement = array_pop($reversedData);
+
+            return isset($firstElement['m']) && is_string($firstElement['m']);
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
+    /**
      * Analyze the provided array of Media Metadata and denormalize the
      * metadata for an Image Gallery or Media Metadata array into Asset
      * Entities.
@@ -46,19 +71,5 @@ class MediaMetadataDenormalizer implements DenormalizerInterface
         }
 
         return $assets;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        if (is_array($data) && $type === Asset::class) {
-            $firstElement = array_pop(array_reverse($data));
-
-            return isset($firstElement['m']) && is_string($firstElement['m']);
-        }
-
-        return false;
     }
 }

@@ -9,6 +9,24 @@ class CommentWithRepliesNormalizer implements NormalizerInterface
 {
 
     /**
+     * @inheritDoc
+     */
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Comment && $format === 'api.json';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
+    /**
      * @param  Comment  $object
      * @param  string|null  $format
      * @param  array  $context
@@ -32,13 +50,5 @@ class CommentWithRepliesNormalizer implements NormalizerInterface
         }
 
         return $normalizedData;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Comment && $format === 'api.json';
     }
 }

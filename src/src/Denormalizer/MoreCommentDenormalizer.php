@@ -33,6 +33,13 @@ class MoreCommentDenormalizer implements DenormalizerInterface
             && $context['post'] instanceof Post;
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
     /**
      * @param  string  $data
      * @param  string  $type

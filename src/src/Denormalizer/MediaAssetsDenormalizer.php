@@ -25,6 +25,21 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    {
+        return is_string($data) && $type === Asset::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Asset::class => true,
+        ];
+    }
+
+    /**
      * Based on the provided Post, inspect its properties and denormalize its
      * associated Response Data in order to return a Media Asset Entity.
      *
@@ -72,13 +87,5 @@ class MediaAssetsDenormalizer implements DenormalizerInterface
         }
 
         return $mediaAssets;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        return is_string($data) && $type === Asset::class;
     }
 }

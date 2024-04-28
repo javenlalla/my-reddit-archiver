@@ -6,7 +6,6 @@ namespace App\Normalizer;
 use App\Entity\Asset;
 use App\Entity\Post;
 use App\Entity\PostAuthorText;
-use App\Entity\Thumbnail;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class PostNormalizer implements NormalizerInterface
@@ -15,6 +14,21 @@ class PostNormalizer implements NormalizerInterface
         private readonly CommentNormalizer $commentNormalizer,
         private readonly AssetNormalizer $assetNormalizer,
     ) {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Post;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Post::class => true,
+        ];
     }
 
     /**
@@ -75,13 +89,5 @@ class PostNormalizer implements NormalizerInterface
         }
 
         return $normalizedData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Post;
     }
 }

@@ -56,6 +56,13 @@ class PostDenormalizer implements DenormalizerInterface
         return is_array($data) && $type === Post::class;
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Post::class => true,
+        ];
+    }
+
     /**
      * @param  array  $data
      * @param  string  $type
