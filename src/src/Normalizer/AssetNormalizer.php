@@ -15,6 +15,21 @@ class AssetNormalizer implements NormalizerInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Asset;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Asset::class => true,
+        ];
+    }
+
+    /**
      * @param  Asset  $object
      * @param  string|null  $format
      * @param  array  $context
@@ -31,13 +46,5 @@ class AssetNormalizer implements NormalizerInterface
         ];
 
         return $normalizedData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Asset;
     }
 }

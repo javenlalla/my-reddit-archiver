@@ -26,6 +26,24 @@ class RedditVideoDenormalizer implements DenormalizerInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Post;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
+    /**
      * Analyze the provided Post and denormalize the associated Response data
      * for a Reddit Video into a Media Asset Entity.
      *
@@ -64,14 +82,6 @@ class RedditVideoDenormalizer implements DenormalizerInterface
         }
 
         return $this->assetDenormalizer->denormalize($videoSourceUrl, Asset::class, null, $context);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsDenormalization(mixed $data, string $type, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Post;
     }
 
     /**

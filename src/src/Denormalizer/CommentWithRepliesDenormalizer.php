@@ -28,6 +28,13 @@ class CommentWithRepliesDenormalizer implements DenormalizerInterface
             && !empty($context['commentData']);
     }
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
     /**
      * Denormalize a Comment and its Replies using the provided Post and Response
      * Data.
