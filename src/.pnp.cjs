@@ -36,7 +36,7 @@ const RAW_RUNTIME_STATE =
           ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
           ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
-          ["chart.js", "npm:3.9.1"],\
+          ["chart.js", "npm:4.4.2"],\
           ["core-js", "npm:3.31.1"],\
           ["regenerator-runtime", "npm:0.13.11"],\
           ["tom-select", "npm:2.2.2"],\
@@ -2506,6 +2506,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@kurkle/color", [\
+      ["npm:0.3.2", {\
+        "packageLocation": "./.yarn/cache/@kurkle-color-npm-0.3.2-98f2086013-079c4b7688.zip/node_modules/@kurkle/color/",\
+        "packageDependencies": [\
+          ["@kurkle/color", "npm:0.3.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@leichtgewicht/ip-codec", [\
       ["npm:2.0.4", {\
         "packageLocation": "./.yarn/cache/@leichtgewicht-ip-codec-npm-2.0.4-dd4d657af8-3c7ffb0afb.zip/node_modules/@leichtgewicht/ip-codec/",\
@@ -2665,7 +2674,7 @@ const RAW_RUNTIME_STATE =
           ["@hotwired/stimulus", "npm:3.2.1"],\
           ["@types/chart.js", null],\
           ["@types/hotwired__stimulus", null],\
-          ["chart.js", "npm:3.9.1"]\
+          ["chart.js", "npm:4.4.2"]\
         ],\
         "packagePeers": [\
           "@hotwired/stimulus",\
@@ -4132,10 +4141,11 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["chart.js", [\
-      ["npm:3.9.1", {\
-        "packageLocation": "./.yarn/cache/chart.js-npm-3.9.1-931bfaba91-62ee137b29.zip/node_modules/chart.js/",\
+      ["npm:4.4.2", {\
+        "packageLocation": "./.yarn/cache/chart.js-npm-4.4.2-e9b1497a6e-609444dfc9.zip/node_modules/chart.js/",\
         "packageDependencies": [\
-          ["chart.js", "npm:3.9.1"]\
+          ["chart.js", "npm:4.4.2"],\
+          ["@kurkle/color", "npm:0.3.2"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -8261,7 +8271,7 @@ const RAW_RUNTIME_STATE =
           ["@symfony/ux-live-component", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#file:vendor/symfony/ux-live-component/assets#vendor/symfony/ux-live-component/assets::hash=fffa05&locator=root-workspace-0b6124%40workspace%3A."],\
           ["@symfony/webpack-encore", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:4.4.0"],\
           ["bootstrap", "virtual:dc3fc578bfa5e06182a4d2be39ede0bc5b74940b1ffe0d70c26892ab140a4699787750fba175dc306292e80b4aa2c8c5f68c2a821e69b2c37e360c0dff36ff66#npm:5.3.0"],\
-          ["chart.js", "npm:3.9.1"],\
+          ["chart.js", "npm:4.4.2"],\
           ["core-js", "npm:3.31.1"],\
           ["regenerator-runtime", "npm:0.13.11"],\
           ["tom-select", "npm:2.2.2"],\
