@@ -15,6 +15,7 @@
   - [ffmpeg](#ffmpeg)
   - [Running Tests](#running-tests)
   - [Running Production Image Locally](#running-production-image-locally)
+  - [Update PHP Version](#update-php-version)
 
 ## Setup
 
@@ -22,8 +23,6 @@
 2. Create Development-specific `docker-compose.yml`
 
     ```yaml
-    version: '3.9'
-
     services:
       mra-dev:
         container_name: mra-dev
@@ -31,7 +30,7 @@
           context: .
           args:
             APP_VERSION: 0.1.0
-          dockerfile: ./development/Dockerfile.dev.buster
+          dockerfile: ./development/Dockerfile.dev.debian
           # Alpine image also available if preferred.
           # dockerfile: ./development/Dockerfile.dev.alpine
         volumes:
@@ -191,14 +190,12 @@ docker exec mra-test php bin/phpunit --group ci-tests
 Create a Docker Compose file pointed to the Production `Dockerfile`: `docker-compose.local-prod.yml`
 
 ```yaml
-version: '3.9'
-
 services:
   mra-local-prod:
     container_name: mra-local-prod
     build:
       context: .
-      dockerfile: Dockerfile.buster
+      dockerfile: Dockerfile.debian
       args:
         APP_VERSION: 0.0.9
     volumes:
@@ -222,3 +219,12 @@ docker compose -f docker-compose.local-prod.yml up -d
 
 docker compose -f docker-compose.local-prod.yml stop
 ```
+
+## Update PHP Version
+
+Dockerfiles to update:
+
+- `development/Dockerfile.dev.debian`
+- `development/Dockerfile.dev.alpine`
+- `Dockerfile.debian`
+- `Dockerfile.alpine`
