@@ -16,6 +16,21 @@ class ContentNormalizer implements NormalizerInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Content && $format === 'api.json';
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Content::class => true,
+        ];
+    }
+
+    /**
      * @param  Content  $object
      * @param  string|null  $format
      * @param  array  $context
@@ -44,13 +59,5 @@ class ContentNormalizer implements NormalizerInterface
         }
 
         return $normalizedData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Content && $format === 'api.json';
     }
 }

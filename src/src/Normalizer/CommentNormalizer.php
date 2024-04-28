@@ -9,6 +9,21 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class CommentNormalizer implements NormalizerInterface
 {
     /**
+     * @inheritDoc
+     */
+    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
+    {
+        return $data instanceof Comment && $format === 'api.json';
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            '*' => false,
+        ];
+    }
+
+    /**
      * @param  Comment  $object
      * @param  string|null  $format
      * @param  array  $context
@@ -45,13 +60,5 @@ class CommentNormalizer implements NormalizerInterface
         }
 
         return $normalizedData;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsNormalization(mixed $data, string $format = null, array $context = []): bool
-    {
-        return $data instanceof Comment && $format === 'api.json';
     }
 }
