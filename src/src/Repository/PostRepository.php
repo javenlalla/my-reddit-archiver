@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Order;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -31,7 +32,7 @@ class PostRepository extends ServiceEntityRepository
     public static function createLatestPostAuthorTextCriteria(): Criteria
     {
         return Criteria::create()
-            ->orderBy(['createdAt' => Criteria::DESC])
+            ->orderBy(['createdAt' => Order::Descending])
             ->setMaxResults(1)
             ;
     }

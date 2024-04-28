@@ -7,6 +7,7 @@ use App\Entity\Comment;
 use App\Entity\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Order;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -35,7 +36,7 @@ class CommentRepository extends ServiceEntityRepository
     public static function createLatestCommentAuthorTextCriteria(): Criteria
     {
         return Criteria::create()
-            ->orderBy(['createdAt' => Criteria::DESC])
+            ->orderBy(['createdAt' => Order::Descending])
             ->setMaxResults(1)
             ;
     }

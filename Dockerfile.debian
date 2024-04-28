@@ -1,5 +1,5 @@
 # Build the main image.
-FROM php:8.1.7-fpm-buster
+FROM php:8.3.6-fpm-bookworm
 
 ENV APP_ENV=prod
 ENV APP_PUBLIC_PATH=/var/www/mra/public

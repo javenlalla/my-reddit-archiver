@@ -120,8 +120,6 @@ If the `docker-compose` method is preferred for running the application, proceed
 1. Create a `docker-compose.yml`:
 
     ```yaml
-    version: '3.9'
-
     services:
       mra:
         container_name: mra
