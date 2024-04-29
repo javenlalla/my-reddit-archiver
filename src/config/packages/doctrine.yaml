@@ -7,9 +7,6 @@ doctrine:
         #server_version: '16'
 
         profiling_collect_backtrace: '%kernel.debug%'
-        # Defaulted to true. Setting to false in order to avoid Exception during phpunit testing:
-        # Doctrine\DBAL\ConnectionException : May not alter the nested transaction with savepoints behavior while a transaction is open.
-        # Update: Re-enabling to `true` after updating dama/doctrine-test-bundle to 8.0.
         use_savepoints: true
     orm:
         auto_generate_proxy_classes: true
@@ -25,6 +22,8 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Entity'
                 prefix: 'App\Entity'
                 alias: App
+        controller_resolver:
+            auto_mapping: true
 
 when@test:
     doctrine:
