@@ -17,6 +17,8 @@ RUN apt update && apt install -y \
     unzip \
     nginx \
     supervisor \
+    # libsqlite3-dev is required by the `pdo_sqlite` extension.
+    libsqlite3-dev \
     # libicu-dev is a dependency required by the `intl` extension.
     libicu-dev \
     # ffmpeg is needed for combining Reddit video and audio asset files.
@@ -24,6 +26,8 @@ RUN apt update && apt install -y \
 
 RUN docker-php-ext-install \
     pdo \
+    pdo_sqlite \
+    pdo_mysql \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem

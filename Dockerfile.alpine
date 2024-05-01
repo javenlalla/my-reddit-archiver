@@ -27,6 +27,8 @@ RUN apk --no-cache add \
     findutils \
     zlib-dev \
     libzip-dev \
+    # sqlite-dev is required for the pdo_sqlite extension.
+    sqlite-dev \
     # icu-dev is a dependency required by the `intl` extension.
     icu-dev \
     # ffmpeg is needed for combining Reddit video and audio asset files.
@@ -38,6 +40,8 @@ RUN apk --no-cache add \
 
 RUN docker-php-ext-install \
     pdo \
+    pdo_sqlite \
+    pdo_mysql \
     intl \
     # sysvsem is required for the RateLimiter Semaphore store.
     sysvsem
