@@ -7,6 +7,7 @@ src/.env.test
 docker-compose.yml
 docker-compose.development.yml
 docker-compose.local-prod.yml
+docker-compose.local-image.yml
 database-data
 temp
 data/r-media

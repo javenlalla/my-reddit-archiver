@@ -14,7 +14,7 @@
     - [yarn](#yarn)
   - [ffmpeg](#ffmpeg)
   - [Running Tests](#running-tests)
-  - [Running Production Image Locally](#running-production-image-locally)
+  - [Running And Testing Images Locally](#running-and-testing-images-locally)
   - [Update PHP Version](#update-php-version)
 
 ## Setup
@@ -185,23 +185,27 @@ Execute PHPUnit tests within the container using the following command as a base
 docker exec mra-test php bin/phpunit --group ci-tests
 ```
 
-## Running Production Image Locally
+## Running And Testing Images Locally
 
-Create a Docker Compose file pointed to the Production `Dockerfile`: `docker-compose.local-prod.yml`
+Create a Docker Compose file pointed to the desired `Dockerfile`: `docker-compose.local-image.yml`
 
 ```yaml
 services:
-  mra-local-prod:
-    container_name: mra-local-prod
+  mra-local-image:
+    container_name: mra-local-image
     build:
       context: .
       dockerfile: Dockerfile.debian
       args:
         APP_VERSION: 0.0.9
     volumes:
-      - ./src:/var/www/mra
       - ./r-media:/r-media
       - ./database:/database
+      # Mounting the source code folder will overwrite the built files within the image in the cases of the Production and Test images.
+      # Mount only as necessary (ex: Development image).
+      # - ./src:/var/www/mra
+      # Declare Volume only if using Development image.
+      # - /var/www/mra/var/
     working_dir: /var/www/mra
     environment:
       REDDIT_USERNAME:
@@ -215,20 +219,22 @@ services:
 Spin up/down the container with the following commands:
 
 ```bash
-docker compose -f docker-compose.local-prod.yml up -d
+docker compose -f docker-compose.local-image.yml up -d
 
-docker compose -f docker-compose.local-prod.yml stop
+docker compose -f docker-compose.local-image.yml stop
 ```
 
 ## Update PHP Version
 
-Dockerfiles to update:
+Update the following Dockerfiles and test them via the `docker-compose.local-image.yml` setup.
 
-- `development/Dockerfile.dev.debian`
-  - `docker build --tag=mra:update-build -f development/Dockerfile.dev.debian .`
+- `development/Dockerfile.dev.debian`:
+- `Dockerfile.test`
 - `Dockerfile.debian`
-  - Update Production `docker-compose` file to point to `Dockerfile.alpine`
-  - `docker compose -f docker-compose.local-prod.yml up -d --force-recreate --build && docker logs -f mra-local-prod`
 - `Dockerfile.alpine`
-  - Update Production `docker-compose` file to point to `Dockerfile.alpine`
-  - `docker compose -f docker-compose.local-prod.yml up -d --force-recreate --build && docker logs -f mra-local-prod`
+
+For each `Dockerfile` updated, build and verify the image with the following command:
+
+```bash
+docker compose -f docker-compose.local-image.yml up -d --force-recreate --build && docker logs -f mra-local-image
+```
