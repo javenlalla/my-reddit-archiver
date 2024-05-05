@@ -199,10 +199,13 @@ services:
       args:
         APP_VERSION: 0.0.9
     volumes:
-      - ./src:/var/www/mra
       - ./r-media:/r-media
       - ./database:/database
-      - /var/www/mra/var/
+      # Mounting the source code folder will overwrite the built files within the image in the cases of the Production and Test images.
+      # Mount only as necessary (ex: Development image).
+      # - ./src:/var/www/mra
+      # Declare Volume only if using Development image.
+      # - /var/www/mra/var/
     working_dir: /var/www/mra
     environment:
       REDDIT_USERNAME:
