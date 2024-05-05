@@ -115,10 +115,10 @@ fi
 php bin/console app:persist-reddit-account
 ### End customization.
 
-# Install Symfony UX/Encore dependencies if not in a Production or Test environment.
+# Install Symfony AssetMapper packages if not in a Production or Test environment.
 if [[ "$dev_env" = true ]]; then
-    echo "Installing Symfony UX/Encore dependencies."
-    yarn install
+    echo "Installing Symfony AssetMapper packages."
+    php bin/console importmap:install
 fi
 
 # Initialize the .env.test file to specify `KERNEL_CLASS` which is required for testing.
