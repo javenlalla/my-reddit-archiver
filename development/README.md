@@ -29,10 +29,8 @@
         build:
           context: .
           args:
-            APP_VERSION: 0.1.0
+            APP_VERSION: 0.1.1
           dockerfile: ./development/Dockerfile.dev.debian
-          # Alpine image also available if preferred.
-          # dockerfile: ./development/Dockerfile.dev.alpine
         volumes:
           - ./src:/var/www/mra
           - ./r-media:/r-media

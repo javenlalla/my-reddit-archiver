@@ -2,7 +2,16 @@
 
 Self-hosted web application to archive your Reddit profile's Comments and Saved, Upvoted, and Downvoted Posts locally.
 
-> Note: This project is currently under active development. There will be data structure and/or bc-breaking changes until the first official release is pushed.
+> [!WARNING]
+> **This project is no longer maintained and the repository is archived.** It will not receive further updates, including security fixes.
+>
+> **Security update (0.1.1):** Images before `0.1.1` run PHP 8.3.6, which is affected by the PHP2Shell remote code execution vulnerabilities ([CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w), [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp)). Version `0.1.1` upgrades to the patched PHP 8.3.36. If you run this application, pull the latest image and recreate your container (see [Updating](#updating)).
+>
+> - `latest`, `alpine`, `alpine-latest`, `0.1.1`, and `0.1.1-alpine` are the patched Alpine image.
+> - `buster`, `buster-latest`, and `0.1.1-bookworm` are the patched Debian image. Despite the tag name, `buster` is now built on Debian bookworm.
+> - `0.1.0` and the other `0.1.0-*` tags remain vulnerable. Do not use them.
+>
+> The application also runs on Symfony 7.0, which no longer receives security updates. Do not expose it to the public internet.
 
 - [My Reddit Archiver](#my-reddit-archiver)
   - [Features](#features)

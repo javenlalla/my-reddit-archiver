@@ -1,4 +1,4 @@
-FROM php:8.3.6-fpm-alpine
+FROM php:8.3.36-fpm-alpine
 
 ENV APP_ENV=prod
 ENV APP_PUBLIC_PATH=/var/www/mra/public
